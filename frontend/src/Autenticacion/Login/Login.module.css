@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+  --accent-cand: #1e3a8a;   /* azul */
+  --accent-rec:  #059669;   /* verde */
+  --bg-gradient: linear-gradient(135deg, #f0f4ff, #e6efff);
+}
+
+
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--bg-gradient);
+  box-sizing: border-box;
+}
+
+
+.accentCandidate {
+  /* candidato: borde superior azul */
+  --accent: var(--accent-cand);
+}
+.accentRecruiter {
+  /* reclutador: borde superior verde */
+  --accent: var(--accent-rec);
+}
+
+/* El formulario centrado */
+.loginForm {
+  background: white;
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  border-top: 6px solid var(--accent);
+  font-family: 'Poppins', sans-serif;
+  text-align: left;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* Título del formulario */
+.formTitle {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+/* Mensaje de error */
+.errorMessage {
+  background: #fdecea;
+  color: #b02a37;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+.inputGroup {
+  margin-bottom: 1.25rem;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+}
+
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: #aaa;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inputWrapper input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+
+.submitButton {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 0.5rem;
+}
+
+.submitButton:hover {
+  background: darken(var(--accent), 10%);
+  transform: translateY(-1px);
+}
+
+
+.linkContainer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.linkContainer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.linkContainer a:hover {
+  color: darken(var(--accent), 15%);
+}
+
+/* Animación de fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
