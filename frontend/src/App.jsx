@@ -4,6 +4,8 @@ import Inicio from './Autenticacion/Inicio/Inicio.jsx';
 import Login from './Autenticacion/Login/Login.jsx';  
 import MostrarDatos from './Autenticacion/MostrarDatos/MostrarDatos.jsx';
 import './index.css';
+import RegistroCandidato from './Autenticacion/Registro/registroCandidato.jsx';
+import RegistroReclutador from './Autenticacion/Registro/registroReclutador.jsx';
 
 function App() {
   return (
@@ -15,6 +17,9 @@ function App() {
           <Route path="/login/:tipoUsuario" element={<Login />} />
 
           <Route path="/datos-empleados" element={<MostrarDatos />} />
+
+          <Route path="/registro-candidato" element={<RegistroCandidato />} />
+          <Route path="/registro-reclutador" element={<RegistroReclutador />} />  
 
           {/* Futuras rutas (dashboards, etc.) */}
           {/* <Route path="/dashboard-candidato" element={<DashboardCandidato />} /> */}

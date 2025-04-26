@@ -1,11 +1,21 @@
+
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #007bff;
-    padding: 10px 20px;
-    color: white;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;                         
+  height: var(--navbar-height);
+  padding: 0 2rem;                    
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(          
+    120deg,
+    var(--primary),
+    var(--accent)
+  );
+  z-index: 1000;                      
+}
   
   .logo {
     font-size: 1.5rem;

@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 :root {
-  --accent-cand: #1e3a8a;   /* azul */
-  --accent-rec:  #059669;   /* verde */
+  --accent-cand: #1e3a8a;   /* azul - candidato */
+  --accent-rec:  #059669;   /* verde - reclutador */
   --bg-gradient: linear-gradient(135deg, #f0f4ff, #e6efff);
 }
 
-
-.loginContainer {
+/* Contenedor principal */
+.authContainer {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,18 +17,16 @@
   box-sizing: border-box;
 }
 
-
+/* Clases para aplicar el color de acento en el borde superior */
 .accentCandidate {
-  /* candidato: borde superior azul */
   --accent: var(--accent-cand);
 }
 .accentRecruiter {
-  /* reclutador: borde superior verde */
   --accent: var(--accent-rec);
 }
 
-/* El formulario centrado */
-.loginForm {
+/* Formulario centrado */
+.authForm {
   background: white;
   padding: 2.5rem 2rem;
   border-radius: 12px;
@@ -60,7 +58,7 @@
   text-align: center;
 }
 
-
+/* Grupo de Input (label + input wrapper) */
 .inputGroup {
   margin-bottom: 1.25rem;
 }
@@ -72,28 +70,28 @@
   font-weight: 500;
 }
 
-
+/* Wrapper para el input */
 .inputWrapper {
-  position: relative;
+  position: relative; 
 }
 
-.inputIcon {
-  position: absolute;
-  top: 50%;
-  left: 0.75rem;
-  transform: translateY(-50%);
-  width: 1rem;
-  height: 1rem;
-  color: #aaa;
-}
-
+/* Estilos del Input */
 .inputWrapper input {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.75rem; /* Padding base sin ajuste para ícono */
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+/* Estilos para input tipo file */
+.inputWrapper input[type="file"] {
+   padding-top: 0.4rem; /* Ajuste visual menor */
+   padding-left: 0.75rem;
+   padding-right: 0.75rem;
+   padding-bottom: 0.75rem;
 }
 
 .inputWrapper input:focus {
@@ -102,7 +100,7 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-
+/* Botón de Submit */
 .submitButton {
   width: 100%;
   padding: 0.75rem;
@@ -113,16 +111,16 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: background 0.3s, transform 0.2s, filter 0.3s;
   margin-top: 0.5rem;
 }
 
 .submitButton:hover {
-  background: darken(var(--accent), 10%);
+  filter: brightness(0.9);
   transform: translateY(-1px);
 }
 
-
+/* Contenedor para los enlaces inferiores */
 .linkContainer {
   text-align: center;
   margin-top: 1rem;
@@ -132,15 +130,71 @@
   color: var(--accent);
   text-decoration: none;
   font-size: 0.9rem;
-  transition: color 0.2s;
+  transition: color 0.2s, filter 0.2s;
 }
 
 .linkContainer a:hover {
-  color: darken(var(--accent), 15%);
+  filter: brightness(0.7);
+  text-decoration: underline;
 }
 
 /* Animación de fade-in */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Media Queries para Responsividad --- */
+
+@media (max-width: 600px) {
+  .authForm {
+    padding: 1.5rem 1rem;
+    margin: 0 0.5rem;
+    max-width: 100%;
+    border-top-width: 4px;
+  }
+
+  .formTitle {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .inputGroup {
+    margin-bottom: 1rem;
+  }
+
+  .inputWrapper input {
+    padding: 0.6rem; /* Padding reducido para móvil */
+    font-size: 0.9rem;
+  }
+   /* Asegurar padding consistente para file input en móvil */
+   .inputWrapper input[type="file"] {
+       padding-top: 0.4rem;
+       padding-left: 0.6rem;
+       padding-right: 0.6rem;
+       padding-bottom: 0.6rem;
+   }
+
+
+  .submitButton {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .linkContainer {
+    margin-top: 0.8rem;
+  }
+
+  .linkContainer a {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+   .authForm {
+     padding: 1rem 0.8rem;
+   }
+   .formTitle {
+     font-size: 1.2rem;
+   }
 }

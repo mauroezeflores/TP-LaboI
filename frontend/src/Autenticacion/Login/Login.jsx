@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import styles from './Login.module.css';
+import styles from '../Autenticacion.module.css';
 
 export default function Login() {
   const { tipoUsuario } = useParams(); // 'candidato' o 'reclutador'
   const title = tipoUsuario[0].toUpperCase() + tipoUsuario.slice(1);
 
-  // Elegimos una clase de acento distinta según el usuario
+  // Elegimos la clase de acento correcta
   const accentClass =
     tipoUsuario === 'candidato'
       ? styles.accentCandidate
@@ -18,26 +18,26 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Aquí llamás tu API / lógica de autenticación
     if (!email || !password) {
       setError('Por favor, completá todos los campos.');
     } else {
       setError('');
-      // submit...
+      // Lógica de autenticación...
+      console.log('Iniciando sesión:', { email, tipoUsuario });
     }
   };
 
   return (
-    <div className={`${styles.loginContainer} ${accentClass}`}>
-      <form onSubmit={handleSubmit} className={styles.loginForm}>
+    <div className={`${styles.authContainer} ${accentClass}`}>
+      <form onSubmit={handleSubmit} className={styles.authForm}>
         <h2 className={styles.formTitle}>Inicio de Sesión - {title}</h2>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
 
-        {/* Email */}
+        {/* Correo electrónico */}
         <div className={styles.inputGroup}>
           <label htmlFor="email">Correo electrónico</label>
-          <div className={styles.inputWrapper}> 
+          <div className={styles.inputWrapper}>
             <input
               id="email"
               type="email"
@@ -62,10 +62,23 @@ export default function Login() {
           </div>
         </div>
 
+        {/* Botón con su clase */}
         <button type="submit" className={styles.submitButton}>
           Iniciar Sesión
         </button>
 
+        {/* Links con sus contenedores */}
+        <div className={styles.linkContainer}>
+          <Link to={`/${tipoUsuario}/recuperar-contraseña`}>
+            Olvidaste tu contraseña?
+          </Link>
+        </div>
+        <div className={styles.linkContainer}>
+          {/* Asegúrate que el tipoUsuario sea 'candidato' o 'reclutador' */}
+          <Link to={`/registro-${tipoUsuario}`}>
+            No tenés cuenta? Registrate
+          </Link>
+        </div>
         <div className={styles.linkContainer}>
           <Link to="/">← Volver al Inicio</Link>
         </div>
