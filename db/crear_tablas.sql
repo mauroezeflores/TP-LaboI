@@ -12,7 +12,7 @@ CREATE TABLE "Empleado" (
   "fecha_de_ingreso" date NOT NULL,
   "id_puesto" integer,
   "id_departamento" integer,
-  "id_contratacion" integer,
+  --"id_contratacion" integer, no lo vamos a utilizar
   "genero" varchar NOT NULL,
   "sueldo" float NOT NULL,
   "ultima_evaluacion_de_desempeno" float, --ultima evaluacion de desempeño
@@ -34,6 +34,7 @@ CREATE TABLE "proyectos_por_empleados" (
   primary key(id_empleado,id_proyecto)
 );
 
+/* NO ES NECESARIO ACTUALMENTE
 CREATE TABLE "extra" (
   "id_extra" integer PRIMARY KEY
   "nombre" varchar
@@ -50,6 +51,23 @@ CREATE TABLE "extras_por_empleados" (
   "id_extra" integer,
   primary key(id_extra,id_empleado)
 );
+
+CREATE TABLE "contratacion" (
+  "id_contratacion" integer PRIMARY KEY,
+  "nombre" varchar NOT NULL
+);
+
+CREATE TABLE "beneficio" (
+  "id_beneficio" integer PRIMARY KEY,
+  "nombre" varchar NOT NULL
+);
+
+CREATE TABLE "beneficios_por_contrataciones" (
+  "id_contratacion" integer,
+  "id_beneficio" integer,
+  primary key(id_contratacion,id_beneficio)
+);
+*/
 
 CREATE TABLE "certificaciones_por_empleados" (
   "id_empleado" integer,
@@ -81,11 +99,6 @@ CREATE TABLE "habilidad" (
   "peso" integer NOT NULL
 );
 
-CREATE TABLE "contratacion" (
-  "id_contratacion" integer PRIMARY KEY,
-  "nombre" varchar NOT NULL
-);
-
 CREATE TABLE "Fichada" (
   "id_empleado" integer,
   "fecha_de_entrada" date NOT NULL,
@@ -106,16 +119,7 @@ CREATE TABLE "departamento" (
   "nombre" varchar NOT NULL
 );
 
-CREATE TABLE "beneficio" (
-  "id_beneficio" integer PRIMARY KEY,
-  "nombre" varchar NOT NULL
-);
 
-CREATE TABLE "beneficios_por_contrataciones" (
-  "id_contratacion" integer,
-  "id_beneficio" integer,
-  primary key(id_contratacion,id_beneficio)
-);
 
 CREATE TABLE "certificacion" (
   "id_certificacion" integer PRIMARY KEY,
@@ -131,6 +135,8 @@ CREATE TABLE "calculo_de_desempeno" (
   "nivel_de_habilidades" integer,
   "presencia_en_proyectos" integer,
   "horas_extras" integer,
+  "ultima_evaluacion_de_desempeno" float, 
+  "evaluacion_del_superior" float,
   "desempeño" float,
   primary key(id_empleado,fecha_de_evaluacion)
 );
