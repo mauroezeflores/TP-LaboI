@@ -21,7 +21,7 @@ INSERT INTO certificacion (id_certificacion, nombre, peso) VALUES
 (4, 'Certificacion en seguridad informatica', 4),
 (5, 'Certificacion en Desarrollo Web Full Stack', 3),
 (6, 'AWS Certified Solutions Architect', 5),
-(7, 'Certificion Administracion Contable', 4);
+(7, 'Certificacion Administracion Contable', 4),
 (8, 'Certificacion Cloud Engineer', 3),
 (9, 'Certificacion en desarrollo movil', 3),
 (10, 'Certificacion de Gestion estrategica de RRHH', 3),
@@ -51,7 +51,7 @@ INSERT INTO habilidad (id_habilidad, nombre, peso) VALUES
 (8, 'Herramientas de recruiting', 3),
 (9, 'Comunicacion efectiva', 3),
 (10, 'Capacidad de toma de decisiones estrategicas', 3),
-(11, 'Manejo de plataformas de RRHH', 3),(, '', 3),
+(11, 'Manejo de plataformas de RRHH', 3),
 (12, 'Analisis de desempeño', 3),
 (13, 'Legislacion laboral basica', 3),
 (14, 'arquitectura de software', 3),
@@ -82,16 +82,16 @@ INSERT INTO habilidad (id_habilidad, nombre, peso) VALUES
 (39, 'Evaluacion de perfiles tecnicos y soft', 3),
 (40, 'Employer branding', 3);
 
-
+/*
 INSERT INTO beneficio (id_beneficio, nombre) VALUES
 (1, 'Obra Social'),
 (2, 'Capacitacion continua'),
 (4, 'Flexibilidad Horaria'),
 (5, 'Trabajo Remoto Parcial');
-
+*/
 INSERT INTO proyecto (id_proyecto, nombre, cantidad_de_integrantes, peso, id_departamento) VALUES
 (1, 'Implementación Sistema de Gestión', 10, 5, 1),
-(3, 'Campaña Publicitaria 2025', 6, 4, 5),
+(2, 'Campaña Publicitaria 2025', 6, 4, 3),
 (3, 'Expansión de Ventas Regionales', 8, 5, 3),
 (4, 'Optimización de Costos Financieros', 4, 3, 4),
 (5, 'Nuevo Portal de Empleos', 5, 4, 2);
@@ -144,12 +144,12 @@ INSERT INTO habilidades_validas_por_puestos(id_puesto, id_habilidad) VALUES
 (4,21),
 (5,22),
 (5,23),
-(5,24)
+(5,24),
 (5,25),
 (5,26),
 (6,27),
 (6,28),
-(6,28),
+(6,29),
 (6,30),
 (6,31),
 (7,32),

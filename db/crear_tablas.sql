@@ -95,7 +95,7 @@ CREATE TABLE "habilidades_validas_por_puestos" (
 
 CREATE TABLE "habilidad" (
   "id_habilidad" integer PRIMARY KEY,
-  "nombre" varchar
+  "nombre" varchar,
   "peso" integer NOT NULL
 );
 
@@ -149,7 +149,7 @@ ALTER TABLE "Empleado" ADD FOREIGN KEY ("id_puesto") REFERENCES "puesto_de_traba
 
 ALTER TABLE "Empleado" ADD FOREIGN KEY ("id_departamento") REFERENCES "departamento" ("id_departamento");
 
-ALTER TABLE "Empleado" ADD FOREIGN KEY ("id_contratacion") REFERENCES "contratacion" ("id_contratacion");
+--ALTER TABLE "Empleado" ADD FOREIGN KEY ("id_contratacion") REFERENCES "contratacion" ("id_contratacion");
 
 ALTER TABLE "Empleado" ADD FOREIGN KEY ("id_proyecto") REFERENCES "proyecto" ("id_proyecto");
 
@@ -159,13 +159,13 @@ ALTER TABLE "proyectos_por_empleados" ADD FOREIGN KEY ("id_empleado") REFERENCES
 
 ALTER TABLE "proyectos_por_empleados" ADD FOREIGN KEY ("id_proyecto") REFERENCES "proyecto" ("id_proyecto");
 
-ALTER TABLE "extras_por_puestos" ADD FOREIGN KEY ("id_puesto") REFERENCES "puesto_de_trabajo" ("id_puesto");
+--ALTER TABLE "extras_por_puestos" ADD FOREIGN KEY ("id_puesto") REFERENCES "puesto_de_trabajo" ("id_puesto");
 
-ALTER TABLE "extras_por_puestos" ADD FOREIGN KEY ("id_extra") REFERENCES "extra" ("id_extra");
+--ALTER TABLE "extras_por_puestos" ADD FOREIGN KEY ("id_extra") REFERENCES "extra" ("id_extra");
 
-ALTER TABLE "extras_por_empleados" ADD FOREIGN KEY ("id_empleado") REFERENCES "Empleado" ("id_empleado");
+--ALTER TABLE "extras_por_empleados" ADD FOREIGN KEY ("id_empleado") REFERENCES "Empleado" ("id_empleado");
 
-ALTER TABLE "extras_por_empleados" ADD FOREIGN KEY ("id_extra") REFERENCES "extra" ("id_extra");
+--ALTER TABLE "extras_por_empleados" ADD FOREIGN KEY ("id_extra") REFERENCES "extra" ("id_extra");
 
 ALTER TABLE "certificaciones_por_empleados" ADD FOREIGN KEY ("id_empleado") REFERENCES "Empleado" ("id_empleado");
 
@@ -183,16 +183,16 @@ ALTER TABLE "habilidades_validas_por_puestos" ADD FOREIGN KEY ("id_puesto") REFE
 
 ALTER TABLE "habilidades_validas_por_puestos" ADD FOREIGN KEY ("id_habilidad") REFERENCES "habilidad" ("id_habilidad");
 
-ALTER TABLE "habilidad" ADD FOREIGN KEY ("id_puesto") REFERENCES "puesto_de_trabajo" ("id_puesto");
+--ALTER TABLE "habilidad" ADD FOREIGN KEY ("id_puesto") REFERENCES "puesto_de_trabajo" ("id_puesto");
 
 ALTER TABLE "Fichada" ADD FOREIGN KEY ("id_empleado") REFERENCES "Empleado" ("id_empleado");
 
 ALTER TABLE "puesto_de_trabajo" ADD FOREIGN KEY ("id_departamento") REFERENCES "departamento" ("id_departamento");
 
-ALTER TABLE "beneficios_por_contrataciones" ADD FOREIGN KEY ("id_contratacion") REFERENCES "contratacion" ("id_contratacion");
+--ALTER TABLE "beneficios_por_contrataciones" ADD FOREIGN KEY ("id_contratacion") REFERENCES "contratacion" ("id_contratacion");
 
-ALTER TABLE "beneficios_por_contrataciones" ADD FOREIGN KEY ("id_beneficio") REFERENCES "beneficio" ("id_beneficio");
+--ALTER TABLE "beneficios_por_contrataciones" ADD FOREIGN KEY ("id_beneficio") REFERENCES "beneficio" ("id_beneficio");
 
 ALTER TABLE "calculo_de_desempeno" ADD FOREIGN KEY ("id_empleado") REFERENCES "Empleado" ("id_empleado");
 
-ALTER TABLE "habilidades_por_empleados" ADD FOREIGN KEY ("id_habilidad") REFERENCES "habilidad" ("id_habilidad");
+--ALTER TABLE "habilidades_por_empleados" ADD FOREIGN KEY ("id_habilidad") REFERENCES "habilidad" ("id_habilidad");
