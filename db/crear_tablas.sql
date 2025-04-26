@@ -9,14 +9,15 @@ CREATE TABLE "Empleado" (
   "nivel_educativo" varchar NOT NULL,
   "telefono" varchar NOT NULL,
   "direccion" varchar NOT NULL,
+  "fecha_de_ingreso" date NOT NULL,
   "id_puesto" integer,
   "id_departamento" integer,
   "id_contratacion" integer,
   "genero" varchar NOT NULL,
   "sueldo" float NOT NULL,
-  "ultima_evaluacion" float,
+  "ultima_evaluacion_de_desempeno" float, --ultima evaluacion de desempeño
   "id_proyecto" integer,
-  "desempeño_actual" integer
+  "evaluacion_del_superior" float -- evaluacion actual del jefe de proyecto
 );
 
 CREATE TABLE "proyecto" (
