@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <div className={`${styles.authContainer} ${accentClass}`}>
-      <form onSubmit={handleSubmit} className={styles.authForm}>
+      <form onSubmit={handleSubmit} className={styles.authForm} noValidate>
         <h2 className={styles.formTitle}>Inicio de Sesión - {title}</h2>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
@@ -64,7 +64,9 @@ export default function Login() {
 
         {/* Botón con su clase */}
         <button type="submit" className={styles.submitButton}>
-          Iniciar Sesión
+          <Link to={`/dashboard/${tipoUsuario}`}>
+            <span className={styles.buttonText}>Iniciar Sesión</span>
+          </Link>
         </button>
 
         {/* Links con sus contenedores */}

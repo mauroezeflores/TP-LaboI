@@ -1,33 +1,54 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Inicio from './Autenticacion/Inicio/Inicio.jsx'; 
-import Login from './Autenticacion/Login/Login.jsx';  
-import MostrarDatos from './Autenticacion/MostrarDatos/MostrarDatos.jsx';
-import './index.css';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Inicio from './Autenticacion/Inicio/Inicio.jsx';
+import Login from './Autenticacion/Login/Login.jsx';
 import RegistroCandidato from './Autenticacion/Registro/registroCandidato.jsx';
 import RegistroReclutador from './Autenticacion/Registro/registroReclutador.jsx';
+import DashboardReclutadorLayout from './DashboardReclutador/DashboardReclutadorLayout.jsx';
+import DashboardHome from './DashboardReclutador/pages/DashboardHome.jsx';
+import CrearConvocatoria from './DashboardReclutador/pages/CrearConvocatoria.jsx';
+import VerConvocatorias from './DashboardReclutador/pages/VerConvocatorias.jsx';
+import VerCandidatos from './DashboardReclutador/pages/VerCandidatos.jsx';
+import GestionEmpleados from './DashboardReclutador/pages/GestionEmpleados.jsx';
+import './index.css';
 
 function App() {
   return (
-    <Router>
-      <div className="App"> 
-        <Routes>
-          <Route path="/" element={<Inicio />} />
+    <Router> {/* Envuelve todo en el Router */}
+      <Routes> {/* Define el área donde cambian las rutas */}
 
-          <Route path="/login/:tipoUsuario" element={<Login />} />
+        {/* --- Rutas Públicas --- */}
+        <Route path="/" element={<Inicio />} />
+        <Route path="/login/:tipoUsuario" element={<Login />} />
+        <Route path="/registro-candidato" element={<RegistroCandidato />} />
+        <Route path="/registro-reclutador" element={<RegistroReclutador />} />
+        {/* <Route path="/recuperar-contraseña/:tipoUsuario" element={<RecuperarContraseña />} /> */}
 
-          <Route path="/datos-empleados" element={<MostrarDatos />} />
 
-          <Route path="/registro-candidato" element={<RegistroCandidato />} />
-          <Route path="/registro-reclutador" element={<RegistroReclutador />} />  
+        {/* --- Rutas Dashboard Reclutador (Protegidas) --- */}
+        <Route path="/dashboard/reclutador" element={<DashboardReclutadorLayout />}>
+           <Route index element={<DashboardHome />} />
+           <Route path="crear-convocatoria" element={<CrearConvocatoria />} />
+           <Route path="mis-convocatorias" element={<VerConvocatorias />} />
+           <Route path="convocatoria/:convocatoriaId/candidatos" element={<VerCandidatos />} />
+           <Route path="gestion-empleados" element={<GestionEmpleados />} />
+        </Route>
 
-          {/* Futuras rutas (dashboards, etc.) */}
-          {/* <Route path="/dashboard-candidato" element={<DashboardCandidato />} /> */}
-          {/* <Route path="/dashboard-reclutador" element={<DashboardReclutador />} /> */}
 
-          {/* <Route path="*" element={<div>404 - Página no encontrada</div>} /> */}
-        </Routes>
-      </div>
+        {/* <Route path="/dashboard/candidato" element={<DashboardCandidatoLayout />}>...</Route> */}
+
+
+        {/* --- Ruta Catch-All para Página No Encontrada (404) --- */}
+        {/* Esta ruta debe ir al final */}
+        <Route path="*" element={
+            <div style={{ padding: '4rem', textAlign: 'center', fontFamily: 'Poppins, sans-serif' }}>
+              <h2>404 - Página No Encontrada</h2>
+              <p>La página que buscas no existe o fue movida.</p>
+              <Link to="/" style={{color: '#1e3a8a', fontWeight: '600'}}>Volver al Inicio</Link>
+            </div>
+          } />
+
+      </Routes>
     </Router>
   );
 }
