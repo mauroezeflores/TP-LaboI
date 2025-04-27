@@ -47,6 +47,7 @@ export default function Login() {
             />
           </div>
         </div>
+        
 
         {/* Contraseña */}
         <div className={styles.inputGroup}>

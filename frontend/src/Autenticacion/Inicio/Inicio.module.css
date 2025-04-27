@@ -56,7 +56,7 @@
   background: var(--bg-light);
   margin: 0;
   padding-top: var(--navbar-height);
-  min-height: 300vh;
+  min-height: 100vh;
 }
 
 
@@ -232,4 +232,77 @@
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
+}
+.footer {
+  background-color: var(--primary); /* Fondo oscuro usando tu color primario */
+  color: rgba(255, 255, 255, 0.8); /* Texto blanco semi-transparente */
+  padding: 2rem 2rem; /* Padding vertical y horizontal */
+  margin-top: 3rem; /* Espacio sobre el footer */
+  font-family: 'Poppins', sans-serif; /* Asegurar la fuente */
+  font-size: 0.85rem; /* Texto pequeño */
+  line-height: 1.5;
+}
+
+.footerContent {
+  max-width: 1100px; /* Limitar ancho como otras secciones */
+  margin: 0 auto; /* Centrar contenido */
+  display: flex;
+  flex-wrap: wrap; /* Permitir que los elementos bajen en pantallas pequeñas */
+  justify-content: space-between; /* Espacio entre marca y links */
+  align-items: center;
+  gap: 1rem; /* Espacio entre elementos cuando se envuelven */
+}
+
+.footerBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem; /* Espacio entre icono/nombre y copyright */
+}
+
+.footerIcon { /* Estilo si usas un icono */
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6); /* Icono un poco más tenue */
+}
+
+.footerAppName {
+    font-weight: 500; /* Nombre un poco más grueso */
+    color: rgba(255, 255, 255, 0.9); /* Nombre más opaco */
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap; /* Permitir que los links bajen */
+  gap: 0.5rem 1.5rem; /* Espacio vertical y horizontal entre links */
+  justify-content: center; /* Centrar links si se envuelven */
+}
+
+.footerLink {
+  color: rgba(255, 255, 255, 0.8); /* Mismo color que el texto base */
+  text-decoration: none;
+  transition: color 0.2s ease-in-out, text-decoration 0.2s ease-in-out;
+}
+
+.footerLink:hover {
+  color: #ffffff; /* Blanco completo al pasar el mouse */
+  text-decoration: underline; /* Subrayado al pasar el mouse */
+}
+
+
+/* --- Ajustes Responsivos para el Footer --- */
+@media (max-width: 768px) {
+  .footerContent {
+    flex-direction: column; /* Apilar marca y links */
+    justify-content: center; /* Centrar todo */
+    gap: 1.5rem; /* Más espacio vertical */
+  }
+
+  .footerNav {
+    justify-content: center; /* Asegurar centrado */
+    gap: 0.5rem 1rem; /* Menos espacio horizontal */
+  }
+
+  .footer {
+      padding: 1.5rem 1rem; /* Menos padding en móvil */
+      font-size: 0.8rem; /* Texto aún más pequeño */
+  }
 }

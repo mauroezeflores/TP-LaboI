@@ -37,6 +37,8 @@ export default function Inicio() {
     autoplay: true,
     autoplaySpeed: 8000,
   };
+  const currentYear = new Date().getFullYear(); // Obtener año actual dinámicamente
+
 
   return (
     <div className={styles.page}>
@@ -100,6 +102,25 @@ export default function Inicio() {
           ))}
         </Slider>
       </section>
+      <footer className={styles.footer}>
+        <div className={styles.footerContent}>
+          <div className={styles.footerBrand}>
+             {/* Opcional: Icono */}
+             {/* <LuCopyright className={styles.footerIcon} /> */}
+             {/* Nombre de la App o Empresa */}
+             <span className={styles.footerAppName}>H.R.Learning</span>
+             <span>© {currentYear}</span> {/* Año actual */}
+          </div>
+          <nav className={styles.footerNav}>
+             {/* Enlaces relevantes para tu aplicación */}
+             <a href="/terminos" className={styles.footerLink}>Términos</a>
+             <a href="/privacidad" className={styles.footerLink}>Privacidad</a>
+             <a href="/seguridad" className={styles.footerLink}>Seguridad</a>
+             <a href="/contacto" className={styles.footerLink}>Contacto</a>
+             {/* Puedes añadir más enlaces si son necesarios */}
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

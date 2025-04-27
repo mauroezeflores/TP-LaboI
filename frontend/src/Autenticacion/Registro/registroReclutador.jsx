@@ -60,9 +60,9 @@ export default function RegistroReclutador() {
 
         {/* Email Corporativo */}
         <div className={styles.inputGroup}>
-          <label htmlFor="email">Correo Electrónico Corporativo</label>
+          <label htmlFor="email">Correo Electrónico</label>
           <div className={styles.inputWrapper}>
-            <input id="email" type="email" placeholder="nombre@empresa.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input id="email" type="email" placeholder="ejemplo@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
         </div>
 
