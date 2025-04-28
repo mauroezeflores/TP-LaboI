@@ -13,7 +13,7 @@ const MostrarDatos = () => {
     try {
       const { data, error } = await supabase
         .from("empleado") // Nombre de la tabla en Supabase
-        .select("nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
+        .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
       if (error) throw error; // Manejo de errores
       setEmpleados(data); // Actualiza el estado con los datos obtenidos
     } catch (error) {
@@ -24,10 +24,10 @@ const MostrarDatos = () => {
   };
 
   // Función para calcular un desempeño ficticio
-  const calcularDesempeno = (id) => {
+  const calcularDesempeno = (id_empleado) => {
     setEmpleados((prevEmpleados) =>
       prevEmpleados.map((empleado) =>
-        empleado.id === id
+        empleado.id_empleado === id_empleado
           ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
           : empleado
       )
@@ -69,14 +69,14 @@ const MostrarDatos = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {empleados.map((empleado, index) => (
-                  <TableRow key={index}>
+                {empleados.map((empleado) => (
+                  <TableRow key={empleado.id_empleado}>
                     <TableCell>{empleado.nombre}</TableCell>
                     <TableCell>{empleado.apellido}</TableCell>
-                    <TableCell>{empleado.mail}</TableCell>
+                    <TableCell>{empleado.email}</TableCell>
                     <TableCell>{empleado.nivel_educativo}</TableCell>
                     <TableCell>{empleado.telefono}</TableCell>
-                    <TableCell>{empleado.fecha_ingreso}</TableCell>
+                    <TableCell>{empleado.fecha_de_ingreso}</TableCell>
                     <TableCell>
                       <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
                         {empleado.desempeño !== null ? `${empleado.desempeño}%` : "N/A"}
@@ -86,7 +86,7 @@ const MostrarDatos = () => {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => calcularDesempeno(index)}
+                        onClick={() => calcularDesempeno(empleado.id_empleado)} // Pasar el id_empleado
                       >
                         Calcular Desempeño
                       </Button>
