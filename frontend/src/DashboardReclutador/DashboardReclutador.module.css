@@ -113,7 +113,7 @@
     transition: background-color 0.2s ease-in-out;
 }
 .navLink.active::before {
-    background-color: var(--accent); /* Visible solo en activo */
+    background-color: var(--accent); /* Viecible solo en activo */
 }
 
 
@@ -333,14 +333,13 @@
 /* --- Estilos para Secciones, Tablas, Formularios dentro de contentArea --- */
 .section, .sectionAlt {
   background: var(--bg-white);
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Sombra un poco más definida */
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
 }
 .sectionAlt {
    position: relative;
-   /* border-left: 5px solid var(--accent); */ /* Quitado para consistencia, a menos que se quiera */
 }
 .section:last-child {
     margin-bottom: 0;
@@ -353,7 +352,6 @@
   font-size: 1.5rem;
   font-weight: 600; /* Más grueso */
   border-bottom: 1px solid var(--border-soft); /* Línea más sutil */
-  padding-bottom: 0.75rem; /* Más espacio bajo el título */
   display: flex; /* Para alinear icono si se pone aquí */
   align-items: center;
   gap: 0.5rem;
