@@ -71,6 +71,19 @@ export default function DashboardReclutadorLayout() {
                 </div>
              </div>
           </NavLink>
+             
+            {/* Link ABM */}
+          <NavLink
+            to="AltaBajaMod"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+             <div className={styles.navItemContent}>
+                <div className={styles.navTextContainer}>
+                   <span className={styles.navTitle}>ABM empleados</span>
+                   <span className={styles.navDescription}>Ver Empleados</span>
+                </div>
+             </div>
+          </NavLink>
 
         </nav>
 
@@ -82,6 +95,7 @@ export default function DashboardReclutadorLayout() {
             </button>
         </div>
         </NavLink>
+
 
       </aside>
 

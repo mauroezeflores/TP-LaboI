@@ -10,6 +10,8 @@ import CrearConvocatoria from './DashboardReclutador/pages/CrearConvocatoria.jsx
 import VerConvocatorias from './DashboardReclutador/pages/VerConvocatorias.jsx';
 import VerCandidatos from './DashboardReclutador/pages/VerCandidatos.jsx';
 import GestionEmpleados from './DashboardReclutador/pages/GestionEmpleados.jsx';
+import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
+
 import './index.css';
 
 function App() {
@@ -22,6 +24,7 @@ function App() {
         <Route path="/login/:tipoUsuario" element={<Login />} />
         <Route path="/registro-candidato" element={<RegistroCandidato />} />
         <Route path="/registro-reclutador" element={<RegistroReclutador />} />
+        
         {/* <Route path="/recuperar-contraseña/:tipoUsuario" element={<RecuperarContraseña />} /> */}
 
 
@@ -32,6 +35,7 @@ function App() {
            <Route path="mis-convocatorias" element={<VerConvocatorias />} />
            <Route path="convocatoria/:convocatoriaId/candidatos" element={<VerCandidatos />} />
            <Route path="gestion-empleados" element={<GestionEmpleados />} />
+           <Route path="AltaBajaMod" element={<AltaBajaMod />} />
         </Route>
 
 
