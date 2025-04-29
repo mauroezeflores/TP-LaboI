@@ -12,8 +12,9 @@ const MostrarDatos = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("empleado") // Nombre de la tabla en Supabase
-        .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
+  .from("empleado")
+  .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso")
+  .order("id_empleado", { ascending: true });
       if (error) throw error; // Manejo de errores
       setEmpleados(data); // Actualiza el estado con los datos obtenidos
     } catch (error) {
@@ -92,7 +93,7 @@ const MostrarDatos = () => {
                     <TableCell>{empleado.fecha_de_ingreso}</TableCell>
                     <TableCell>
                       <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
-                        {empleado.desempeño !== null ? `${empleado.desempeño}%` : "N/A"}
+                      {typeof empleado.desempeño === "number" ? `${empleado.desempeño}%` : ""}
                       </div>
                     </TableCell>
                     <TableCell>
