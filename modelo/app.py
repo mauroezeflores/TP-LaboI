@@ -5,7 +5,7 @@ import pandas as pd
 import auxiliares as aux
 import db
 
-conexion = db.abrir_conexion()
+
 
 app = FastAPI()
 
@@ -25,6 +25,7 @@ model = load("modelo_regresion_lineal.joblib")
 # Endpoint 1: Predicción individual de datos
 @app.post("/predecir/{empleado_id}")
 async def predecir(empleado_id: int):
+    conexion = db.abrir_conexion()
     try:
        nivel_de_presentismo = aux.obtener_presentismo(empleado_id,conexion)
        nivel_certificacion = aux.obtener_nivel_certificacion(empleado_id,conexion)
@@ -32,7 +33,7 @@ async def predecir(empleado_id: int):
        presencia_en_proyectos = aux.obtener_nivel_presencia_en_proyectos(empleado_id,conexion)
        horas_extras= aux.obtener_horas_extras(empleado_id,conexion)
        ultima_evaluacion_desempeño= aux.obtener_ultima_evaluacion_desempeño(empleado_id,conexion)
-       evaluacion_del_superior= aux.obtener_ultima_evaluacion_desempeño(empleado_id,conexion)
+       evaluacion_del_superior= aux.obtener_evaluacion_del_superior(empleado_id,conexion)
        
        pred = model.predict([[nivel_de_presentismo, nivel_certificacion, nivel_habilidades, presencia_en_proyectos, horas_extras, ultima_evaluacion_desempeño, evaluacion_del_superior]])[0]
 
@@ -46,6 +47,7 @@ async def predecir(empleado_id: int):
 
 @app.get("/presentismo/{empleado_id}")
 async def presentismo(empleado_id: int):
+    conexion = db.abrir_conexion()
     try:
         presentismo = aux.obtener_presentismo(empleado_id,conexion)
         return {"presentismo": presentismo}
