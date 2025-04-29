@@ -28,16 +28,20 @@ def abrir_conexion():
         print(f"Error al abrir la conexion: {e}")
         return None
 
-def realizar_consulta(conexion, query):
-    try:    # Create a cursor to execute SQL queries
+def realizar_consulta(conexion, query, params=None):
+    try:
         cursor = conexion.cursor()
         
-        # Example query
-        cursor.execute("SELECT * FROM \"departamento\";")
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        
         rows = cursor.fetchall()
-        # Close the cursor and connection
         cursor.close()
-        return rows
+        return rows if rows else []   # 👈 Devuelve [] si no hay datos
+
+
     
     except Exception as e:
         print("Error al realizar la consulta: {e}")
