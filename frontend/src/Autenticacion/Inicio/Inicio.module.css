@@ -5,6 +5,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  margin:0;
 }
 
 
@@ -65,7 +66,7 @@
   color: white;
   padding: 3rem 2rem;
   text-align: center;
-  animation: fadeIn 1s ease-out;
+  animation: fadeIn 1ec ease-out;
 }
 
 .navbar {
@@ -271,20 +272,20 @@
 
 .footerNav {
   display: flex;
-  flex-wrap: wrap; /* Permitir que los links bajen */
-  gap: 0.5rem 1.5rem; /* Espacio vertical y horizontal entre links */
-  justify-content: center; /* Centrar links si se envuelven */
+  flex-wrap: wrap; 
+  gap: 0.5rem 1.5rem; 
+  justify-content: center; 
 }
 
 .footerLink {
-  color: rgba(255, 255, 255, 0.8); /* Mismo color que el texto base */
+  color: rgba(255, 255, 255, 0.8); 
   text-decoration: none;
   transition: color 0.2s ease-in-out, text-decoration 0.2s ease-in-out;
 }
 
 .footerLink:hover {
-  color: #ffffff; /* Blanco completo al pasar el mouse */
-  text-decoration: underline; /* Subrayado al pasar el mouse */
+  color: #ffffff; 
+  text-decoration: underline; 
 }
 
 
