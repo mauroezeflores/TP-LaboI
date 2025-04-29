@@ -23,16 +23,29 @@ const MostrarDatos = () => {
     }
   };
 
-  // Función para calcular un desempeño ficticio
+  // Función para calcular un desempeño usando el backend local
   const calcularDesempeno = (id_empleado) => {
-    setEmpleados((prevEmpleados) =>
-      prevEmpleados.map((empleado) =>
-        empleado.id_empleado === id_empleado
-          ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
-          : empleado
-      )
-    );
+    fetch(`http://127.0.0.1:8000/predecir/${id_empleado}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.prediccion !== undefined) {
+          // Si la predicción es válida, actualizar el estado
+          setEmpleados((prevEmpleados) =>
+            prevEmpleados.map((empleado) =>
+              empleado.id_empleado === id_empleado
+                ? { ...empleado, desempeño: data.prediccion } // Usamos la predicción del backend
+                : empleado
+            )
+          );
+        } else {
+          console.error('Error en la predicción:', data.error);
+        }
+      })
+      .catch((error) => {
+        console.error('Error al hacer la solicitud al backend:', error);
+      });
   };
+
 
   // Función para determinar el color del desempeño
   const getColorDesempeno = (desempeno) => {

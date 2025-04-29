@@ -23,7 +23,7 @@ model = load("modelo_regresion_lineal.joblib")
 
 
 # Endpoint 1: Predicción individual de datos
-@app.post("/predecir/{empleado_id}")
+@app.get("/predecir/{empleado_id}")
 async def predecir(empleado_id: int):
     conexion = db.abrir_conexion()
     try:
