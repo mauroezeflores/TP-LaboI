@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress } from "@mui/material";
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
-  const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga
+  const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
+  const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
 
   // Función para obtener los datos de empleados desde Supabase
   const fetchEmpleados = async () => {
@@ -13,7 +14,7 @@ const MostrarDatos = () => {
     try {
       const { data, error } = await supabase
         .from("empleado") // Nombre de la tabla en Supabase
-        .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
+        .select("id, nombre, apellido, email_personal, nivel_educativo, id_telefono, fecha_de_nacimiento"); // Selecciona las columnas necesarias
       if (error) throw error; // Manejo de errores
       setEmpleados(data); // Actualiza el estado con los datos obtenidos
     } catch (error) {
@@ -23,15 +24,19 @@ const MostrarDatos = () => {
     }
   };
 
-  // Función para calcular un desempeño ficticio
-  const calcularDesempeno = (id_empleado) => {
-    setEmpleados((prevEmpleados) =>
-      prevEmpleados.map((empleado) =>
-        empleado.id_empleado === id_empleado
-          ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
-          : empleado
-      )
-    );
+  // Función para calcular un desempeño ficticio con retraso
+  const calcularDesempeno = (id) => {
+    setLoadingEmpleado(ido); // Establece el empleado en proceso de cálculo
+    setTimeout(() => {
+      setEmpleados((prevEmpleados) =>
+        prevEmpleados.map((empleado) =>
+          empleado.id_empleado === id
+            ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
+            : empleado
+        )
+      );
+      setLoadingEmpleado(null); // Finaliza el estado de carga para este empleado
+    }, 1500); // Retraso de 1.5 segundos
   };
 
   // Función para determinar el color del desempeño
@@ -73,13 +78,19 @@ const MostrarDatos = () => {
                   <TableRow key={empleado.id_empleado}>
                     <TableCell>{empleado.nombre}</TableCell>
                     <TableCell>{empleado.apellido}</TableCell>
-                    <TableCell>{empleado.email}</TableCell>
+                    <TableCell>{empleado.email_personal}</TableCell>
                     <TableCell>{empleado.nivel_educativo}</TableCell>
-                    <TableCell>{empleado.telefono}</TableCell>
-                    <TableCell>{empleado.fecha_de_ingreso}</TableCell>
+                    <TableCell>{empleado.id_telefono}</TableCell>
+                    <TableCell>{empleado.fecha_de_nacimiento}</TableCell>
                     <TableCell>
                       <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
-                        {empleado.desempeño !== null ? `${empleado.desempeño}%` : "N/A"}
+                        {loadingEmpleado === empleado.id_empleado ? (
+                          <CircularProgress size={20} /> // Indicador de carga
+                        ) : empleado.desempeño !== null ? (
+                          `${empleado.desempeño}%`
+                        ) : (
+                          "N/A"
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -87,6 +98,7 @@ const MostrarDatos = () => {
                         variant="contained"
                         color="primary"
                         onClick={() => calcularDesempeno(empleado.id_empleado)} // Pasar el id_empleado
+                        disabled={loadingEmpleado === empleado.id_empleado} // Deshabilitar mientras se calcula
                       >
                         Calcular Desempeño
                       </Button>
