@@ -61,3 +61,84 @@ def obtener_evaluacion_del_superior(id_empleado,conexion):
     if nivel >= 100:
         return 100
     else: return nivel
+
+def nueva_direccion(conexion,direccion, pais, provincia, ciudad, cod_postal, latitud, longitud):
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO direccion(direccion, pais, provincia, ciudad, cod_postal, latitud, longitud) " \
+            "VALUES (%s,%s,%s,%s,%s,%s,%s) " \
+            "RETURNING id_direccion"
+
+        cursor.execute(query, (direccion, pais, provincia, ciudad, cod_postal, latitud, longitud))
+
+        id_direccion = cursor.fetchone()[0]
+        cursor.close()
+        
+        return id_direccion
+    except Exception as e:
+        print("Error al insertar datos: {e}")
+        return None
+
+def nuevo_telefono(conexion, codigo_pais, codigo_area, numero_telefono,id_empleado, tipo_telefono):
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO telefono(codigo_pais, codigo_area, numero_telefono,id_empleado,tipo_telefono) " \
+            "VALUES (%s,%s,%s,%s,%s) " \
+            "RETURNING id_telefono"
+
+        cursor.execute(query, (codigo_pais, codigo_area, numero_telefono,id_empleado, tipo_telefono))
+
+        id_telefono = cursor.fetchone()[0]
+        cursor.close()
+        
+        return id_telefono
+    except Exception as e:
+        print("Error al insertar datos: {e}")
+        return None
+    
+#crea el nuevo usuario, la direccion, y el telefono
+#utiliza unicamente los datos personales del usuario, no guarda puesto ni jornada ni ningun dato relacionado a lo laboral
+#tendriamos que mopdificar la base de datos
+def nuevo_usuario(conexion,nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo, direccion, pais, provincia, ciudad, cod_postal, latitud, longitud, codigo_pais, codigo_area, numero_telefono, tipo_telefono):
+    id_direccion= nueva_direccion(conexion,direccion, pais, provincia, ciudad, cod_postal, latitud, longitud)
+    if id_direccion is None:
+        raise Exception("No se pudo crear la dirección")
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO usuario(nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo,id_direccion) " \
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s) " \
+            "RETURNING id"
+
+        cursor.execute(query, (nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo,id_direccion))
+
+        id_usuario = cursor.fetchone()[0]
+        cursor.close()
+        #como telefono utiliza el id del usuario tengo que crearlo despues de crear al empleado
+        id_telefono = nuevo_telefono(conexion,codigo_pais, codigo_area, numero_telefono,id_usuario, tipo_telefono)
+        if id_telefono is None:
+            raise Exception("No se pudo crear la dirección")
+        conexion.commit()
+        return id_usuario
+    except Exception as e:
+        conexion.rollback()
+        print(f"Error al insertar datos: {e}")
+        return None
+
+def nuevo_empleado(conexion, id_usuario, id_puesto, id_jornada, estado_empleado):
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO empleado(id_usuario, id_puesto, id_jornada, estado_empleado) " \
+            "VALUES (%s,%s,%s,%s) " \
+            "RETURNING id"
+
+        cursor.execute(query, (id_usuario, id_puesto, id_jornada, estado_empleado))
+
+        id_empleado = cursor.fetchone()[0]
+        cursor.close()
+        conexion.commit()
+        return id_empleado
+    except Exception as e:
+        conexion.rollback()
+        print(f"Error al insertar datos: {e}")
+        return None
+    
