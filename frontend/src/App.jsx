@@ -11,6 +11,8 @@ import VerConvocatorias from './DashboardReclutador/pages/VerConvocatorias.jsx';
 import VerCandidatos from './DashboardReclutador/pages/VerCandidatos.jsx';
 import GestionEmpleados from './DashboardReclutador/pages/GestionEmpleados.jsx';
 import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
+import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
+import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
 
 import './index.css';
 
@@ -39,7 +41,8 @@ function App() {
         </Route>
 
 
-        {/* <Route path="/dashboard/candidato" element={<DashboardCandidatoLayout />}>...</Route> */}
+         <Route path="/dashboard/candidato" element={<DashboardCandidato/>}/>
+          <Route path="/dashboard/empleado" element={<DashboardEmpleado />} />
 
 
         {/* --- Ruta Catch-All para Página No Encontrada (404) --- */}

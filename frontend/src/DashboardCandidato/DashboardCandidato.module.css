@@ -1,0 +1,394 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+/* Importa o re-define las variables globales que necesitas */
+:root {
+  --primary: #1e3a8a;
+  --accent: #3b82f6;
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --text-dark: #212529;
+  --text-light: #6c757d;
+  --border-soft: #dee2e6;
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+}
+
+/* Estilo base de la página */
+.pageContainer {
+  padding: 2rem;
+  background-color: var(--bg-light);
+  min-height: 100vh; /* Ocupar toda la altura */
+  font-family: 'Poppins', sans-serif;
+}
+
+.mainTitle {
+  font-size: 2rem; /* Tamaño grande */
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 2rem;
+  text-align: left; /* O center si prefieres */
+}
+
+/* Navegación de secciones - Estilo tipo "Tabs" */
+.sectionNav {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los botones bajen si no caben */
+  gap: 0.25rem; /* Pequeño espacio entre botones */
+  margin-bottom: 0; /* Quitamos margen inferior, se controla con sectionsContainer */
+  border-bottom: 2px solid var(--border-soft); /* Línea inferior sutil */
+  padding-bottom: 0;
+}
+
+.navButton {
+  padding: 0.8rem 1.5rem; /* Más padding vertical y horizontal */
+  border: none; /* Sin borde por defecto */
+  border-bottom: 3px solid transparent; /* Borde inferior transparente para efecto hover/active */
+  background-color: transparent; /* Fondo transparente */
+  color: var(--text-light); /* Color de texto grisáceo por defecto */
+  cursor: pointer;
+  font-size: 0.95rem; /* Tamaño de fuente ligeramente mayor */
+  font-weight: 500; /* Peso de fuente normal/medio */
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  margin-bottom: -2px; /* Solapa ligeramente la línea inferior del contenedor */
+  border-radius: 6px 6px 0 0; /* Redondeo solo en esquinas superiores */
+  display: inline-flex; /* Para alinear icono y texto si se añaden */
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navButton:hover {
+  color: var(--primary); /* Color primario al pasar el ratón */
+  background-color: var(--bg-light); /* Fondo muy sutil al pasar el ratón */
+  border-bottom-color: var(--border-soft); /* Borde inferior grisáceo */
+}
+
+.navButton.active {
+  color: var(--primary); /* Color primario para el activo */
+  font-weight: 600; /* Texto más grueso para el activo */
+  border-bottom-color: var(--primary); /* Borde inferior con color primario */
+  background-color: var(--bg-white); /* Fondo blanco para que se destaque sobre la línea */
+}
+
+
+/* Contenedor de secciones */
+.sectionsContainer {
+  margin-top: 0; /* Sin margen superior, ya que se conecta a la nav */
+  padding: 1.5rem 2rem; /* Padding dentro del contenedor de la sección activa */
+  background-color: var(--bg-white); /* Fondo blanco para la sección activa */
+  border-radius: 0 0 12px 12px; /* Redondeo inferior */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Sombra como las cards */
+  border: 1px solid var(--border-soft); /* Borde sutil */
+  border-top: none; /* Quitar borde superior ya que la nav lo simula */
+  min-height: 300px; /* Altura mínima para que no se vea vacío */
+}
+
+/* Contenido dentro de cada sección */
+.sectionContent {
+  /* Aquí puedes añadir estilos si necesitas algo específico
+     para el contenido dentro de cada pestaña */
+}
+
+
+.cardTitle {
+  font-size: 1.3rem; /* Un poco más grande */
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem; /* Más espacio debajo del título */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Espacio para icono */
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-soft); /* Separador ligero */
+}
+
+/* Estado del proceso */
+.statusText {
+    font-size: 1.1rem;
+    font-weight: 500; /* Ligeramente menos grueso */
+    padding: 0.5rem 0;
+}
+
+/* Colores de Estado */
+.statusSuccess { color: var(--success); }
+.statusWarning { color: var(--warning); }
+.statusDanger { color: var(--danger); }
+/* Añade más si necesitas */
+
+
+/* Grupo de botones */
+.buttonGroup {
+    display: flex;
+    flex-wrap: wrap; /* Para que bajen en móvil */
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem; /* Espacio debajo de los botones */
+}
+
+/* Estilos de botones (similares a los del reclutador) */
+.buttonPrimary, .buttonSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem; /* Ajuste de padding */
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent; /* Añadido para consistencia */
+  transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
+}
+
+.buttonPrimary {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.buttonPrimary:hover {
+  background-color: #162c66; /* Más oscuro */
+  border-color: #162c66;
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  background-color: var(--bg-white);
+  color: var(--primary);
+  border: 1px solid var(--primary); /* Borde primario */
+}
+.buttonSecondary:hover {
+  background-color: #e7f5ff; /* Azul muy claro */
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tabla (reutiliza estilos del reclutador) */
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem; /* Espacio debajo de la tabla */
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+.tableContainer table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tableContainer th,
+.tableContainer td {
+  padding: 0.8rem 1rem; /* Menos padding quizás */
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+}
+.tableContainer th {
+  background-color: var(--bg-light);
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+}
+.tableContainer tr:last-child td {
+  border-bottom: none;
+}
+.applicationList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 1rem; /* Espacio sobre la lista */
+  }
+  
+  .applicationItem {
+    display: flex;
+    justify-content: space-between; /* Pone info a la izq, estado a la der */
+    align-items: center;
+    padding: 1rem 0.5rem; /* Padding vertical y un poco horizontal */
+    border-bottom: 1px solid var(--border-soft); /* Separador */
+    gap: 1rem; /* Espacio entre info y estado */
+  }
+  
+  .applicationItem:last-child {
+    border-bottom: none; /* Quitar borde del último item */
+  }
+  
+  .applicationInfo {
+    display: flex;
+    flex-direction: column; /* Puesto arriba, empresa abajo */
+    gap: 0.2rem;
+  }
+  
+  .applicationJobTitle {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1rem;
+  }
+  
+  .applicationCompany {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+  
+  .applicationStatus {
+    text-align: right;
+  }
+  
+  /* Estilos base para las "insignias" de estado */
+  .statusBadge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px; /* Más redondeado */
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    min-width: 100px; /* Ancho mínimo para consistencia */
+    border: 1px solid transparent; /* Borde por defecto */
+  }
+  
+  /* Clases específicas para cada estado (Define colores) */
+  .statusRevision {
+    background-color: #e7f3ff; /* Azul claro fondo */
+    color: #0d6efd; /* Azul texto */
+    border-color: #aed5ff; /* Azul claro borde */
+  }
+  
+  .statusEntrevista {
+    background-color: #fff3cd; /* Amarillo claro fondo */
+    color: #664d03; /* Amarillo oscuro texto */
+    border-color: #ffe69c; /* Amarillo claro borde */
+  }
+  
+  .statusRechazado {
+    background-color: #f8d7da; /* Rojo claro fondo */
+    color: #842029; /* Rojo oscuro texto */
+    border-color: #f5c2c7; /* Rojo claro borde */
+  }
+  
+  .statusRecibido {
+    background-color: #e2e3e5; /* Gris claro fondo */
+    color: #41464b; /* Gris oscuro texto */
+    border-color: #d3d6d8; /* Gris claro borde */
+  }
+  
+  .statusContratado { /* Ejemplo adicional */
+    background-color: #d1e7dd; /* Verde claro fondo */
+    color: #0f5132; /* Verde oscuro texto */
+    border-color: #badbcc; /* Verde claro borde */
+  }
+  
+  .statusDefault { /* Estado por defecto si no coincide */
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border-color: #dee2e6;
+  }
+/* Acciones dentro de la tarjeta/sección */
+.cardActions {
+    margin-top: 1.5rem; /* Espacio sobre los botones */
+    display: flex;
+    justify-content: flex-end; /* Alinear botones a la derecha */
+    gap: 0.8rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-soft); /* Separador */
+}
+
+/* Lista de notificaciones */
+.notificationList {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.notificationList li {
+    color: var(--text-dark); /* Texto más oscuro para mejor lectura */
+    font-size: 0.95rem;
+    padding: 0.7rem 0.5rem; /* Más padding */
+    border-bottom: 1px dashed var(--border-soft); /* Separador sutil */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.notificationList li:last-child {
+    border-bottom: none;
+}
+.notificationList li::before { /* Ejemplo con un punto simple */
+    content: '•';
+    color: var(--accent);
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+
+/* Textos informativos o sin items */
+.noItemsText, .infoText, .noItemsTextTable {
+    color: var(--text-light);
+    font-style: italic;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem 0;
+}
+.noItemsTextTable { /* Para celdas de tabla */
+    text-align: center;
+    padding: 1rem;
+}
+.infoText {
+    text-align: left;
+    font-style: normal;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    padding: 0.8rem;
+    background-color: var(--bg-light);
+    border-radius: 6px;
+}
+
+
+/* Formulario datos personales */
+.formPersonalData {
+    margin-top: 1rem;
+}
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas auto-ajustables */
+    gap: 1.5rem; /* Más espacio */
+    margin-bottom: 1.5rem; /* Espacio antes de las acciones */
+}
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+.formGroup label {
+    margin-bottom: 0.4rem;
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+.inputField { /* Clase específica para los inputs */
+    padding: 0.8rem 1rem; /* Más padding */
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.inputField:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Media Queries (Ajustar según necesidad) */
+@media (max-width: 768px) {
+    .pageContainer { padding: 1.5rem; }
+    .mainTitle { font-size: 1.6rem; margin-bottom: 1.5rem;}
+    .sectionNav { gap: 0.4rem; }
+    .navButton { padding: 0.7rem 1rem; font-size: 0.9rem; }
+    .sectionsContainer { padding: 1rem; }
+    .cardTitle { font-size: 1.2rem; }
+    .formGrid { grid-template-columns: 1fr; gap: 1rem;} /* Una columna en móvil */
+}
+@media (max-width: 500px) {
+  .pageContainer { padding: 1rem; }
+  .mainTitle { font-size: 1.4rem; }
+  .navButton { padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+  .sectionsContainer { padding: 1rem 0.8rem; }
+  .cardTitle { font-size: 1.1rem; }
+  .buttonPrimary, .buttonSecondary { padding: 0.6rem 1rem; font-size: 0.85rem;}
+  .inputField { padding: 0.7rem 0.9rem; font-size: 0.9rem; }
+}
