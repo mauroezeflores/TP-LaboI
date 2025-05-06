@@ -4,10 +4,10 @@ import styles from './DashboardEmpleado.module.css';
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
   const empleado = {
-    nombre: "Laura",
-    apellido: "Martínez",
+    nombre: "Juan",
+    apellido: "Perez",
     puesto: "Analista de Marketing",
-    email: "laura.m@example.com",
+    email: "juan.m@example.com",
     telefono: "1122334455",
     fechaIngreso: "2023-01-15",
     dni: "12345678",
