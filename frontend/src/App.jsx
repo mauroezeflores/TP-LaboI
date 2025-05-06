@@ -14,6 +14,7 @@ import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
 import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
 import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
 
+
 import './index.css';
 
 function App() {
@@ -40,9 +41,10 @@ function App() {
            <Route path="AltaBajaMod" element={<AltaBajaMod />} />
         </Route>
 
+        <Route path="/dashboard/candidato" element={<DashboardCandidato/>}/>
+        <Route path="/dashboard/empleado" element={<DashboardEmpleado />} />
 
-         <Route path="/dashboard/candidato" element={<DashboardCandidato/>}/>
-          <Route path="/dashboard/empleado" element={<DashboardEmpleado />} />
+        {/* <Route path="/dashboard/candidato" element={<DashboardCandidatoLayout />}>...</Route> */}
 
 
         {/* --- Ruta Catch-All para Página No Encontrada (404) --- */}
