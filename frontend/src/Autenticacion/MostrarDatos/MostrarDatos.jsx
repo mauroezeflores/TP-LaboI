@@ -16,7 +16,9 @@ const MostrarDatos = () => {
         .from("empleado") // Nombre de la tabla en Supabase
         .select("id, nombre, apellido, email_personal, nivel_educativo, id_telefono, fecha_de_nacimiento"); // Selecciona las columnas necesarias
       if (error) throw error; // Manejo de errores
-      setEmpleados(data); // Actualiza el estado con los datos obtenidos
+      setEmpleados(data)
+      console.log(data)
+      ; // Actualiza el estado con los datos obtenidos
     } catch (error) {
       console.error("Error al obtener empleados:", error.message);
     } finally {
