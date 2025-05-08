@@ -71,6 +71,18 @@ export default function DashboardReclutadorLayout() {
                 </div>
              </div>
           </NavLink>
+
+          <NavLink
+            to="gestion-licencias"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+            >
+               <div className={styles.navItemContent}>
+                  <div className={styles.navTextContainer}>
+                     <span className={styles.navTitle}>Gestión Licencias</span>
+                     <span className={styles.navDescription}>Ver licencias</span>
+                  </div>
+               </div>
+            </NavLink>
              
             {/* Link ABM */}
           <NavLink
@@ -86,6 +98,7 @@ export default function DashboardReclutadorLayout() {
           </NavLink>
 
         </nav>
+
 
         {/* Botón/Link de Cerrar Sesión (Ejemplo) */}
         <NavLink to="/" className={styles.navLink}>
