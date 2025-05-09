@@ -4,7 +4,6 @@ import styles from '../Autenticacion.module.css';
 
 export default function Login() {
   const { tipoUsuario } = useParams(); // 'candidato' o 'reclutador'
-  const title = tipoUsuario[0].toUpperCase() + tipoUsuario.slice(1);
 
   // Elegimos la clase de acento correcta
   const accentClass =
@@ -30,7 +29,7 @@ export default function Login() {
   return (
     <div className={`${styles.authContainer} ${accentClass}`}>
       <form onSubmit={handleSubmit} className={styles.authForm} noValidate>
-        <h2 className={styles.formTitle}>Inicio de Sesión - {title}</h2>
+        <h2 className={styles.formTitle}>Inicio de Sesión</h2>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
 
@@ -65,7 +64,7 @@ export default function Login() {
 
         {/* Botón con su clase */}
         <button type="submit" className={styles.submitButton}>
-          <Link to={`/dashboard/candidato`}>
+          <Link to={`/dashboard/admin`}>
             <span className={styles.buttonText}>Iniciar Sesión</span>
           </Link>
         </button>
