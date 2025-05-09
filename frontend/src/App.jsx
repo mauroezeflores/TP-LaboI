@@ -13,6 +13,7 @@ import GestionEmpleados from './DashboardReclutador/pages/GestionEmpleados.jsx';
 import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
 import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
 import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
+import DashboardGerenteLayout from './DashboardGerente/DashboardGerenteLayout.jsx';
 
 
 import './index.css';
@@ -45,6 +46,11 @@ function App() {
         <Route path="/dashboard/empleado" element={<DashboardEmpleado />} />
 
         {/* <Route path="/dashboard/candidato" element={<DashboardCandidatoLayout />}>...</Route> */}
+
+
+        <Route path="/dashboard/gerente" element={<DashboardGerenteLayout />}>
+          
+        </Route>
 
 
         {/* --- Ruta Catch-All para Página No Encontrada (404) --- */}
