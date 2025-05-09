@@ -1,55 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress } from "@mui/material";
-import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
+import React from 'react';
+import { Outlet, NavLink } from 'react-router-dom';
+import styles from './DashboardReclutador.module.css';
 
-const MostrarDatos = () => {
-  const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
-  const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
-  const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
-
-  // Función para obtener los datos de empleados desde Supabase
-  const fetchEmpleados = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("empleado") // Nombre de la tabla en Supabase
-        .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
-      if (error) throw error; // Manejo de errores
-      setEmpleados(data); // Actualiza el estado con los datos obtenidos
-    } catch (error) {
-      console.error("Error al obtener empleados:", error.message);
-    } finally {
-      setLoading(false);
-    }
+export default function DashboardReclutadorLayout() {
+  // Función para manejar el logout (ejemplo)
+  const handleLogout = () => {
+    console.log("Cerrando sesión...");
+    // Aca iría la lógica para limpiar tokens/estado y redirigir al login
   };
-
-  // Función para calcular un desempeño ficticio con retraso
-  const calcularDesempeno = (id_empleado) => {
-    setLoadingEmpleado(id_empleado); // Establece el empleado en proceso de cálculo
-    setTimeout(() => {
-      setEmpleados((prevEmpleados) =>
-        prevEmpleados.map((empleado) =>
-          empleado.id_empleado === id_empleado
-            ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
-            : empleado
-        )
-      );
-      setLoadingEmpleado(null); // Finaliza el estado de carga para este empleado
-    }, 1500); // Retraso de 1.5 segundos
-  };
-
-  // Función para determinar el color del desempeño
-  const getColorDesempeno = (desempeno) => {
-    if (desempeno < 30) return styles.red;
-    if (desempeno >= 30 && desempeno < 70) return styles.orange;
-    if (desempeno >= 70) return styles.green;
-    return styles.default;
-  };
-
-  // useEffect para cargar los datos al montar el componente
-  useEffect(() => {
-    fetchEmpleados();
-  }, []);
 
   return (
     <div className={styles.dashboardLayout}>
@@ -160,6 +118,4 @@ const MostrarDatos = () => {
       </main>
     </div>
   );
-};
-
-export default MostrarDatos;
+}
