@@ -13,8 +13,6 @@ import GestionEmpleados from './DashboardReclutador/pages/GestionEmpleados.jsx';
 import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
 import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
 import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
-import DashboardGerenteLayout from './DashboardGerente/DashboardGerenteLayout.jsx';
-
 
 import './index.css';
 import GestionLicencias from './DashboardReclutador/pages/gestionLicencias.jsx';
