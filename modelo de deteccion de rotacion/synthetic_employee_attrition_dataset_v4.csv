@@ -1,4 +1,4 @@
-avg_monthly_hours,late_arrivals_90d,early_leaves_90d,unauthorized_absences_90d,performance_score,job_satisfaction,Attrition
+promedio_horas_mensuales,llegadas_tarde_90d,salidas_tempranas_90d,ausencias_90d,desempeno,satisfaccion_laboral,salida
 141.39606929311125,7,1,4,66.2298528428226,50.46665158975336,0
 134.39582773964682,1,2,2,100.0,84.03436342102445,1
 165.7884282815862,1,2,0,100.0,81.18905191455326,1
