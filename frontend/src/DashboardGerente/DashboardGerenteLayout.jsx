@@ -41,7 +41,17 @@ export default function DashboardGerenteLayout() {
               </div>
             </div>
           </NavLink>
-
+          <NavLink
+            to="config"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+            <div className={styles.navItemContent}>
+              <div className={styles.navTextContainer}>
+                <span className={styles.navTitle}>Configuraciones</span>
+                <span className={styles.navDescription}>configurar parametros</span>
+              </div>
+            </div>
+          </NavLink>
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
 
