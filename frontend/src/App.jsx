@@ -14,7 +14,7 @@ import AltaBajaMod from './Autenticacion/ABM/AltaBajaMod.jsx';
 import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
 import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
 import DashboardHomeGerente from './DashboardGerente/DashboardHomeGerente.jsx';
-import PantallaConfigs from './DashboardGerente/PantallaConfigs.jsx';
+import ConfiguracionPorPuesto from './DashboardGerente/ConfiguracionPorPuesto.jsx';
 
 import './index.css';
 import GestionLicencias from './DashboardReclutador/pages/gestionLicencias.jsx';
@@ -80,7 +80,7 @@ function App() {
         <Route path="/dashboard/gerente" element={<DashboardGerenteLayout />}>
             <Route index element={<DashboardHomeGerente />} />
             <Route path="registro-candidato" element={<RegistroCandidato />} />
-            <Route path="config" element={<PantallaConfigs />} />
+            <Route path="config" element={<ConfiguracionPorPuesto />} />
             {/* Acá van más rutas del gerente */}
         </Route>
 
