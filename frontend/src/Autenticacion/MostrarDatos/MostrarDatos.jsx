@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress } from "@mui/material";
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
+import getEmpleados from "../../services/ServiceEmpleadosMock";
 
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
@@ -9,13 +10,25 @@ const MostrarDatos = () => {
   const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
 
   // Función para obtener los datos de empleados desde Supabase
+  // const fetchEmpleados = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("empleado") // Nombre de la tabla en Supabase
+  //       .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
+  //     if (error) throw error; // Manejo de errores
+  //     setEmpleados(data); // Actualiza el estado con los datos obtenidos
+  //   } catch (error) {
+  //     console.error("Error al obtener empleados:", error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchEmpleados = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("empleado") // Nombre de la tabla en Supabase
-        .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
-      if (error) throw error; // Manejo de errores
+      const data = await getEmpleados(); // Llama a la función mock para obtener empleados
       setEmpleados(data); // Actualiza el estado con los datos obtenidos
     } catch (error) {
       console.error("Error al obtener empleados:", error.message);
@@ -59,55 +72,60 @@ const MostrarDatos = () => {
         {loading ? (
           <p>Cargando empleados...</p>
         ) : (
-          <TableContainer component={Paper} className={styles.tableContainer}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Apellido</TableCell>
-                  <TableCell>Mail</TableCell>
-                  <TableCell>Nivel Educativo</TableCell>
-                  <TableCell>Teléfono</TableCell>
-                  <TableCell>Fecha de Ingreso</TableCell>
-                  <TableCell>Desempeño</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {empleados.map((empleado) => (
-                  <TableRow key={empleado.id_empleado}>
-                    <TableCell>{empleado.nombre}</TableCell>
-                    <TableCell>{empleado.apellido}</TableCell>
-                    <TableCell>{empleado.email}</TableCell>
-                    <TableCell>{empleado.nivel_educativo}</TableCell>
-                    <TableCell>{empleado.telefono}</TableCell>
-                    <TableCell>{empleado.fecha_de_ingreso}</TableCell>
-                    <TableCell>
-                      <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
-                        {loadingEmpleado === empleado.id_empleado ? (
-                          <CircularProgress size={20} /> // Indicador de carga
-                        ) : empleado.desempeño !== null ? (
-                          `${empleado.desempeño}%`
-                        ) : (
-                          "N/A"
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => calcularDesempeno(empleado.id_empleado)} // Pasar el id_empleado
-                        disabled={loadingEmpleado === empleado.id_empleado} // Deshabilitar mientras se calcula
-                      >
-                        Calcular Desempeño
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+         <TableContainer component={Paper} className={styles.tableContainer}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        {empleados.length > 0 &&
+          Object.keys(empleados[0]).map((key) => (
+            key !== "id_empleado" && key !== "desempeño" && (
+              <TableCell key={key}>
+                {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+              </TableCell>
+            )
+          ))}
+        <TableCell>Desempeño</TableCell>
+        <TableCell>Acciones</TableCell>
+      </TableRow>
+    </TableHead>
+
+    <TableBody>
+      {empleados.map((empleado) => (
+        <TableRow key={empleado.id_empleado}>
+          {Object.entries(empleado).map(([key, value]) =>
+            key !== "id_empleado" && key !== "desempeño" ? (
+              <TableCell key={key}>{value}</TableCell>
+            ) : null
+          )}
+          <TableCell>
+            <div
+              className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}
+            >
+              {loadingEmpleado === empleado.id_empleado ? (
+                <CircularProgress size={20} />
+              ) : empleado.desempeño !== null && empleado.desempeño !== undefined ? (
+                `${empleado.desempeño}%`
+              ) : (
+                "N/A"
+              )}
+            </div>
+          </TableCell>
+          <TableCell>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => calcularDesempeno(empleado.id_empleado)}
+              disabled={loadingEmpleado === empleado.id_empleado}
+            >
+              Calcular Desempeño
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
+
         )}
       </div>
     </div>
