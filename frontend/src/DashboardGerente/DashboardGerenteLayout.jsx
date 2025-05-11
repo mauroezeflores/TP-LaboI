@@ -31,13 +31,13 @@ export default function DashboardGerenteLayout() {
           </NavLink>
 
           <NavLink
-            to="reportes"
+            to="registro-candidato"
             className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
           >
             <div className={styles.navItemContent}>
               <div className={styles.navTextContainer}>
-                <span className={styles.navTitle}>Reportes</span>
-                <span className={styles.navDescription}>Desempeño y métricas</span>
+                <span className={styles.navTitle}>Registro Candidatos</span>
+                <span className={styles.navDescription}>formulario de registro</span>
               </div>
             </div>
           </NavLink>
