@@ -4,8 +4,8 @@ import styles from "./AltaBajaMod.module.css"; // Archivo CSS para estilos perso
 
 const AltaBajaMod = () => {
   const [empleados, setEmpleados] = useState([
-    { id: 1, nombre: "Juan", apellido: "Pérez", email: "juan.perez@example.com", telefono: "123456789",puesto: "Gerente", jornada: "Parcial" },
-    { id: 2, nombre: "María", apellido: "Gómez", email: "maria.gomez@example.com", telefono: "987654321",puesto: "Desarrollador", jornada: "Completa" },
+    { id: 1, nombre: "Juan", apellido: "Pérez", email: "juan.perez@example.com", telefono: "123456789" },
+    { id: 2, nombre: "María", apellido: "Gómez", email: "maria.gomez@example.com", telefono: "987654321" },
   ]);
 
   return (
@@ -21,8 +21,6 @@ const AltaBajaMod = () => {
             <TextField label="Apellido" variant="outlined" fullWidth margin="normal" />
             <TextField label="Email" variant="outlined" fullWidth margin="normal" />
             <TextField label="Teléfono" variant="outlined" fullWidth margin="normal" />
-            <TextField label="Puesto de trabajo" variant="outlined" fullWidth margin="normal" />
-            <TextField label="Jordana laboral" variant="outlined" fullWidth margin="normal" />
             <div className={styles.formActions}>
               <Button variant="contained" color="primary">
                 Guardar
@@ -43,10 +41,7 @@ const AltaBajaMod = () => {
                 <TableCell>Apellido</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Teléfono</TableCell>
-                <TableCell>Puesto de Trabajo</TableCell>
-                <TableCell>Jornada Laboral</TableCell>
                 <TableCell>Acciones</TableCell>
-                
               </TableRow>
             </TableHead>
             <TableBody>
@@ -56,8 +51,6 @@ const AltaBajaMod = () => {
                   <TableCell>{empleado.apellido}</TableCell>
                   <TableCell>{empleado.email}</TableCell>
                   <TableCell>{empleado.telefono}</TableCell>
-                  <TableCell>{empleado.puesto}</TableCell>
-                  <TableCell>{empleado.jornada}</TableCell>
                   <TableCell>
                     <Button variant="contained" color="primary" size="small" style={{ marginRight: "10px" }}>
                       Editar
