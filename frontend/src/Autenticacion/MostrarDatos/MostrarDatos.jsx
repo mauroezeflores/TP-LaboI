@@ -39,8 +39,6 @@ const handleVerHistoria = async (idEmpleado) => {
   const fetchEmpleados = async () => {
     setLoading(true);
     try {
- 
-      const data = await getEmpleados(); // Llama a la función mock para obtener empleados
 
       const { data, error } = await supabase
   .from("empleado")
@@ -194,36 +192,6 @@ const handleVerHistoria = async (idEmpleado) => {
             </TableBody>
           </Table>
         </TableContainer>
-
-              </TableHead>
-              <TableBody>
-                {empleados.map((empleado) => (
-                  <TableRow key={empleado.id_empleado}>
-                    <TableCell>{empleado.nombre}</TableCell>
-                    <TableCell>{empleado.apellido}</TableCell>
-                    <TableCell>{empleado.email}</TableCell>
-                    <TableCell>{empleado.nivel_educativo}</TableCell>
-                    <TableCell>{empleado.telefono}</TableCell>
-                    <TableCell>{empleado.fecha_de_ingreso}</TableCell>
-                    <TableCell>
-                      <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
-                      {typeof empleado.desempeño === "number" ? `${empleado.desempeño}%` : ""}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => calcularDesempeno(empleado.id_empleado)} // Pasar el id_empleado
-                      >
-                        Calcular Desempeño
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         )}
       </div>
 
