@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Butto
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../../services/ServiceEmpleadosMock";
-import  {obtenerHistoriaDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 import GraficoDesempeno from "./GraficoDesempeno";
 
 const MostrarDatos = () => {
@@ -48,20 +48,35 @@ const handleVerHistoria = async (idEmpleado) => {
     }
   };
 
-  // Función para calcular un desempeño ficticio con retraso
-  const calcularDesempeno = (id_empleado) => {
-    setLoadingEmpleado(id_empleado); // Establece el empleado en proceso de cálculo
-    setTimeout(() => {
-      setEmpleados((prevEmpleados) =>
-        prevEmpleados.map((empleado) =>
-          empleado.id_empleado === id_empleado
-            ? { ...empleado, desempeño: Math.floor(Math.random() * 101) } // Número aleatorio entre 0 y 100
-            : empleado
-        )
-      );
-      setLoadingEmpleado(null); // Finaliza el estado de carga para este empleado
-    }, 1500); // Retraso de 1.5 segundos
-  };
+
+  const manejarCalculoDesempeno = (id_empleado) => {
+  setLoadingEmpleado(id_empleado);
+
+  setTimeout(() => {
+    const nuevoDesempeno = Math.floor(Math.random() * 101); // del 0 al 100
+
+    // 1. Actualizás el estado
+    setEmpleados((prevEmpleados) =>
+      prevEmpleados.map((empleado) =>
+        empleado.id_empleado === id_empleado
+          ? { ...empleado, desempeño: nuevoDesempeno }
+          : empleado
+      )
+    );
+
+    // 2. Agregás el nuevo desempeño al historial
+    agregarDesempeno(id_empleado, nuevoDesempeno)
+      .then(() => {
+        console.log("Desempeño agregado al historial");
+      })
+      .catch((err) => {
+        console.error("Error al agregar desempeño:", err);
+      });
+
+    setLoadingEmpleado(null);
+  }, 1500);
+};
+
 
   // Función para determinar el color del desempeño
   const getColorDesempeno = (desempeno) => {
@@ -125,7 +140,8 @@ const handleVerHistoria = async (idEmpleado) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => calcularDesempeno(empleado.id_empleado)}
+              onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
+              
               disabled={loadingEmpleado === empleado.id_empleado}
             >
               Calcular Desempeño
