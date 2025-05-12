@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../../services/ServiceEmpleadosMock";
+import  {obtenerHistoriaDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import GraficoDesempeno from "./GraficoDesempeno";
 
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
@@ -24,6 +26,15 @@ const MostrarDatos = () => {
   //     setLoading(false);
   //   }
   // };
+const [historiaActual, setHistoriaActual] = useState([]);
+const [modalAbierto, setModalAbierto] = useState(false);
+
+const handleVerHistoria = async (idEmpleado) => {
+  const historia = await obtenerHistoriaDesempeno(idEmpleado);
+  setHistoriaActual(historia);
+  setModalAbierto(true);
+};
+
 
   const fetchEmpleados = async () => {
     setLoading(true);
@@ -120,14 +131,37 @@ const MostrarDatos = () => {
               Calcular Desempeño
             </Button>
           </TableCell>
+          <TableCell>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => handleVerHistoria(empleado.id_empleado)}
+            >
+              Ver Historia
+            </Button>
+          </TableCell>
         </TableRow>
       ))}
     </TableBody>
   </Table>
 </TableContainer>
 
+
+
         )}
       </div>
+
+      {modalAbierto && (
+  <Dialog open={modalAbierto} onClose={() => setModalAbierto(false)} fullWidth maxWidth="sm">
+    <DialogTitle>Historial de Desempeño</DialogTitle>
+    <DialogContent>
+        <GraficoDesempeno historia={historiaActual} />
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={() => setModalAbierto(false)}>Cerrar</Button>
+    </DialogActions>
+  </Dialog>
+)}
     </div>
   );
 };
