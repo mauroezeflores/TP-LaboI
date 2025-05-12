@@ -1,0 +1,604 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap'); /* Asegurar pesos necesarios */
+
+/* --- Variables CSS --- */
+:root {
+  --primary: #1e3a8a;        /* Azul principal */
+  --accent: #3b82f6;         /* Azul acento (usado en hover/active) */
+  --bg-light: #f8f9fa;       /* Fondo gris claro para el área de contenido */
+  --bg-sidebar: #ffffff;     /* Sidebar blanco */
+  --bg-sidebar-hover: #f1f3f5; /* Fondo del item del sidebar en hover */
+  --bg-sidebar-active: #e7f5ff; /* Fondo del item activo (azul muy claro) */
+  --text-dark: #212529;      /* Texto oscuro principal */
+  --text-light: #6c757d;     /* Texto gris claro (descripciones, placeholders) */
+  --text-sidebar-title: #343a40; /* Color para títulos en sidebar */
+  --border-soft: #dee2e6;    /* Color para bordes suaves */
+}
+
+/* --- Layout General --- */
+.dashboardLayout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 260px; /* Ancho fijo del sidebar */
+  background: var(--bg-sidebar); /* Usa la variable */
+  border-right: 1px solid var(--border-soft); /* Usa la variable */
+  display: flex;
+  flex-direction: column;
+  position: fixed; /* Fijar el sidebar */
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 100; 
+  transition: width 0.3s ease; /* Para futura minimización */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* Sombra sutil a la derecha */
+}
+
+.sidebarHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: center;
+  flex-shrink: 0; /* Evita que se encoja */
+}
+
+.sidebarTitle {
+  margin: 0 0 0.25rem 0;
+  color: var(--primary);
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.sidebarSubtitle {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.sidebarNav {
+  flex-grow: 1; /* Ocupa el espacio disponible */
+  margin-top: 1rem;
+  overflow-y: auto; /* Scroll si hay muchos links */
+  /* Estilo de scrollbar (opcional) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-soft) var(--bg-sidebar);
+}
+.sidebarNav::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebarNav::-webkit-scrollbar-track {
+    background: var(--bg-sidebar);
+}
+.sidebarNav::-webkit-scrollbar-thumb {
+    background-color: var(--border-soft);
+    border-radius: 10px;
+    border: 3px solid var(--bg-sidebar);
+}
+
+
+/* --- Estilos de los Items de Navegación --- */
+.navLink {
+  display: block;
+  color: var(--text-light);
+  text-decoration: none;
+  margin: 0.3rem 0.8rem; /* Margen alrededor de cada link */
+  border-radius: 8px; /* Bordes redondeados */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  border: 1px solid transparent; /* Borde transparente para mantener layout */
+  position: relative; /* Para el borde activo simulado */
+}
+
+/* Simulación de borde izquierdo activo sin afectar padding */
+.navLink.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15%; /* Ajustar posición vertical */
+    bottom: 15%;
+    width: 4px; /* Ancho del borde */
+    background-color: var(--accent);
+    border-radius: 0 4px 4px 0; /* Redondear borde */
+    transition: background-color 0.2s ease-in-out; /* Añadir transición */
+}
+.navLink::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15%;
+    bottom: 15%;
+    width: 4px;
+    background-color: transparent; /* Invisible por defecto */
+    border-radius: 0 4px 4px 0;
+    transition: background-color 0.2s ease-in-out;
+}
+.navLink.active::before {
+    background-color: var(--accent); /* Viecible solo en activo */
+}
+
+
+.navItemContent {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem; /* Padding interno */
+  gap: 0.8rem; /* Espacio entre icono y texto */
+}
+
+.navIcon {
+  font-size: 1.3rem; /* Tamaño del icono */
+  color: var(--text-light); /* Color grisáceo por defecto */
+  flex-shrink: 0; /* Evitar que el icono se achique */
+  transition: color 0.2s ease-in-out;
+}
+
+.navTextContainer {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3; /* Ajuste de interlineado */
+  overflow: hidden; /* Evitar desbordamiento de texto */
+}
+
+.navTitle {
+  font-weight: 500; /* Semi-bold */
+  color: var(--text-sidebar-title); /* Color más oscuro para título */
+  font-size: 0.95rem;
+  transition: color 0.2s ease-in-out;
+  white-space: nowrap; /* Evitar que el título se parta */
+}
+
+.navDescription {
+  font-size: 0.75rem; /* Más pequeño */
+  color: var(--text-light);
+  font-weight: 400; /* Normal */
+  white-space: nowrap; /* Evitar que la descripción se parta */
+  opacity: 0.8; /* Ligeramente transparente */
+}
+
+/* --- Estados Hover y Active --- */
+.navLink:hover {
+  background-color: var(--bg-sidebar-hover);
+  color: var(--primary);
+  border-color: var(--bg-sidebar-hover);
+}
+
+.navLink:hover .navIcon,
+.navLink:hover .navTitle {
+  color: var(--primary);
+}
+/* Contenedor opcional de la página de inicio */
+.dashboardHomeContainer {
+    padding: 1rem 0;
+  }
+  
+  /* Encabezado de bienvenida */
+  .welcomeHeader {
+    text-align: center; /* Centra el texto */
+    margin-bottom: 3rem; /* Espacio antes de las tarjetas */
+    padding: 1.5rem;
+    background-color: var(--bg-white); /* Fondo blanco */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Sombra suave */
+  }
+  
+  .welcomeHeader h2 {
+    color: var(--primary);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  
+  .welcomeHeader p {
+    color: var(--text-light);
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Grilla para las tarjetas de herramientas */
+  .toolsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; /* Espacio entre tarjetas */
+  }
+  
+  /* Estilo para el Link que envuelve la tarjeta */
+  .toolCardLink {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      border-radius: 12px; /* Añadir radius al link para que la sombra funcione bien */
+  }
+  
+  .toolCardLink:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Estilo de cada tarjeta de herramienta */
+  .toolCard {
+    background-color: var(--bg-white);
+    border-radius: 12px;
+    padding: 1.8rem;
+    border: 1px solid var(--border-soft);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: border-color 0.2s ease-in-out;
+  }
+  
+  /* Cambio de borde al hacer hover en el link */
+  .toolCardLink:hover .toolCard {
+      border-color: var(--accent);
+  }
+  
+  
+  /* Contenedor del icono en la tarjeta */
+  .toolIconWrapper {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    background-color: var(--bg-sidebar-active); /* Fondo azulado muy claro */
+    padding: 0.8rem;
+    border-radius: 50%; /* Círculo */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  
+  /* Título de la herramienta */
+  .toolTitle {
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0.6rem;
+  }
+  
+  /* Descripción de la herramienta */
+  .toolDescription {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+  
+.navLink.active {
+  background-color: var(--bg-sidebar-active);
+  border-color: #a5d8ff; /* Borde azul claro */
+}
+
+/* El ::before se encarga del borde izquierdo visual */
+.navLink.active .navIcon,
+.navLink.active .navTitle {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.navLink.active .navDescription {
+    color: #1c7ed6; /* Descripción azul más oscuro */
+    opacity: 1;
+}
+
+/* --- Footer del Sidebar (Logout) --- */
+.sidebarFooter {
+    padding: 1rem 1.5rem;
+    margin-top: auto; /* Empuja al fondo */
+    border-top: 1px solid var(--border-soft);
+    flex-shrink: 0; /* Evita que se encoja */
+}
+
+.logoutButton {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #dc3545; /* Rojo para logout */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.logoutButton .navIcon {
+    color: #dc3545;
+    font-size: 1.2rem;
+}
+.logoutButton span {
+    transition: opacity 0.2s ease-in-out;
+}
+.logoutButton:hover {
+    background-color: #f8d7da; /* Fondo rojo muy claro */
+}
+
+
+/* --- Área de Contenido --- */
+.contentArea {
+  flex-grow: 1;
+  padding: 2rem;
+  margin-left: 260px; /* Coincidir con ancho del sidebar */
+  background-color: var(--bg-light);
+  transition: margin-left 0.3s ease; /* Transición al colapsar/expandir sidebar */
+}
+
+/* --- Estilos para Secciones, Tablas, Formularios dentro de contentArea --- */
+.section, .sectionAlt {
+  background: var(--bg-white);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Sombra un poco más definida */
+  margin-bottom: 4rem;
+}
+.sectionAlt {
+   position: relative;
+}
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.section h2 {
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600; /* Más grueso */
+  border-bottom: 1px solid var(--border-soft); /* Línea más sutil */
+  display: flex; /* Para alinear icono si se pone aquí */
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Estilos para Formularios --- */
+.formConvocatoria {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem; /* Más espacio entre grupos */
+}
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+.formGroup label {
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.9rem; /* Ligeramente más pequeño */
+}
+.formGroup input[type="text"],
+.formGroup textarea,
+.formGroup input[type="email"], /* Añadir otros tipos si los usas */
+.formGroup input[type="tel"] {
+    padding: 0.8rem 1rem; /* Más padding */
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    font-size: 0.95rem; /* Ajustar tamaño fuente */
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus,
+.formGroup input[type="email"]:focus,
+.formGroup input[type="tel"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.formGroup textarea {
+    resize: vertical;
+    min-height: 80px; /* Altura mínima */
+}
+
+/* --- Estilos para Tablas --- */
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.tableContainer table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tableContainer th,
+.tableContainer td {
+  padding: 1rem 1.2rem;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.tableContainer th {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-soft);
+}
+.tableContainer td {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.tableContainer tr:last-child td {
+    border-bottom: none;
+}
+/* Centrar algunas columnas si se desea */
+.tableContainer th:nth-child(3), /* Estado */
+.tableContainer td:nth-child(3),
+.tableContainer th:nth-child(4), /* Aptos */
+.tableContainer td:nth-child(4),
+.tableContainer th:nth-child(5), /* Acciones */
+.tableContainer td:nth-child(5) {
+    text-align: center;
+}
+
+
+/* --- Estilos para Botones --- */
+.submitButton {
+  padding: 0.8rem 1.8rem; /* Más padding */
+  background: var(--primary); /* Usar primario para submit */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s, filter 0.3s;
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
+.actionButton {
+  background-color: var(--accent); /* Usar accent para acciones */
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.submitButton:hover, .actionButton:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+.submitButton:disabled, .actionButton:disabled {
+  background-color: #adb5bd;
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* --- Estilos para Badges --- */
+.statusBadge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+  display: inline-block;
+  text-align: center;
+  min-width: 70px;
+}
+.statusBadge.activa { background-color: #28a745; }
+.statusBadge.cerrada { background-color: #6c757d; }
+.defaultStatus { background-color: #adb5bd; }
+
+/* --- Otros Estilos --- */
+.closeButton {
+   position: absolute;
+   top: 1rem;
+   right: 1rem;
+   padding: 0.2rem 0.6rem;
+   font-size: 1.2rem;
+   line-height: 1;
+   background-color: #dc3545;
+   color: white;
+   border: none;
+   border-radius: 50%;
+   font-weight: bold;
+   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+   cursor: pointer;
+   z-index: 10; /* Asegurar que esté encima */
+   transition: background-color 0.2s ease;
+}
+.closeButton:hover {
+    background-color: #c82333; /* Rojo más oscuro */
+    filter: none;
+}
+
+.errorMessage {
+  color: #721c24; /* Rojo oscuro */
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.successMessage {
+  color: #155724; /* Verde oscuro */
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.backLink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+.backLink:hover {
+    text-decoration: underline;
+}
+.cvLink {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  background-color: var(--primary);
+  color: white !important;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: filter 0.2s ease-in-out;
+  white-space: nowrap;
+}
+.cvLink:hover {
+  filter: brightness(0.9);
+  text-decoration: none;
+  color: white !important;
+}
+
+
+/* --- Media Queries para Responsividad --- */
+@media (max-width: 992px) {
+   .sidebar {
+       width: 70px; /* Sidebar colapsado */
+       overflow: hidden;
+    }
+   .sidebarHeader .sidebarTitle, .sidebarHeader .sidebarSubtitle { display: none; }
+   .navTextContainer { display: none; }
+   .navItemContent { justify-content: center; padding: 1rem 0; }
+   .navLink { margin: 0.3rem 0.5rem; }
+   .navIcon { font-size: 1.6rem; }
+   .sidebarFooter { padding: 1rem 0.5rem; }
+   .logoutButton span { display: none; }
+   .logoutButton { justify-content: center; padding: 0.7rem 0;}
+   .contentArea { margin-left: 70px; }
+}
+
+@media (max-width: 768px) {
+   .sidebar { display: none; } /* Ocultar completamente */
+   .contentArea { margin-left: 0; padding: 1.5rem; }
+   .section, .sectionAlt { padding: 1.5rem; }
+   .section h2 { font-size: 1.3rem; }
+   .tableContainer th, .tableContainer td { padding: 0.8rem; white-space: normal; } /* Permitir salto de línea en móvil */
+}
+
+@media (max-width: 500px) {
+    .contentArea { padding: 1rem; }
+    .section, .sectionAlt { padding: 1rem; }
+    .section h2 { font-size: 1.2rem; }
+    .tableContainer th, .tableContainer td { font-size: 0.85rem; padding: 0.6rem; }
+    .actionButton, .submitButton, .cvLink { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+    .statusBadge { font-size: 0.75rem; padding: 0.2rem 0.5rem; min-width: 60px;}
+}
