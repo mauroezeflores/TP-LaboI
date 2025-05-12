@@ -15,7 +15,7 @@ import DashboardCandidato from './DashboardCandidato/DashboardCandidato.jsx';
 import DashboardEmpleado from './DashboardEmpleado/DashboardEmpleado.jsx';
 import DashboardHomeGerente from './DashboardGerente/DashboardHomeGerente.jsx';
 import ConfiguracionPorPuesto from './DashboardGerente/ConfiguracionPorPuesto.jsx';
-
+import PantallaDeRiesgosEmpleados from './DashboardGerente/PantallaDeRiesgosEmpleados.jsx';
 import './index.css';
 import GestionLicencias from './DashboardReclutador/pages/gestionLicencias.jsx';
 import DashboardGerenteLayout from './DashboardGerente/DashboardGerenteLayout.jsx';
@@ -81,6 +81,7 @@ function App() {
             <Route index element={<DashboardHomeGerente />} />
             <Route path="registro-candidato" element={<RegistroCandidato />} />
             <Route path="config" element={<ConfiguracionPorPuesto />} />
+            <Route path="riesgos-empleados" element={<PantallaDeRiesgosEmpleados />} />
             {/* Acá van más rutas del gerente */}
         </Route>
 

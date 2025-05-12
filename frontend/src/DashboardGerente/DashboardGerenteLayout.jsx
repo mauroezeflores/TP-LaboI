@@ -52,6 +52,17 @@ export default function DashboardGerenteLayout() {
               </div>
             </div>
           </NavLink>
+           <NavLink
+            to="riesgos-empleados"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+            <div className={styles.navItemContent}>
+              <div className={styles.navTextContainer}>
+                <span className={styles.navTitle}>Pantalla de Riesgos</span>
+                <span className={styles.navDescription}>Riesgo de desercion por empleado</span>
+              </div>
+            </div>
+          </NavLink>
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
 

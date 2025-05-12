@@ -99,71 +99,68 @@ const handleVerHistoria = async (idEmpleado) => {
           <p>Cargando empleados...</p>
         ) : (
          <TableContainer component={Paper} className={styles.tableContainer}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        {empleados.length > 0 &&
-          Object.keys(empleados[0]).map((key) => (
-            key !== "id_empleado" && key !== "desempeño" && (
-              <TableCell key={key}>
-                {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-              </TableCell>
-            )
-          ))}
-        <TableCell>Desempeño</TableCell>
-        <TableCell>Acciones</TableCell>
-      </TableRow>
-    </TableHead>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {empleados.length > 0 &&
+                  Object.keys(empleados[0]).map((key) => (
+                    key !== "id_empleado" && key !== "desempeño" && (
+                      <TableCell key={key}>
+                        {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </TableCell>
+                    )
+                  ))}
+                <TableCell>Desempeño</TableCell>
+                <TableCell>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
 
-    <TableBody>
-      {empleados.map((empleado) => (
-        <TableRow key={empleado.id_empleado}>
-          {Object.entries(empleado).map(([key, value]) =>
-            key !== "id_empleado" && key !== "desempeño" ? (
-              <TableCell key={key}>{value}</TableCell>
-            ) : null
-          )}
-          <TableCell>
-            <div
-              className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}
-            >
-              {loadingEmpleado === empleado.id_empleado ? (
-                <CircularProgress size={20} />
-              ) : empleado.desempeño !== null && empleado.desempeño !== undefined ? (
-                `${empleado.desempeño}%`
-              ) : (
-                "N/A"
-              )}
-            </div>
-          </TableCell>
-          <TableCell>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
-              
-              disabled={loadingEmpleado === empleado.id_empleado}
-            >
-              Calcular Desempeño
-            </Button>
-          </TableCell>
-          <TableCell>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => handleVerHistoria(empleado.id_empleado)}
-            >
-              Ver Historia
-            </Button>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
-
-
-
+            <TableBody>
+              {empleados.map((empleado) => (
+                <TableRow key={empleado.id_empleado}>
+                  {Object.entries(empleado).map(([key, value]) =>
+                    key !== "id_empleado" && key !== "desempeño" ? (
+                      <TableCell key={key}>{value}</TableCell>
+                    ) : null
+                  )}
+                  <TableCell>
+                    <div
+                      className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}
+                    >
+                      {loadingEmpleado === empleado.id_empleado ? (
+                        <CircularProgress size={20} />
+                      ) : empleado.desempeño !== null && empleado.desempeño !== undefined ? (
+                        `${empleado.desempeño}%`
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
+                      
+                      disabled={loadingEmpleado === empleado.id_empleado}
+                    >
+                      Calcular Desempeño
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => handleVerHistoria(empleado.id_empleado)}
+                    >
+                      Ver Historia
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
         )}
       </div>
 
