@@ -31,6 +31,7 @@ import VisualizacionAnomaliasAdmin from './DashboardAdmin/pages/VisualizacionAno
 import ConfiguracionSistemaAdmin from './DashboardAdmin/pages/ConfiguracionSistemaAdmin.jsx';
 import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
+import DeteccionAnomalias from './DashboardReclutador/pages/DeteccionAnomalias.jsx';
 function App() {
   return (
     <Router> {/* Envuelve todo en el Router */}
@@ -54,6 +55,7 @@ function App() {
            <Route path="gestion-empleados" element={<GestionEmpleados />} />
            <Route path="gestion-licencias" element={<GestionLicencias />} />
            <Route path="AltaBajaMod" element={<AltaBajaMod />} />
+           <Route path="deteccion-anomalias" element={<DeteccionAnomalias />} />
         </Route>
         <Route
                         path="/dashboard/admin"

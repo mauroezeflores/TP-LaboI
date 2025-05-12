@@ -83,6 +83,17 @@ export default function DashboardReclutadorLayout() {
                   </div>
                </div>
             </NavLink>
+            <NavLink
+            to="deteccion-anomalias"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+         >
+         <div className={styles.navItemContent}>
+            <div className={styles.navTextContainer}>
+               <span className={styles.navTitle}>Detección Anomalías</span>
+               <span className={styles.navDescription}>Analizar datos</span>
+            </div>
+          </div>
+         </NavLink>
              
             {/* Link ABM */}
           <NavLink
