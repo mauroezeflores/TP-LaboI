@@ -155,7 +155,7 @@ const handleVerHistoria = async (idEmpleado) => {
   <Dialog open={modalAbierto} onClose={() => setModalAbierto(false)} fullWidth maxWidth="sm">
     <DialogTitle>Historial de Desempeño</DialogTitle>
     <DialogContent>
-        <GraficoDesempeno historia={historiaActual} />
+        <GraficoDesempeno data={historiaActual} />
     </DialogContent>
     <DialogActions>
       <Button onClick={() => setModalAbierto(false)}>Cerrar</Button>
