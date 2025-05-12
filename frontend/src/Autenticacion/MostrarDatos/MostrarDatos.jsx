@@ -39,13 +39,7 @@ const handleVerHistoria = async (idEmpleado) => {
   const fetchEmpleados = async () => {
     setLoading(true);
     try {
-
-      const { data, error } = await supabase
-  .from("empleado")
-  .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso")
-  .order("id_empleado", { ascending: true });
-      if (error) throw error; // Manejo de errores
- 
+      const data = await getEmpleados(); // Llama a la función mock para obtener empleados
       setEmpleados(data); // Actualiza el estado con los datos obtenidos
     } catch (error) {
       console.error("Error al obtener empleados:", error.message);
@@ -54,7 +48,6 @@ const handleVerHistoria = async (idEmpleado) => {
     }
   };
 
- 
 
   const manejarCalculoDesempeno = (id_empleado) => {
   setLoadingEmpleado(id_empleado);
@@ -83,30 +76,6 @@ const handleVerHistoria = async (idEmpleado) => {
     setLoadingEmpleado(null);
   }, 1500);
 };
-
-
-  // Función para calcular un desempeño usando el backend local
-  const calcularDesempeno = (id_empleado) => {
-    fetch(`http://127.0.0.1:8000/predecir/${id_empleado}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.prediccion !== undefined) {
-          // Si la predicción es válida, actualizar el estado
-          setEmpleados((prevEmpleados) =>
-            prevEmpleados.map((empleado) =>
-              empleado.id_empleado === id_empleado
-                ? { ...empleado, desempeño: data.prediccion } // Usamos la predicción del backend
-                : empleado
-            )
-          );
-        } else {
-          console.error('Error en la predicción:', data.error);
-        }
-      })
-      .catch((error) => {
-        console.error('Error al hacer la solicitud al backend:', error);
-      });
-  };
 
 
   // Función para determinar el color del desempeño
