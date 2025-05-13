@@ -20,16 +20,19 @@ const getPuestos = () => {
     }, 1000); // Simula un retraso de 1 segundo
   });
 }
-
-export const getUnPuesto = (index) => {
-  return puestosMock[index-1];
-}
-
+export const obtenerPuestos = () => {
+  const guardado = localStorage.getItem("puestos");
+  return guardado ? JSON.parse(guardado) : puestosMock;
+};
+export const getUnPuesto = (id) => {
+  const puestos = obtenerPuestos();
+  return puestos.find((p) => p.id === id);
+};
 export const setRendimiento = (index, rendimientoMinimo, rendimientoAceptable) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      puestosMock[index].rendimientoMinimo = rendimientoMinimo;
-      puestosMock[index].rendimientoAceptable = rendimientoAceptable;
+      puestosMock[index-1].rendimientoMinimo = rendimientoMinimo;
+      puestosMock[index-1].rendimientoAceptable = rendimientoAceptable;
       resolve(puestosMock[index]);
     }, 1000); // Simula un retraso de 1 segundo
   });

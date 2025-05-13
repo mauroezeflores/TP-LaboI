@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import getPuestos from '../services/ServicePuestosMock'; // Asegurate que el path sea el correcto
-import { setRendimiento } from '../services/ServicePuestosMock'; // Asegurate de que el path sea correcto
+import { setRendimiento, getUnPuesto } from '../services/ServicePuestosMock'; // Asegurate de que el path sea correcto
 
 const ConfiguracionPorPuesto = () => {
   const [puestos, setPuestos] = useState([]);
@@ -47,8 +47,11 @@ const guardarConfiguracion = async () => {
     const umbrales = umbralesPorPuesto[puesto.id];
 
     if (umbrales) {
+
+      setRendimiento(puesto.id, umbrales[0], umbrales[1]);
+      console.log(getUnPuesto(puesto.id).id, "valor minimo:", getUnPuesto(puesto.id).rendimientoMinimo, getUnPuesto(puesto.id).rendimientoAceptable);
       const [min, aceptable] = umbrales;
-      await setRendimiento(i, min, aceptable);
+      await setRendimiento(puesto.id, min, aceptable);
       console.log(`Puesto ${puesto.nombre} actualizado: Min: ${min}, Aceptable: ${aceptable}`);
     }
   }
