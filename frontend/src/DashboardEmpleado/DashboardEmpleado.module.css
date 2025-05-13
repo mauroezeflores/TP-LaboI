@@ -139,6 +139,17 @@
   border: 1px solid transparent; /* Añadido para consistencia */
   transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
 }
+.logoutButtonContainer {
+    margin-top: 1rem; /* Espacio sobre el botón */
+    text-align: right; /* Alinea el botón a la derecha */
+  }
+  
+  /* Botón de Logout */
+ .logoutButton{
+    background-color: var(--danger); /* Color de acento (rojo claro) */
+    color: white;
+    border-color: var(--danger);
+  }
 
 .buttonPrimary {
   background-color: var(--primary);

@@ -66,7 +66,7 @@ export default function DashboardGerenteLayout() {
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
 
-        <NavLink to="/" className={styles.navLink}>
+        <NavLink to="/dashboard/candidato" className={styles.navLink}>
           <div className={styles.sidebarFooter}>
             <button onClick={handleLogout} className={styles.logoutButton}>
               <span>Cerrar Sesión</span>

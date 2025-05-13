@@ -112,7 +112,7 @@ export default function DashboardReclutadorLayout() {
 
 
         {/* Botón/Link de Cerrar Sesión (Ejemplo) */}
-        <NavLink to="/" className={styles.navLink}>
+        <NavLink to="/dashboard/gerente" className={styles.navLink}>
         <div className={styles.sidebarFooter}>
             <button onClick={handleLogout} className={styles.logoutButton}>
                 <span>Cerrar Sesión</span>

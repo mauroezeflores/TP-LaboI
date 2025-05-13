@@ -420,6 +420,18 @@
     border-color: #1d4ed8;
     transform: translateY(-1px);
   }
+.logoutButtonContainer {
+    margin-top: 1rem; /* Espacio sobre el botón */
+    text-align: right; /* Alinea el botón a la derecha */
+  }
+  
+  /* Botón de Logout */
+ .logoutButton{
+    background-color: var(--danger); /* Color de acento (rojo claro) */
+    color: white;
+    border-color: var(--danger);
+  }
+ 
   
   
   /* Responsive para el Job Board dentro del Dashboard */

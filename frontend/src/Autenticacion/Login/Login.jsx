@@ -64,7 +64,7 @@ export default function Login() {
 
         {/* Botón con su clase */}
         <button type="submit" className={styles.submitButton}>
-          <Link to={`/dashboard/admin`}>
+          <Link to={`/dashboard/reclutador`}>
             <span className={styles.buttonText}>Iniciar Sesión</span>
           </Link>
         </button>

@@ -407,7 +407,7 @@ export default function ABMEmpleadosAdmin() {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                 <TextField InputProps={{startAdornment: <InputAdornment position="start"><ApartmentIcon fontSize="small" /></InputAdornment> }} label="Departamento" name="id_departamento_display" value={getNombreDepartamento(currentEmpleado.id_departamento)} fullWidth margin="dense" disabled InputLabelProps={{ shrink: true }}/>
+                                <TextField label="Departamento" name="direccion" value={currentEmpleado.direccion} onChange={handleChange} fullWidth margin="dense" disabled={viewMode}/>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <DatePicker

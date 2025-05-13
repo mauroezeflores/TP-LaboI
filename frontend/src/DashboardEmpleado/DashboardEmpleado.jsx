@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './DashboardEmpleado.module.css';
+import { NavLink } from 'react-router-dom';
 
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
@@ -67,12 +68,24 @@ const DashboardEmpleado = () => {
   // Función para cambiar la sección visible
   const mostrarSeccion = (nombreSeccion) => {
     setSeccionVisible(nombreSeccion);
-  };
+  }
+  const handleLogout = () => {
+    console.log("Cerrando sesión...");
+    // lógica de logout si querés agregar algo
+  }
+  ;
 
 
   return (
     // Contenedor principal de la página del empleado
     <div className={styles.pageContainer}>
+      <NavLink to="/dashboard/admin" className={styles.navLink}>
+            <div className={styles.logoutButtonContainer}>
+              <button className={styles.logoutButton} onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            </div>
+            </NavLink>
       <h1 className={styles.mainTitle}>Portal del Empleado</h1>
       <p className={styles.welcomeMessage}>Hola, {empleado.nombre}. Aquí puedes gestionar tu información.</p>
 
