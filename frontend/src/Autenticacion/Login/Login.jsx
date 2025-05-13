@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom'; // Importa Link aquí
 import styles from '../Autenticacion.module.css';
 
 export default function Login() {
   const { tipoUsuario } = useParams(); // 'candidato' o 'reclutador'
+  const navigate = useNavigate(); // Para redirigir después de hacer login
 
   // Elegimos la clase de acento correcta
   const accentClass =
@@ -15,15 +16,46 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!email || !password) {
       setError('Por favor, completá todos los campos.');
-    } else {
-      setError('');
-      // Lógica de autenticación...
-      console.log('Iniciando sesión:', { email, tipoUsuario });
+      return;
     }
+
+    const usuarios = {
+      'reclutador@gmail.com': {
+        rol: 'reclutador',
+        path: '/dashboard/reclutador',
+      },
+      'gerente@gmail.com': {
+        rol: 'gerente',
+        path: '/dashboard/gerente',
+      },
+      'admin@gmail.com': {
+        rol: 'admin',
+        path: '/dashboard/admin',
+      },
+      'empleado@gmail.com': {
+        rol: 'empleado',
+        path: '/dashboard/empleado',
+      },
+      'candidato@gmail.com': {
+        rol: 'candidato',
+        path: '/dashboard/candidato',
+      },
+    };
+
+    const usuario = usuarios[email];
+
+    if (!usuario) {
+      setError('Correo no registrado.');
+      return;
+    }
+
+    // Navegar a la ruta correspondiente
+    navigate(usuario.path);
   };
 
   return (
@@ -46,7 +78,6 @@ export default function Login() {
             />
           </div>
         </div>
-        
 
         {/* Contraseña */}
         <div className={styles.inputGroup}>
@@ -64,9 +95,7 @@ export default function Login() {
 
         {/* Botón con su clase */}
         <button type="submit" className={styles.submitButton}>
-          <Link to={`/dashboard/reclutador`}>
-            <span className={styles.buttonText}>Iniciar Sesión</span>
-          </Link>
+          <span className={styles.buttonText}>Iniciar Sesión</span>
         </button>
 
         {/* Links con sus contenedores */}
@@ -76,7 +105,6 @@ export default function Login() {
           </Link>
         </div>
         <div className={styles.linkContainer}>
-          {/* Asegúrate que el tipoUsuario sea 'candidato' o 'reclutador' */}
           <Link to={`/registro-${tipoUsuario}`}>
             No tenés cuenta? Registrate
           </Link>

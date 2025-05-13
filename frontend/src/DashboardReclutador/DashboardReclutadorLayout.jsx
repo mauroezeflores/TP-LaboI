@@ -2,10 +2,15 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardReclutador.module.css';
 
+
 export default function DashboardReclutadorLayout() {
   // Función para manejar el logout (ejemplo)
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
+     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
     // Aca iría la lógica para limpiar tokens/estado y redirigir al login
   };
 
@@ -112,7 +117,7 @@ export default function DashboardReclutadorLayout() {
 
 
         {/* Botón/Link de Cerrar Sesión (Ejemplo) */}
-        <NavLink to="/dashboard/gerente" className={styles.navLink}>
+        <NavLink to="/" className={styles.navLink}>
         <div className={styles.sidebarFooter}>
             <button onClick={handleLogout} className={styles.logoutButton}>
                 <span>Cerrar Sesión</span>

@@ -99,28 +99,47 @@ def nuevo_telefono(conexion, codigo_pais, codigo_area, numero_telefono,id_emplea
 #crea el nuevo usuario, la direccion, y el telefono
 #utiliza unicamente los datos personales del usuario, no guarda puesto ni jornada ni ningun dato relacionado a lo laboral
 #tendriamos que mopdificar la base de datos
-def nuevo_empleado(conexion,nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo, direccion, pais, provincia, ciudad, cod_postal, latitud, longitud, codigo_pais, codigo_area, numero_telefono, tipo_telefono, id_puesto, id_jornada, estado_empleado):
-    id_direccion= nueva_direccion(conexion,direccion, pais, provincia, ciudad, cod_postal, latitud, longitud)
+# archivo auxiliares.py
+def nuevo_empleado(
+    conexion,
+    nombre, apellido, fecha_de_nacimiento, email_personal,
+    estado_civil, tiene_hijos, nivel_educativo,
+    direccion, pais, provincia, ciudad, cod_postal, latitud, longitud,
+    codigo_pais, codigo_area, numero_telefono, tipo_telefono,
+    id_puesto_trabajo, id_jornada, estado,
+    hace_horas_extra, tiene_movilidad_propia
+):
+    id_direccion = nueva_direccion(conexion, direccion, pais, provincia, ciudad, cod_postal, latitud, longitud)
     if id_direccion is None:
         raise Exception("No se pudo crear la dirección")
+
     try:
         cursor = conexion.cursor()
-        query = "INSERT INTO empleado(nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo,id_direccion, id_puesto, id_jornada, estado_empleado) " \
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) " \
-            "RETURNING id"
-
-        cursor.execute(query, (nombre, apellido, fecha_de_nacimiento, email_personal, estado_civil, tiene_hijos, nivel_educativo,id_direccion, id_puesto, id_jornada, estado_empleado))
+        query = """
+        INSERT INTO empleado (
+            nombre, apellido, fecha_de_nacimiento, email_personal,
+            estado_civil, tiene_hijos, nivel_educativo,
+            id_direccion, id_puesto_trabajo, id_jornada, estado,
+            hace_horas_extra, tiene_movilidad_propia
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        RETURNING id_empleado
+        """
+        cursor.execute(query, (
+            nombre, apellido, fecha_de_nacimiento, email_personal,
+            estado_civil, tiene_hijos, nivel_educativo,
+            id_direccion, id_puesto_trabajo, id_jornada, estado,
+            hace_horas_extra, tiene_movilidad_propia
+        ))
 
         id_empleado = cursor.fetchone()[0]
-        cursor.close()
-        #como telefono utiliza el id del usuario tengo que crearlo despues de crear al empleado
-        id_telefono = nuevo_telefono(conexion,codigo_pais, codigo_area, numero_telefono, id_empleado, tipo_telefono)
+        id_telefono = nuevo_telefono(conexion, codigo_pais, codigo_area, numero_telefono, id_empleado, tipo_telefono)
+
         if id_telefono is None:
-            raise Exception("No se pudo crear telefono")
+            raise Exception("No se pudo crear el teléfono")
+
         conexion.commit()
         return id_empleado
     except Exception as e:
         conexion.rollback()
-        print(f"Error al insertar datos: {e}")
+        print(f"Error al insertar empleado: {e}")
         return None
-    

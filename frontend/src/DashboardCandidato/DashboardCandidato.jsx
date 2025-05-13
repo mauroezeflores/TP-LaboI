@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './DashboardCandidato.module.css';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink ,useNavigate} from 'react-router-dom';
 
 const convocatoriasDisponibles = [
   { id: 1, tags: ['⚡ Postulación rápida', 'Nuevo'], title: 'Programador Frontend Jr.', company: 'Tech Solutions S.A.', desc: 'Nuestra Organización se encuentra en la búsqueda de un Programador...', location: 'Capital Federal, Buenos Aires', modality: 'Remoto', time: 'Publicado hace 1 hora' },
@@ -49,7 +49,11 @@ const DashboardCandidato = () => {
     alert(`Simulación: Aplicando a "${jobTitle}" (ID: ${jobId}).`);
   }
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
+     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
     // lógica de logout si querés agregar algo
   }
 
@@ -58,13 +62,14 @@ const DashboardCandidato = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <NavLink to="/dashboard/empleado" className={styles.navLink}>
+      <NavLink to="/" className={styles.navLink}>
       <div className={styles.logoutButtonContainer}>
         <button className={styles.logoutButton} onClick={handleLogout}>
           Cerrar sesión
         </button>
       </div>
       </NavLink>
+      
       <h1 className={styles.mainTitle}>Bienvenida, {candidato.nombre} {candidato.apellido}</h1>
 
       <nav className={styles.sectionNav}>

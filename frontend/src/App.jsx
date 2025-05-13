@@ -39,7 +39,7 @@ function App() {
 
         {/* --- Rutas Públicas --- */}
         <Route path="/" element={<Inicio />} />
-        <Route path="/login/:tipoUsuario" element={<Login />} />
+        <Route path="/login/candidato" element={<Login />} />
         <Route path="/registro-candidato" element={<RegistroCandidato />} />
         <Route path="/registro-reclutador" element={<RegistroReclutador />} />
         

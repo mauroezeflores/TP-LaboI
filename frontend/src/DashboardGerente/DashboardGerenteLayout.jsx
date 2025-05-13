@@ -4,8 +4,11 @@ import styles from './DashboardGerente.module.css'; // creás un nuevo CSS con l
 
 export default function DashboardGerenteLayout() {
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
-    // lógica de logout si querés agregar algo
+     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
   };
 
   return (
@@ -66,7 +69,7 @@ export default function DashboardGerenteLayout() {
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
 
-        <NavLink to="/dashboard/candidato" className={styles.navLink}>
+        <NavLink to="/" className={styles.navLink}>
           <div className={styles.sidebarFooter}>
             <button onClick={handleLogout} className={styles.logoutButton}>
               <span>Cerrar Sesión</span>

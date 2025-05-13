@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './DashboardEmpleado.module.css';
-import { NavLink } from 'react-router-dom';
+import { NavLink ,useNavigate} from 'react-router-dom';
 
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
@@ -69,17 +69,24 @@ const DashboardEmpleado = () => {
   const mostrarSeccion = (nombreSeccion) => {
     setSeccionVisible(nombreSeccion);
   }
+  
+  //no me funciona el useNavigate
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
-    // lógica de logout si querés agregar algo
+    // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+  
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
   }
   ;
 
 
   return (
     // Contenedor principal de la página del empleado
+    
     <div className={styles.pageContainer}>
-      <NavLink to="/dashboard/admin" className={styles.navLink}>
+      <NavLink to="/" className={styles.navLink}>
             <div className={styles.logoutButtonContainer}>
               <button className={styles.logoutButton} onClick={handleLogout}>
                 Cerrar sesión
