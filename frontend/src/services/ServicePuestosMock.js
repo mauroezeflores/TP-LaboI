@@ -1,14 +1,17 @@
 const puestosMock = [
-  { id: 1, nombre: 'Gerente de Ventas', descripcion: 'Responsable de liderar el equipo de ventas y alcanzar los objetivos comerciales.' },
-  { id: 2, nombre: 'Analista de Marketing', descripcion: 'Encargado de analizar el mercado y desarrollar estrategias de marketing.' },
-  { id: 3, nombre: 'Desarrollador Frontend', descripcion: 'Responsable del desarrollo de la interfaz de usuario de aplicaciones web.' },
-  { id: 4, nombre: 'Desarrollador Backend', descripcion: 'Encargado del desarrollo del lado del servidor y la lógica de negocio.' },
-  { id: 5, nombre: 'Diseñador Gráfico', descripcion: 'Responsable de crear elementos visuales para campañas y productos.' },
-    { id: 6, nombre: 'Gerente de Recursos Humanos', descripcion: 'Encargado de gestionar el talento humano y las relaciones laborales.' },
-    { id: 7, nombre: 'Analista Financiero', descripcion: 'Responsable de analizar la situación financiera de la empresa y hacer recomendaciones.' },
-    { id: 8, nombre: 'Asistente Administrativo', descripcion: 'Encargado de tareas administrativas y apoyo a diferentes departamentos.' },
-    { id: 9, nombre: 'Gerente de Proyectos', descripcion: 'Responsable de planificar y ejecutar proyectos dentro del presupuesto y plazo.' },
-    { id: 10, nombre: 'Especialista en SEO', descripcion: 'Encargado de optimizar el contenido web para mejorar su posicionamiento en buscadores.' }
+  { id: 1, nombre: 'Programador Senior', descripcion: 'Desaprofesional experimentado con amplia experiencia en el desarrollo de software',
+    rendimientoMinimo: 45,
+    rendimientoAceptable: 80,
+  },
+  { id: 2, nombre: 'Programador Junior', descripcion: 'Profesional de tecnología de nivel básico que trabaja en el desarrollo de software', 
+    rendimientoMinimo: 20,
+    rendimientoAceptable: 40,
+  },
+  { id: 3, nombre: 'Diseñador Grafico', descripcion: 'Responsable del desarrollo de imagenes y diseños de marketing.',
+    rendimientoMinimo: 40,
+    rendimientoAceptable: 70,
+   },
+
 ]; 
 const getPuestos = () => {
   return new Promise((resolve) => {
@@ -17,5 +20,20 @@ const getPuestos = () => {
     }, 1000); // Simula un retraso de 1 segundo
   });
 }
+
+export const getUnPuesto = (index) => {
+  return puestosMock[index-1];
+}
+
+export const setRendimiento = (index, rendimientoMinimo, rendimientoAceptable) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      puestosMock[index].rendimientoMinimo = rendimientoMinimo;
+      puestosMock[index].rendimientoAceptable = rendimientoAceptable;
+      resolve(puestosMock[index]);
+    }, 1000); // Simula un retraso de 1 segundo
+  });
+}
+
 export default getPuestos;
 // Este archivo simula la obtención de datos de puestos desde un servicio externo.

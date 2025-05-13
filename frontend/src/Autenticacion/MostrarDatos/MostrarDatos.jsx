@@ -5,7 +5,7 @@ import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos pers
 import getEmpleados from "../../services/ServiceEmpleadosMock";
 import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 import GraficoDesempeno from "./GraficoDesempeno";
-
+import { getUnPuesto } from "../../services/ServicePuestosMock"; // Importa la función mock para obtener los puestos
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
   const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
@@ -79,10 +79,10 @@ const handleVerHistoria = async (idEmpleado) => {
 
 
   // Función para determinar el color del desempeño
-  const getColorDesempeno = (desempeno) => {
-    if (desempeno < 30) return styles.red;
-    if (desempeno >= 30 && desempeno < 70) return styles.orange;
-    if (desempeno >= 70) return styles.green;
+  const getColorDesempeno = (desempeno , index) => {
+    if (desempeno < getUnPuesto(index).rendimientoMinimo) return styles.red;
+    if (desempeno >= getUnPuesto(index).rendimientoMinimo && desempeno < getUnPuesto(index).rendimientoAceptable) return styles.orange;
+    if (desempeno >= getUnPuesto(index).rendimientoAceptable) return styles.green;
     return styles.default;
   };
 
@@ -125,7 +125,7 @@ const handleVerHistoria = async (idEmpleado) => {
                   )}
                   <TableCell>
                     <div
-                      className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}
+                      className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño, empleado.id_empleado)}`}
                     >
                       {loadingEmpleado === empleado.id_empleado ? (
                         <CircularProgress size={20} />

@@ -6,7 +6,9 @@ const empleados = [
     email: " juan@gmail.com",
     nivel_educativo: "Secundario",
     telefono: "123456789",
-    fecha_de_ingreso: "2022-01-01",},
+    fecha_de_ingreso: "2022-01-01",
+    puesto:"Programador Junior",
+},
     {
     id_empleado: 2,
     nombre: "María",
@@ -15,6 +17,8 @@ const empleados = [
     nivel_educativo: "Terciario",
     telefono: "987654321",
     fecha_de_ingreso: "2021-05-15",
+    puesto:"Programador Senior",
+
     },
     {
     id_empleado: 3,
@@ -24,9 +28,10 @@ const empleados = [
     nivel_educativo: "Secundario",
     telefono: "456789123",
     fecha_de_ingreso: "2020-03-10",
+    puesto:"Diseñador Grafico",
+
     }
 ]
-
 const getEmpleados = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
