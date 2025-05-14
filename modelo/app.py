@@ -8,6 +8,7 @@ from fastapi import  HTTPException
 from pydantic import BaseModel
 from typing import Optional
 import auxiliares as aux
+from psycopg2.extras import RealDictCursor  # Agrega esta importación al inicio
 
 app = FastAPI()
 
@@ -112,7 +113,7 @@ async def predecir(empleado_id: int) -> dict:
 async def presentismo(empleado_id: int):
     conexion = db.abrir_conexion()
     try:
-        presentismo = aux.obtener_presentismo(empleado_id,conexion)
+        presentismo = aux.obtener_presentismo(conexion,empleado_id)
         return {"presentismo": presentismo}
     except Exception as e:
         return {"error": str(e)}
@@ -142,12 +143,13 @@ async def registrar_empleado(data: EmpleadoInput):
         db.cerrar_conexion(conexion)
 
 
+
 @app.get("/empleados")
 async def listar_empleados():
     conn = db.abrir_conexion()
     try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM empleados")
+        cursor = conn.cursor(cursor_factory=RealDictCursor)  # <-- Cambia aquí
+        cursor.execute("SELECT * FROM empleado")
         empleados = cursor.fetchall()
         return empleados
     finally:

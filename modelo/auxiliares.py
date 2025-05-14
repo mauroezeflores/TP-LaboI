@@ -41,15 +41,11 @@ def obtener_nivel_presencia_en_proyectos(conexion, id_empleado):
 
 
 def obtener_presentismo(conexion, id_empleado):
-    presentismo = db.realizar_consulta(conexion, "SELECT tiene_presentismo FROM empleado WHERE id_empleado = %s",
-                                       (id_empleado,))
-    nivel = presentismo[0][0]  # obtenemos el nivel para el modelo
-    nivel = nivel if nivel is not None else 0
-    if nivel == True:
-        return 1
-    else:
+    presentismo = db.realizar_consulta(conexion, "SELECT tiene_presentismo FROM empleado WHERE id_empleado = %s", (id_empleado,))
+    if not presentismo or presentismo[0][0] is None:
         return 0
-
+    nivel = presentismo[0][0]
+    return 1 if nivel else 0
 
 # si el empleado realizo mas de 5 horas extras en los ultimos 30 dias, se considera que tiene horas extras
 def obtener_horas_extras(conexion, id_empleado):
