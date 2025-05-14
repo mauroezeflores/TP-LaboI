@@ -20,18 +20,15 @@ import './index.css';
 import GestionLicencias from './DashboardReclutador/pages/gestionLicencias.jsx';
 import DashboardGerenteLayout from './DashboardGerente/DashboardGerenteLayout.jsx';
 import DashboardAdminLayout from './DashboardAdmin/DashboardAdminLayout.jsx';
-//import ProtectedRoute from './Autenticacion/ProtectedRoute.jsx';
 import ABMEmpleadosAdmin from './DashboardAdmin/pages/ABMEmpleadosAdmin.jsx';
 import ABMCandidatosAdmin from './DashboardAdmin/pages/ABMCandidatosAdmin.jsx';
 import GestionConvocatoriasAdmin from './DashboardAdmin/pages/GestionConvocatoriasAdmin.jsx';
 import GestionLicenciasAdmin from './DashboardAdmin/pages/GestionLicenciasAdmin.jsx';
 import GestionEncuestasAdmin from './DashboardAdmin/pages/GestionEncuestasAdmin.jsx';
 import ReportesAdmin from './DashboardAdmin/pages/ReportesAdmin.jsx';
-import VisualizacionAnomaliasAdmin from './DashboardAdmin/pages/VisualizacionAnomaliasAdmin.jsx';
 import ConfiguracionSistemaAdmin from './DashboardAdmin/pages/ConfiguracionSistemaAdmin.jsx';
 import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
-import DeteccionAnomalias from './DashboardReclutador/pages/DeteccionAnomalias.jsx';
 function App() {
   return (
     <Router> {/* Envuelve todo en el Router */}
@@ -47,7 +44,7 @@ function App() {
 
 
         {/* --- Rutas Dashboard Reclutador (Protegidas) --- */}
-        <Route path="/dashboard/reclutador" element={<DashboardReclutadorLayout />}>
+        <Route path="/dashboard/empleadoRRHH" element={<DashboardReclutadorLayout />}>
            <Route index element={<DashboardHome />} />
            <Route path="crear-convocatoria" element={<CrearConvocatoria />} />
            <Route path="mis-convocatorias" element={<VerConvocatorias />} />
@@ -55,7 +52,6 @@ function App() {
            <Route path="gestion-empleados" element={<GestionEmpleados />} />
            <Route path="gestion-licencias" element={<GestionLicencias />} />
            <Route path="AltaBajaMod" element={<AltaBajaMod />} />
-           <Route path="deteccion-anomalias" element={<DeteccionAnomalias />} />
         </Route>
         <Route
                         path="/dashboard/admin"
@@ -68,7 +64,6 @@ function App() {
                         <Route path="licencias" element={<GestionLicenciasAdmin />} />
                         <Route path="encuestas" element={<GestionEncuestasAdmin />} />
                         <Route path="reportes" element={<ReportesAdmin />} />
-                        <Route path="anomalias" element={<VisualizacionAnomaliasAdmin />} />
                         <Route path="configuracion" element={<ConfiguracionSistemaAdmin />} />
                     </Route>
 

@@ -27,7 +27,7 @@ export default function DashboardHome() {
     <div className={styles.dashboardHomeContainer}>
         {/* --- Encabezado de Bienvenida --- */}
       <header className={styles.welcomeHeader}>
-        <h2>Bienvenido al Panel de Reclutador</h2>
+        <h2>Bienvenido al Panel de RRHH</h2>
         <p>
           Desde aquí puedes acceder a las herramientas principales para gestionar
           empleados y el ciclo de reclutamiento.

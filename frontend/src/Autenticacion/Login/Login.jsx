@@ -27,7 +27,7 @@ export default function Login() {
     const usuarios = {
       'reclutador@gmail.com': {
         rol: 'reclutador',
-        path: '/dashboard/reclutador',
+        path: '/dashboard/empleadoRRHH',
       },
       'gerente@gmail.com': {
         rol: 'gerente',

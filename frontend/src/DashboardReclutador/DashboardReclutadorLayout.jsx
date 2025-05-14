@@ -20,13 +20,13 @@ export default function DashboardReclutadorLayout() {
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
            <h3 className={styles.sidebarTitle}>SIGRH+</h3>
-           <span className={styles.sidebarSubtitle}>Panel Reclutador</span>
+           <span className={styles.sidebarSubtitle}>Panel EmpleadoRRHH</span>
         </div>
         <nav className={styles.sidebarNav}>
 
            {/* Link al Inicio del Dashboard */}
            <NavLink
-             to="/dashboard/reclutador" 
+             to="/dashboard/empleadoRRHH" 
              end 
              className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
            >
@@ -88,17 +88,7 @@ export default function DashboardReclutadorLayout() {
                   </div>
                </div>
             </NavLink>
-            <NavLink
-            to="deteccion-anomalias"
-            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
-         >
-         <div className={styles.navItemContent}>
-            <div className={styles.navTextContainer}>
-               <span className={styles.navTitle}>Detección Anomalías</span>
-               <span className={styles.navDescription}>Analizar datos</span>
-            </div>
-          </div>
-         </NavLink>
+            
              
             {/* Link ABM */}
           <NavLink
