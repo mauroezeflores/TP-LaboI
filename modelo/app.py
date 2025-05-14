@@ -154,3 +154,24 @@ async def listar_empleados():
         return empleados
     finally:
         db.cerrar_conexion(conn)
+
+@app.get("/empleados/detalle")
+async def empleados_detalle():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT 
+                e.nombre, 
+                e.apellido, 
+                e.email_personal, 
+                e.nivel_educativo, 
+                pt.nombre AS puesto_trabajo, 
+                e.dni
+            FROM empleado e
+            JOIN puesto_trabajo pt ON e.id_puesto_trabajo = pt.id_puesto_trabajo
+        """)
+        empleados = cursor.fetchall()
+        return empleados
+    finally:
+        db.cerrar_conexion(conn)
