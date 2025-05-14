@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import getPuestos from '../services/ServicePuestosMock'; // Asegurate que el path sea el correcto
+import { setRendimiento, getUnPuesto } from '../services/ServicePuestosMock'; // Asegurate de que el path sea correcto
 
 const ConfiguracionPorPuesto = () => {
   const [puestos, setPuestos] = useState([]);
   const [umbralesPorPuesto, setUmbralesPorPuesto] = useState({});
+
+  
+
 
   useEffect(() => {
     // Traemos los puestos del mock
@@ -34,10 +38,26 @@ const ConfiguracionPorPuesto = () => {
     }));
   };
 
-  const guardarConfiguracion = () => {
-    localStorage.setItem('umbralesPorPuesto', JSON.stringify(umbralesPorPuesto));
-    alert('Configuraciones guardadas correctamente');
-  };
+const guardarConfiguracion = async () => {
+  localStorage.setItem('umbralesPorPuesto', JSON.stringify(umbralesPorPuesto));
+
+  // Actualizar el mock (simulando un guardado en la "base de datos")
+  for (let i = 0; i < puestos.length; i++) {
+    const puesto = puestos[i];
+    const umbrales = umbralesPorPuesto[puesto.id];
+
+    if (umbrales) {
+
+      setRendimiento(puesto.id, umbrales[0], umbrales[1]);
+      console.log(getUnPuesto(puesto.id).id, "valor minimo:", getUnPuesto(puesto.id).rendimientoMinimo, getUnPuesto(puesto.id).rendimientoAceptable);
+      const [min, aceptable] = umbrales;
+      await setRendimiento(puesto.id, min, aceptable);
+      console.log(`Puesto ${puesto.nombre} actualizado: Min: ${min}, Aceptable: ${aceptable}`);
+    }
+  }
+
+  alert('Configuraciones guardadas correctamente en localStorage y mock');
+};
 
   return (
     <div style={{ padding: '2rem' }}>
