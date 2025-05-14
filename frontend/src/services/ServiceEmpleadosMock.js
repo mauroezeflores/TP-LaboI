@@ -1,3 +1,4 @@
+const API_URL = "http://localhost:8000/empleados/detalle";
 const empleados = [
   {
     id_empleado: 1,
@@ -32,12 +33,13 @@ const empleados = [
 
     }
 ]
-const getEmpleados = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(empleados);
-    }, 1000); // Simula un retraso de 1 segundo
-  });
-}
+const getEmpleados = async () => {
+  const response = await fetch(API_URL);
+  if (!response.ok) {
+    throw new Error("Error al obtener empleados");
+  }
+  const empleados = await response.json();
+  return empleados;
+};
 
 export default getEmpleados;

@@ -11,21 +11,7 @@ const MostrarDatos = () => {
   const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
   const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
 
-  // Función para obtener los datos de empleados desde Supabase
-  // const fetchEmpleados = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("empleado") // Nombre de la tabla en Supabase
-  //       .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
-  //     if (error) throw error; // Manejo de errores
-  //     setEmpleados(data); // Actualiza el estado con los datos obtenidos
-  //   } catch (error) {
-  //     console.error("Error al obtener empleados:", error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+
 const [historiaActual, setHistoriaActual] = useState([]);
 const [modalAbierto, setModalAbierto] = useState(false);
 
@@ -55,7 +41,6 @@ const handleVerHistoria = async (idEmpleado) => {
   setTimeout(() => {
     const nuevoDesempeno = Math.floor(Math.random() * 101); // del 0 al 100
 
-    // 1. Actualizás el estado
     setEmpleados((prevEmpleados) =>
       prevEmpleados.map((empleado) =>
         empleado.id_empleado === id_empleado
@@ -79,13 +64,13 @@ const handleVerHistoria = async (idEmpleado) => {
 
 
   // Función para determinar el color del desempeño
-  const getColorDesempeno = (desempeno , index) => {
-    if (desempeno < getUnPuesto(index).rendimientoMinimo) return styles.red;
-    if (desempeno >= getUnPuesto(index).rendimientoMinimo && desempeno < getUnPuesto(index).rendimientoAceptable) return styles.orange;
-    if (desempeno >= getUnPuesto(index).rendimientoAceptable) return styles.green;
+  // Función para determinar el color del desempeño
+  const getColorDesempeno = (desempeno) => {
+    if (desempeno < 30) return styles.red;
+    if (desempeno >= 30 && desempeno < 70) return styles.orange;
+    if (desempeno >= 70) return styles.green;
     return styles.default;
   };
-
   // useEffect para cargar los datos al montar el componente
   useEffect(() => {
     fetchEmpleados();
