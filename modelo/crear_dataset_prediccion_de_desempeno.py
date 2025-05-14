@@ -63,6 +63,6 @@ df["ultima_evaluacion_de_desempeño"] = df["ultima_evaluacion_de_desempeño"].as
 df["ultima_evaluacion_desempeño"] = df["evaluacion_del_superior"].astype(int)
 
 # Guardar a CSV
-df.to_csv("dataset_ficticio_regresion_lineal_actualizado.csv", index=False)
+df.to_csv("dataset_prediccion_de_desempeno.csv", index=False)
 
-print("Dataset guardado como 'dataset_ficticio_regresion_lineal_actualizado.csv'")
+print("Dataset guardado como 'dataset_prediccion_de_desempeno.csv'")

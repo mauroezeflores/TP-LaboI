@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from joblib import dump
 
 # 1. Cargar el dataset generado
-df = pd.read_csv("dataset_ficticio_regresion_lineal_actualizado.csv")
+df = pd.read_csv("dataset_prediccion_de_desempeno.csv")
 
 # 2. Definir características (X) y objetivo (y)
 X = df[["nivel_de_presentismo", "nivel_certificacion", "nivel_habilidades", "presencia_en_proyectos", "horas_extras", "ultima_evaluacion_desempeño", "evaluacion_del_superior"]]
@@ -39,7 +39,7 @@ print(f"- R²: {r2:.4f} (1.0 es perfecto)")
 #################################
 ####EXPORTAR MODELO PARA USAR####
 #################################
-dump(model, 'modelo_regresion_lineal.joblib')
+dump(model, 'modelo_prediccion_de_desempeno.joblib')
 
 #############################
 ####GRAFICO DE DISPERSIÓN####

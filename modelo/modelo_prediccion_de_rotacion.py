@@ -9,7 +9,7 @@ from joblib import dump
 # ────────────────────────────────
 # 📥 Cargar el dataset
 # ────────────────────────────────
-df = pd.read_csv("synthetic_employee_attrition_dataset_v4.csv")
+df = pd.read_csv("dataset_prediccion_de_rotacion.csv")
 
 # Separar variables y target
 X = df.drop(columns=["salida"])
