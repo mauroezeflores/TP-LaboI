@@ -59,15 +59,22 @@ async def predecir(id_empleado: int):
     conexion = db.abrir_conexion()
     try:
        nivel_de_presentismo = aux.obtener_presentismo(conexion,id_empleado)
+       print(f"nivel presentismo: {nivel_de_presentismo}")
        nivel_certificacion = aux.obtener_nivel_certificacion(conexion,id_empleado)
+       print(f"nivel certificacion: {nivel_certificacion}")
        nivel_habilidades = aux.obtener_nivel_habilidad(conexion,id_empleado)
+       print(f"nivel habilidades: {nivel_habilidades}")
        presencia_en_proyectos = aux.obtener_nivel_presencia_en_proyectos(conexion,id_empleado)
+       print(f"presencia en proyectos: {presencia_en_proyectos}")
        horas_extras= aux.obtener_horas_extras(conexion,id_empleado)
+       print(f"horas extras: {horas_extras}")
        ultima_evaluacion_desempeño= aux.obtener_ultima_evaluacion_de_desempeño(conexion,id_empleado)
+       print(f"ultima evaluacion desempeño: {ultima_evaluacion_desempeño}")
        evaluacion_del_superior= aux.obtener_ultima_evaluacion_del_superior(conexion,id_empleado)
+       print(f"evaluacion del superior: {evaluacion_del_superior}")
        
        pred = modelo_desempeno.predict([[nivel_de_presentismo, nivel_certificacion, nivel_habilidades, presencia_en_proyectos, horas_extras, ultima_evaluacion_desempeño, evaluacion_del_superior]])[0]
-
+       print("prediccion: " + str(pred))
        return {"prediccion": round(pred, 2)}
     except Exception as e:
         return {"error": str(e)}

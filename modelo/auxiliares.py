@@ -4,7 +4,7 @@ import db
 # obtener habilidades, certificacion y presencia en proyectos, devuelve un numero del 1 al 5
 def obtener_nivel_habilidad(conexion, id_empleado):
     habilidades = db.realizar_consulta(conexion,
-                                       "SELECT SUM(h.peso) AS suma_pesos FROM habilidades_por_empleado hpe JOIN empleado e ON e.id_empleado = hpe.id_empleado JOIN habilidades_validas_por_puesto hvp ON hvp.id_puesto = e.id_puesto AND hvp.id_habilidad = hpe.id_habilidad JOIN habilidad h ON h.id_habilidad = hpe.id_habilidad WHERE e.id_empleado =  %s",
+                                       "SELECT SUM(h.peso) AS suma_pesos FROM habilidades_por_empleado hpe JOIN empleado e ON e.id_empleado = hpe.id_empleado JOIN habilidades_validas_por_puesto hvp ON hvp.id_puesto = e.id_puesto_trabajo AND hvp.id_habilidad = hpe.id_habilidad JOIN habilidad h ON h.id_habilidad = hpe.id_habilidad WHERE e.id_empleado =  %s",
                                        (id_empleado,))
     # valor_habilidades = sum(r[1] for r in habilidades) #obtiene el peso total, 1 seria la columna donde estan los pesos
     # nivel = obtener_nivel(valor_habilidades) #obtenemos el nivel para el modelo
@@ -18,7 +18,7 @@ def obtener_nivel_habilidad(conexion, id_empleado):
 
 def obtener_nivel_certificacion(conexion, id_empleado):
     certificaciones = db.realizar_consulta(conexion,
-                                           "SELECT SUM(c.peso) AS suma_pesos_certificaciones FROM certificaciones_por_empleado cpe JOIN empleado e ON e.id_empleado = cpe.id_empleado JOIN certificaciones_validas_por_puesto cvp ON cvp.id_puesto = e.id_puesto AND cvp.id_certificacion = cpe.id_certificacion JOIN certificacion c ON c.id_certificacion = cpe.id_certificacion WHERE e.id_empleado =  %s",
+                                           "SELECT SUM(c.peso) AS suma_pesos_certificaciones FROM certificaciones_por_empleado cpe JOIN empleado e ON e.id_empleado = cpe.id_empleado JOIN certificaciones_validas_por_puesto cvp ON cvp.id_puesto_trabajo = e.id_puesto_trabajo AND cvp.id_certificacion = cpe.id_certificacion JOIN certificacion c ON c.id_certificacion = cpe.id_certificacion WHERE e.id_empleado =  %s",
                                            (id_empleado,))
     nivel = certificaciones[0][0]  # obtenemos el nivel para el modelo
     nivel = nivel if nivel is not None else 0
@@ -54,7 +54,7 @@ def obtener_horas_extras(conexion, id_empleado):
     row = db.realizar_consulta(conexion, "SELECT "
                                          "COALESCE(SUM(cant_horas_extras), 0) AS Horas_Extras_90d "
                                          "FROM "
-                                         "fichadas "
+                                         "fichada"
                                          "WHERE "
                                          "id_empleado = %s "
                                          "AND "
@@ -267,7 +267,7 @@ def obtener_horas_extras(conexion, id_empleado):  # no encuentro donde quedan re
     row = db.realizar_consulta(conexion, "SELECT "
                                          "COALESCE(SUM(cant_horas_extras), 0) AS Horas_Extras_90d "
                                          "FROM "
-                                         "fichadas "
+                                         "fichada"
                                          "WHERE "
                                          "id_empleado = %s "
                                          "AND "
