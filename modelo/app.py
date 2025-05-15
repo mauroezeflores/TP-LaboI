@@ -108,8 +108,8 @@ async def predecir(empleado_id: int) -> dict:
         }])
 
         empleado_escalado = scaler_rotacion.transform(empleado)
-        prediccion = modelo_rotacion.predict(empleado_escalado)[0]
-        proba = modelo_rotacion.predict_proba(empleado_escalado)[0][1]
+        prediccion = int(modelo_rotacion.predict(empleado_escalado)[0])
+        proba = float(modelo_rotacion.predict_proba(empleado_escalado)[0][1])
 
         return {"prediccion": prediccion, "probabilidad": proba}
 
