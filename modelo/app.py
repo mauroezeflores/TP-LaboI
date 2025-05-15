@@ -195,12 +195,12 @@ async def historial_desempeno(empleado_id: int):
          cursor = conn.cursor(cursor_factory=RealDictCursor)
          cursor.execute("""
              SELECT
-                 fecha_evaluacion,
-                 evaluacion_desempeño,
+                 fecha_prediccion,
+                 prediccion,
                  id_empleado
-             FROM historial_evaluacion
+             FROM historial_prediccion_desempeno
              WHERE id_empleado = %s
-             ORDER BY fecha_evaluacion ASC
+             ORDER BY fecha_prediccion ASC
          """, (empleado_id,))
          historial = cursor.fetchall()
          return historial

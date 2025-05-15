@@ -52,8 +52,8 @@ export const obtenerHistoriaDesempeno = async (idEmpleado) => {
   const data = await response.json();
   // Si tu backend devuelve los campos como 'evaluacion_desempeno', puedes mapearlos así:
   return data.map(item => ({
-    fecha: item.fecha_evaluacion,
-    porcentaje: item.evaluacion_desempeño
+    fecha: item.fecha_prediccion,
+    porcentaje: item.prediccion
   }));
 };
 
