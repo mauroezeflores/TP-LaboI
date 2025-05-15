@@ -96,7 +96,6 @@ const manejarCalculoDesempeno = async (id_empleado) => {
                 <TableCell key="header-desempeno">Desempeño</TableCell>
                 <TableCell key="header-acciones">Acciones</TableCell>
                 <TableCell key="historial">Historial</TableCell>
-                <TableCell key="header-valoracion-empresa">Valoracion de la Empresa</TableCell>
                 <TableCell key="header-valoracion-jefe">Valoracion del Jefe</TableCell>
                 <TableCell key="aprobar-valoraciones">Aprobar valoraciones</TableCell>
               </TableRow>
@@ -140,22 +139,6 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           Ver Historia
         </Button>
       </TableCell>
-      <TableCell key={`cell-valoracion-empresa-${empleado.id_empleado}`}>
-        <Slider
-          value={valoracionesEmpresa[empleado.id_empleado] ?? 50}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(_, newValue) => {
-            setValoracionesEmpresa((prev) => ({
-              ...prev,
-              [empleado.id_empleado]: newValue
-            }));
-          }}
-          valueLabelDisplay="auto"
-          sx={{ width: 120 }}
-        />
-      </TableCell>
             <TableCell key={`aceptar-valoraciones${empleado.id_empleado}`}>
         <Slider
           value={valoracionesJefe[empleado.id_empleado] ?? 50}
@@ -172,14 +155,13 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           sx={{ width: 120 }}
         />
       </TableCell>
-            <TableCell key={`cell-acciones-${empleado.id_empleado}`}>
+            <TableCell key={`valoracion-jefe${empleado.id_empleado}`}>
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() =>
                   subirValoraciones(
                     empleado.id_empleado,
-                    valoracionesEmpresa[empleado.id_empleado] ?? 50,
                     valoracionesJefe[empleado.id_empleado] ?? 50
                   )
                 }

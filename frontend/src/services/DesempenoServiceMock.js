@@ -12,11 +12,30 @@ export const obtenerHistoriaDesempeno = async (idEmpleado) => {
   }));
 };
 
-export const subirValoraciones = (idEmpleado, valoracionEmpresa, valoracionJefe) => {
-  // Aquí luego harás el fetch al backend
+export const subirValoraciones = async (idEmpleado, valoracionJefe) => {
+  try {
+    const response = await fetch("http://localhost:8000/historial/evaluacion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id_empleado: idEmpleado,
+        evaluacion_del_superior: valoracionJefe
+      })
+    });
 
-    
-  console.log("Subiendo:", idEmpleado, valoracionEmpresa, valoracionJefe);
+    if (!response.ok) {
+      throw new Error("Error al subir valoraciones");
+    }
+
+    const data = await response.json();
+    console.log("Respuesta del backend:", data);
+    return data;
+  } catch (error) {
+    console.error("Error al subir valoraciones:", error);
+    throw error;
+  }
 };
 
 export default obtenerHistoriaDesempeno;
