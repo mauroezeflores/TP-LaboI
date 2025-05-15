@@ -66,9 +66,20 @@ export default function DashboardGerenteLayout() {
               </div>
             </div>
           </NavLink>
+                     <NavLink
+            to="datos-desempeno"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+            <div className={styles.navItemContent}>
+              <div className={styles.navTextContainer}>
+                <span className={styles.navTitle}>Desempeno predictivo</span>
+                <span className={styles.navDescription}>Prediccion de desempeño por empleados</span>
+              </div>
+            </div>
+          </NavLink>
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
-
+        
         <NavLink to="/" className={styles.navLink}>
           <div className={styles.sidebarFooter}>
             <button onClick={handleLogout} className={styles.logoutButton}>

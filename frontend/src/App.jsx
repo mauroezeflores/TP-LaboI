@@ -29,6 +29,8 @@ import ReportesAdmin from './DashboardAdmin/pages/ReportesAdmin.jsx';
 import ConfiguracionSistemaAdmin from './DashboardAdmin/pages/ConfiguracionSistemaAdmin.jsx';
 import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
+import DatosDeDesempeno from './DashboardGerente/DatosDeDesempeno.jsx';
+
 function App() {
   return (
     <Router> {/* Envuelve todo en el Router */}
@@ -79,6 +81,7 @@ function App() {
             <Route path="registro-candidato" element={<RegistroCandidato />} />
             <Route path="config" element={<ConfiguracionPorPuesto />} />
             <Route path="riesgos-empleados" element={<PantallaDeRiesgosEmpleados />} />
+            <Route path="datos-desempeno" element={<DatosDeDesempeno />} />
             {/* Acá van más rutas del gerente */}
         </Route>
 
