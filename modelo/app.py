@@ -183,3 +183,22 @@ async def empleados_detalle():
         return empleados
     finally:
         db.cerrar_conexion(conn)
+
+@app.get("/historial/desempeno/{empleado_id}")
+async def historial_desempeno(empleado_id: int):
+   conn = db.abrir_conexion()
+   try:
+         cursor = conn.cursor(cursor_factory=RealDictCursor)
+         cursor.execute("""
+             SELECT
+                 fecha_evaluacion,
+                 evaluacion_desempeño,
+                 id_empleado
+             FROM historial_evaluacion
+             WHERE id_empleado = %s
+             ORDER BY fecha_evaluacion ASC
+         """, (empleado_id,))
+         historial = cursor.fetchall()
+         return historial
+   finally:
+         db.cerrar_conexion(conn)
