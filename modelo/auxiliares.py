@@ -70,8 +70,8 @@ def obtener_horas_extras(conexion, id_empleado):
 
 
 def obtener_ultima_evaluacion_de_desempeño(conexion, id_empleado):
-    row = db.realizar_consulta(conexion, "SELECT evaluacion_de_desempeño " \
-                                         "FROM historial_de_evaluaciones " \
+    row = db.realizar_consulta(conexion, "SELECT evaluacion_desempeño " \
+                                         "FROM historial_evaluacion " \
                                          "WHERE id_empleado = %s " \
                                          "ORDER BY fecha_evaluacion DESC " \
                                          "LIMIT 1;",
@@ -86,7 +86,7 @@ def obtener_ultima_evaluacion_de_desempeño(conexion, id_empleado):
 
 def obtener_ultima_evaluacion_del_superior(conexion, id_empleado):
     row = db.realizar_consulta(conexion, "SELECT evaluacion_del_superior " \
-                                         "FROM historial_de_evaluaciones " \
+                                         "FROM historial_evaluacion " \
                                          "WHERE id_empleado = %s " \
                                          "ORDER BY fecha_evaluacion DESC " \
                                          "LIMIT 1;",
@@ -265,9 +265,9 @@ def obtener_salidas(conexion, id_empleado):  # no se encuentra como campo
 
 def obtener_horas_extras(conexion, id_empleado):  # no encuentro donde quedan registradas las horas extras
     row = db.realizar_consulta(conexion, "SELECT "
-                                         "COALESCE(SUM(cant_horas_extras), 0) AS Horas_Extras_90d "
+                                         "COALESCE(SUM(cant_horas_extra), 0) AS Horas_Extras_90d "
                                          "FROM "
-                                         "fichada"
+                                         "fichada "
                                          "WHERE "
                                          "id_empleado = %s "
                                          "AND "
