@@ -168,7 +168,8 @@ async def empleados_detalle():
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("""
-            SELECT 
+            SELECT
+                e.id_empleado,s 
                 e.nombre, 
                 e.apellido, 
                 e.email_personal, 
