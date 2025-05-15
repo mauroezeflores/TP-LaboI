@@ -61,8 +61,8 @@ export default function DashboardGerenteLayout() {
           >
             <div className={styles.navItemContent}>
               <div className={styles.navTextContainer}>
-                <span className={styles.navTitle}>Pantalla de Riesgos</span>
-                <span className={styles.navDescription}>Riesgo de desercion por empleado</span>
+                <span className={styles.navTitle}>Deteccion de rotacion</span>
+                <span className={styles.navDescription}>Prediccion de rotacion por empleados</span>
               </div>
             </div>
           </NavLink>

@@ -31,7 +31,7 @@ useEffect(() => {
 
     return (
     <div className="p-6">
-        <h2 className="text-xl font-bold mb-4">Riesgos de Empleados</h2>
+        <h2 className="text-xl font-bold mb-4">Prediccion de rotacion de empleados</h2>
 
         <Table className="min-w-full bg-white border border-gray-300">
             <TableHead>
