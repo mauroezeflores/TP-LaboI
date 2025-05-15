@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../services/ServiceEmpleadosMock";
-import  {obtenerHistoriaDesempeno} from "../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import  {obtenerHistoriaDesempeno, subirValoraciones} from "../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 
 import GraficoDesempeno from "../Autenticacion/MostrarDatos/GraficoDesempeno";
 import Slider from "@mui/material/Slider";
@@ -54,16 +54,6 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           : empleado
       )
     );
-
-    // Opcional: agregar al historial si lo deseas
-    agregarDesempeno(id_empleado, data.prediccion)
-      .then(() => {
-        console.log("Desempeño agregado al historial");
-      })
-      .catch((err) => {
-        console.error("Error al agregar desempeño:", err);
-      });
-
   } catch (error) {
     console.error(error);
   } finally {
@@ -108,6 +98,7 @@ const manejarCalculoDesempeno = async (id_empleado) => {
                 <TableCell key="historial">Historial</TableCell>
                 <TableCell key="header-valoracion-empresa">Valoracion de la Empresa</TableCell>
                 <TableCell key="header-valoracion-jefe">Valoracion del Jefe</TableCell>
+                <TableCell key="aprobar-valoraciones">Aprobar valoraciones</TableCell>
               </TableRow>
             </TableHead>
 
@@ -137,7 +128,7 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
           disabled={loadingEmpleado === empleado.id_empleado}
         >
-          Calcular Desempeño
+          Predecir Desempeño
         </Button>
       </TableCell>
       <TableCell key={`cell-historia-${empleado.id_empleado}`}>
@@ -165,7 +156,7 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           sx={{ width: 120 }}
         />
       </TableCell>
-            <TableCell key={`cell-valoracion-jefe-${empleado.id_empleado}`}>
+            <TableCell key={`aceptar-valoraciones${empleado.id_empleado}`}>
         <Slider
           value={valoracionesJefe[empleado.id_empleado] ?? 50}
           min={0}
@@ -180,6 +171,22 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           valueLabelDisplay="auto"
           sx={{ width: 120 }}
         />
+      </TableCell>
+            <TableCell key={`cell-acciones-${empleado.id_empleado}`}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() =>
+                  subirValoraciones(
+                    empleado.id_empleado,
+                    valoracionesEmpresa[empleado.id_empleado] ?? 50,
+                    valoracionesJefe[empleado.id_empleado] ?? 50
+                  )
+                }
+                disabled={loadingEmpleado === empleado.id_empleado}
+              >
+                Aceptar Valoraciones
+              </Button>
       </TableCell>
     </TableRow>
   ))}

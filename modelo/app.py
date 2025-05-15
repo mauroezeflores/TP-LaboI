@@ -10,6 +10,7 @@ from typing import Optional
 import auxiliares as aux
 from psycopg2.extras import RealDictCursor  # Agrega esta importación al inicio
 import datetime
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -206,3 +207,24 @@ async def historial_desempeno(empleado_id: int):
          return historial
    finally:
          db.cerrar_conexion(conn)
+
+class NuevaEvaluacionInput(BaseModel):
+    id_empleado: int
+    evaluacion_del_superior: float
+
+
+@app.post("/historial/evaluacion")
+async def insertar_evaluacion(data: NuevaEvaluacionInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO historial_evaluacion (fecha_evaluacion, evaluacion_desempeño, evaluacion_del_superior, id_empleado) VALUES (NOW(), %s, %s, %s)",
+            (100, data.evaluacion_del_superior, data.id_empleado)
+        )
+        conn.commit()
+        return {"mensaje": "Evaluación insertada correctamente"}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        db.cerrar_conexion(conn)

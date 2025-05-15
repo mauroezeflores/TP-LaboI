@@ -12,3 +12,11 @@ export const obtenerHistoriaDesempeno = async (idEmpleado) => {
   }));
 };
 
+export const subirValoraciones = (idEmpleado, valoracionEmpresa, valoracionJefe) => {
+  // Aquí luego harás el fetch al backend
+
+    
+  console.log("Subiendo:", idEmpleado, valoracionEmpresa, valoracionJefe);
+};
+
+export default obtenerHistoriaDesempeno;
