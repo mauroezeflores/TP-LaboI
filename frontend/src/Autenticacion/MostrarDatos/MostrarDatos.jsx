@@ -23,17 +23,30 @@ const handleVerHistoria = async (idEmpleado) => {
 };
 
 
-  const fetchEmpleados = async () => {
-    setLoading(true);
-    try {
-      const data = await getEmpleados(); // Llama a la función mock para obtener empleados
-      setEmpleados(data); // Actualiza el estado con los datos obtenidos
-    } catch (error) {
-      console.error("Error al obtener empleados:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchEmpleados = async () => {
+  setLoading(true);
+  try {
+    const data = await getEmpleados();
+    // Para cada empleado, obtenemos el desempeño
+    const empleadosConDesempeno = await Promise.all(
+      data.map(async (empleado) => {
+        try {
+          const response = await fetch(`http://localhost:8000/predecir/desempeno/${empleado.id_empleado}`);
+          if (!response.ok) throw new Error();
+          const result = await response.json();
+          return { ...empleado, desempeño: result.prediccion };
+        } catch {
+          return { ...empleado, desempeño: null };
+        }
+      })
+    );
+    setEmpleados(empleadosConDesempeno);
+  } catch (error) {
+    console.error("Error al obtener empleados:", error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
 const manejarCalculoDesempeno = async (id_empleado) => {
   setLoadingEmpleado(id_empleado);
@@ -51,16 +64,6 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           : empleado
       )
     );
-
-    // Opcional: agregar al historial si lo deseas
-    agregarDesempeno(id_empleado, data.prediccion)
-      .then(() => {
-        console.log("Desempeño agregado al historial");
-      })
-      .catch((err) => {
-        console.error("Error al agregar desempeño:", err);
-      });
-
   } catch (error) {
     console.error(error);
   } finally {
@@ -131,7 +134,7 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
           disabled={loadingEmpleado === empleado.id_empleado}
         >
-          Calcular Desempeño
+          Mostrar Prediccion de desempeño
         </Button>
       </TableCell>
       <TableCell key={`cell-historia-${empleado.id_empleado}`}>

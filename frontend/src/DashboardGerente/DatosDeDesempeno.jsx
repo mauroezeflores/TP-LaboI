@@ -13,6 +13,7 @@ const DatosDeDesempeno = () => {
   const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
   const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
   const [valoracionesJefe, setValoracionesJefe] = useState({});
+  const [valoracionesEmpresa, setValoracionesEmpresa] = useState({});
 
 const [historiaActual, setHistoriaActual] = useState([]);
 const [modalAbierto, setModalAbierto] = useState(false);
@@ -104,9 +105,9 @@ const manejarCalculoDesempeno = async (id_empleado) => {
                   )}
                 <TableCell key="header-desempeno">Desempeño</TableCell>
                 <TableCell key="header-acciones">Acciones</TableCell>
-                <TableCell key="header-valoracion-jefe">Historial</TableCell>
+                <TableCell key="historial">Historial</TableCell>
+                <TableCell key="header-valoracion-empresa">Valoracion de la Empresa</TableCell>
                 <TableCell key="header-valoracion-jefe">Valoracion del Jefe</TableCell>
-
               </TableRow>
             </TableHead>
 
@@ -148,7 +149,23 @@ const manejarCalculoDesempeno = async (id_empleado) => {
           Ver Historia
         </Button>
       </TableCell>
-      <TableCell key={`cell-valoracion-jefe-${empleado.id_empleado}`}>
+      <TableCell key={`cell-valoracion-empresa-${empleado.id_empleado}`}>
+        <Slider
+          value={valoracionesEmpresa[empleado.id_empleado] ?? 50}
+          min={0}
+          max={100}
+          step={1}
+          onChange={(_, newValue) => {
+            setValoracionesEmpresa((prev) => ({
+              ...prev,
+              [empleado.id_empleado]: newValue
+            }));
+          }}
+          valueLabelDisplay="auto"
+          sx={{ width: 120 }}
+        />
+      </TableCell>
+            <TableCell key={`cell-valoracion-jefe-${empleado.id_empleado}`}>
         <Slider
           value={valoracionesJefe[empleado.id_empleado] ?? 50}
           min={0}
