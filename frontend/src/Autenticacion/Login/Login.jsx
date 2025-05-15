@@ -105,7 +105,7 @@ export default function Login() {
           </Link>
         </div>
         <div className={styles.linkContainer}>
-          <Link to={`/registro-${tipoUsuario}`}>
+          <Link to={`/registro-candidato`}>
             No tenés cuenta? Registrate
           </Link>
         </div>
