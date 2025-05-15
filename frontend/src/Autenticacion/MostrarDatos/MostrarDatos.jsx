@@ -5,7 +5,7 @@ import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos pers
 import getEmpleados from "../../services/ServiceEmpleadosMock";
 import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 import GraficoDesempeno from "./GraficoDesempeno";
-import { getUnPuesto } from "../../services/ServicePuestosMock"; // Importa la función mock para obtener los puestos
+
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
   const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
@@ -17,6 +17,7 @@ const [modalAbierto, setModalAbierto] = useState(false);
 
 const handleVerHistoria = async (idEmpleado) => {
   const historia = await obtenerHistoriaDesempeno(idEmpleado);
+  console.log("Historia de desempeño:", historia);
   setHistoriaActual(historia);
   setModalAbierto(true);
 };
