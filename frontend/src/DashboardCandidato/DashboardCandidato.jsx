@@ -34,7 +34,7 @@ const getStatusClass = (estado) => {
 };
 
 const DashboardCandidato = () => {
-  const candidato = { nombre: "Lara", apellido: "Selser", email: "lara.selser@mail.com", ubicacion: "Buenos Aires", telefono: "1123456789", cvNombre: "CV_JuanPerez_2025.pdf" };
+  const candidato = { nombre: "Lara", apellido: "Selser", email: "lara.selser@mail.com", ubicacion: "Buenos Aires", telefono: "1123456789", cvNombre: "CV_LaraSelser_2025.pdf" };
   const notificaciones = [ { id: 1, texto: "✔️ Su CV fue aprobado.", leida: false }, { id: 2, texto: "❗️ Nueva oferta de trabajo disponible.", leida: false }, { id: 3, texto: "✔️ Su entrevista está programada para el 15/10.", leida: true }, ];
 
   const [seccionVisible, setSeccionVisible] = useState('buscarConvocatorias');
@@ -201,6 +201,7 @@ const DashboardCandidato = () => {
                      <label htmlFor="telefono">Teléfono</label>
                      <input type="tel" id="telefono" defaultValue={candidato.telefono} className={styles.inputField} />
                   </div>
+                  
                </div>
                <div className={styles.cardActions}>
                   <button type="submit" className={styles.buttonPrimary}>
@@ -215,9 +216,11 @@ const DashboardCandidato = () => {
            <div className={`${styles.card} ${styles.sectionCard}`}>
              <h2 className={styles.cardTitle}>Tu Perfil Profesional</h2>
              <div className={styles.buttonGroup}>
-                <button className={styles.buttonPrimary} onClick={handleFileUploadClick}>
-                   Subir o actualizar CV
-                </button>
+                <div className={styles.formGroup}>
+                      <label htmlFor="cv">Agregar CV</label>
+                      <input type="file" id="cv" accept=".pdf, .docx" className={styles.inputField} />
+                      <p className={styles.fileInfo}>Formato aceptado: PDF,DOCX</p>
+                    </div>
              </div>
              <p className={styles.infoText}>Tu CV actual es: {candidato.cvNombre || "No tienes un CV subido."}</p>
            </div>
