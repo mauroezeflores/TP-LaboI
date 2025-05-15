@@ -228,3 +228,24 @@ async def insertar_evaluacion(data: NuevaEvaluacionInput):
         return {"error": str(e)}
     finally:
         db.cerrar_conexion(conn)
+
+@app.get("/empleados/rotacion")
+async def empleados_con_rotacion():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_empleado, nombre, apellido FROM empleado")
+        empleados = cursor.fetchall()
+        resultado = []
+        for emp in empleados:
+            try:
+                pred = await predecir(emp['id_empleado'])
+                emp['rotacion_prediccion'] = pred.get('prediccion')
+                emp['rotacion_probabilidad'] = pred.get('probabilidad')
+            except Exception as e:
+                emp['rotacion_prediccion'] = None
+                emp['rotacion_probabilidad'] = None
+            resultado.append(emp)
+        return resultado
+    finally:
+        db.cerrar_conexion(conn)
