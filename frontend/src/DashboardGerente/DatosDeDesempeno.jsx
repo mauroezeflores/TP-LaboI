@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../services/ServiceEmpleadosMock";
-import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import  {obtenerHistoriaDesempeno} from "../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 
 import GraficoDesempeno from "../Autenticacion/MostrarDatos/GraficoDesempeno";
 import Slider from "@mui/material/Slider";

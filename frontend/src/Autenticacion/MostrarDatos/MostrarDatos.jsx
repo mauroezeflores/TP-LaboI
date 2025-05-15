@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Butto
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../../services/ServiceEmpleadosMock";
-import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import  {obtenerHistoriaDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 import GraficoDesempeno from "./GraficoDesempeno";
 
 const MostrarDatos = () => {
