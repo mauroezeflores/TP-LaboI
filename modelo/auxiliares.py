@@ -210,15 +210,7 @@ def obtener_estado_civil(conexion, id_empleado):
 
 # revisar, de aca sacamos el presentismo tambien
 def obtener_ausencias(conexion, id_empleado):
-    row = db.realizar_consulta(conexion, "SELECT " \
-                                         "  COUNT(*) AS ausencias_90d " \
-                                         "FROM fichada AS f " \
-                                         "JOIN detalles_fichada AS d " \
-                                         "ON d.id_fichada = f.id_fichada " \
-                                         "WHERE " \
-                                         "f.id_empleado = %s " \
-                                         "AND d.es_ausencia = TRUE " \
-                                         "AND f.fecha >= CURRENT_DATE - INTERVAL '90 days';"(id_empleado, ))
+    row = db.realizar_consulta(conexion, "SELECT ausencias_90d FROM deteccion_rotacion WHERE id_empleado = %s;", (id_empleado, ))
     if not row:
         return 0
     Ausencias_90d = row[0][0]
@@ -228,15 +220,7 @@ def obtener_ausencias(conexion, id_empleado):
 
 
 def obtener_llegadas_tarde(conexion, id_empleado):
-    row = db.realizar_consulta(conexion, "SELECT " \
-                                         "  COUNT(*) AS llegadas_tarde_90d " \
-                                         "FROM fichada AS f " \
-                                         "JOIN detalles_fichada AS d " \
-                                         "ON d.id_fichada = f.id_fichada " \
-                                         "WHERE " \
-                                         "f.id_empleado = %s" \
-                                         "AND d.es_llegada_tarde = TRUE " \
-                                         "AND f.fecha >= CURRENT_DATE - INTERVAL '90 days';"(id_empleado, ))
+    row = db.realizar_consulta(conexion, "SELECT llegadas_tardes_90d FROM deteccion_rotacion WHERE id_empleado = %s;", (id_empleado, ))
     if not row:
         return 0
     Tardanzas_90d = row[0][0]
@@ -246,21 +230,14 @@ def obtener_llegadas_tarde(conexion, id_empleado):
 
 
 def obtener_salidas(conexion, id_empleado):  # no se encuentra como campo
-    row = db.realizar_consulta(conexion, "SELECT " \
-                                         "  COUNT(*) AS salidas_tempranas_90d " \
-                                         "FROM fichada AS f " \
-                                         "JOIN detalles_fichada AS d " \
-                                         "ON d.id_fichada = f.id_fichada " \
-                                         "WHERE " \
-                                         "f.id_empleado = %s" \
-                                         "AND d.es_salida_temprana = TRUE " \
-                                         "AND f.fecha >= CURRENT_DATE - INTERVAL '90 days';"(id_empleado, ))
+    row = db.realizar_consulta(conexion, "SELECT salidas_tempranas_90d FROM deteccion_rotacion WHERE id_empleado = %s;", (id_empleado, ))
     if not row:
         return 0
     Salidas_Tempranas_90d = row[0][0]
     if Salidas_Tempranas_90d == None:
         Salidas_Tempranas_90d = 0
     return Salidas_Tempranas_90d
+
 
 
 def obtener_horas_extras(conexion, id_empleado):  # no encuentro donde quedan registradas las horas extras
