@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 import auxiliares as aux
 from psycopg2.extras import RealDictCursor  # Agrega esta importación al inicio
+import datetime
 
 app = FastAPI()
 
@@ -74,6 +75,9 @@ async def predecir(id_empleado: int):
        print(f"evaluacion del superior: {evaluacion_del_superior}")
        
        pred = modelo_desempeno.predict([[nivel_de_presentismo, nivel_certificacion, nivel_habilidades, presencia_en_proyectos, horas_extras, ultima_evaluacion_desempeño, evaluacion_del_superior]])[0]
+       
+       aux.insertar_en_historial(conexion, id_empleado, datetime.datetime.now(), pred)
+
        print("prediccion: " + str(pred))
        return {"prediccion": round(pred, 2)}
     except Exception as e:

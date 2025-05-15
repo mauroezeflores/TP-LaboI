@@ -347,3 +347,18 @@ def obtener_horas_trabajadas(conexion, id_empleado):
         horas_trabajadas = 0
     return horas_trabajadas"""
     return 160
+
+def insertar_en_historial(conexion, id_empleado, fecha, evaluacion_desempeno):
+    try:
+        print("Intentando insertar en historial_prediccion_desempeno")
+        cursor = conexion.cursor()
+        # Convierte a float nativo de Python
+        valor = float(evaluacion_desempeno)
+        cursor.execute(
+            "INSERT INTO public.historial_prediccion_desempeno (id_empleado, fecha_prediccion, prediccion) VALUES (%s, %s, %s)",
+            (id_empleado, fecha, valor)
+        )
+        conexion.commit()
+        print("Insert exitoso")
+    except Exception as e:
+        print(f"Error al insertar en historial: {e}")
