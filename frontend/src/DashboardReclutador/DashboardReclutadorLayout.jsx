@@ -90,7 +90,7 @@ export default function DashboardReclutadorLayout() {
             </NavLink>
             
              
-            {/* Link ABM */}
+            {/* Link ABM 
           <NavLink
             to="AltaBajaMod"
             className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
@@ -102,6 +102,7 @@ export default function DashboardReclutadorLayout() {
                 </div>
              </div>
           </NavLink>
+          */}
 
         </nav>
 
