@@ -41,7 +41,7 @@ export default function VerCandidatos() {
          // Usa la clase .section como contenedor principal
          <section className={styles.section}>
              {/* Usa la clase .backLink para el enlace de volver */}
-             <Link to="/dashboard/reclutador/mis-convocatorias" className={styles.backLink}>← Volver a Mis Convocatorias</Link>
+             <Link to="/dashboard/empleadoRRHH/mis-convocatorias" className={styles.backLink}>← Volver a Mis Convocatorias</Link>
 
              <h2>👥 Candidatos Aptos para "{convocatoriaInfo?.titulo || '...'}"</h2>
               {/* Usa clases de error y contenedor de tabla */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom';
 import Inicio from './Autenticacion/Inicio/Inicio.jsx';
 import Login from './Autenticacion/Login/Login.jsx';
 import RegistroCandidato from './Autenticacion/Registro/registroCandidato.jsx';
@@ -31,6 +31,7 @@ import VisualizacionAnomaliasAdmin from './DashboardAdmin/pages/VisualizacionAno
 import ConfiguracionSistemaAdmin from './DashboardAdmin/pages/ConfiguracionSistemaAdmin.jsx';
 import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
+
 function App() {
   return (
     <Router> {/* Envuelve todo en el Router */}

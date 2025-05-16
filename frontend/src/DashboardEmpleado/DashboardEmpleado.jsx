@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './DashboardEmpleado.module.css';
+import { useNavigate, NavLink } from 'react-router-dom';
 
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
@@ -39,6 +40,10 @@ const DashboardEmpleado = () => {
      { id: 100, periodo: "Marzo 2025", fechaPago: "2025-04-05", archivo: "recibo_marzo_2025.pdf" },
    ];
 
+   const [lastSurveySubmissionDate, setLastSurveySubmissionDate] = useState(null);
+  const [canSubmitSurvey, setCanSubmitSurvey] = useState(true);
+  const navigate = useNavigate();
+
   // --- Estado para controlar la pestaña visible ---
   const [seccionVisible, setSeccionVisible] = useState('perfil'); // Inicia en Mi Perfil
 
@@ -68,6 +73,105 @@ const DashboardEmpleado = () => {
   const mostrarSeccion = (nombreSeccion) => {
     setSeccionVisible(nombreSeccion);
   };
+  
+  //no me funciona el useNavigate
+  const handleLogout = () => {
+    // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+  
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
+  }
+  // Estado y lógica para la encuesta de clima laboral
+  const [surveyData, setSurveyData] = useState({
+    satisfaccionGeneral: '',
+    ambienteTrabajo: '',
+    comunicacionInterna: '',
+    desarrolloProfesional: '',
+    reconocimiento: '',
+    comentariosAdicionales: '',
+  });
+
+  const surveyQuestions = [
+    {
+      name: 'satisfaccionGeneral',
+      label: '¿Qué tan satisfecho/a estás con tu trabajo en general? (1 = Nada satisfecho, 5 = Muy satisfecho)',
+      type: 'number',
+      min: 1,
+      max: 5,
+    },
+    {
+      name: 'ambienteTrabajo',
+      label: '¿Cómo calificarías el ambiente laboral? (1 = Muy malo, 5 = Excelente)',
+      type: 'number',
+      min: 1,
+      max: 5,
+    },
+    {
+      name: 'comunicacionInterna',
+      label: '¿Consideras que la comunicación interna es efectiva? (1 = Nada efectiva, 5 = Muy efectiva)',
+      type: 'number',
+      min: 1,
+      max: 5,
+    },
+    {
+      name: 'desarrolloProfesional',
+      label: '¿Sientes que tienes oportunidades de desarrollo profesional? (1 = Ninguna, 5 = Muchas)',
+      type: 'number',
+      min: 1,
+      max: 5,
+    },
+    {
+      name: 'reconocimiento',
+      label: '¿Te sientes reconocido/a por tu trabajo? (1 = Nada, 5 = Mucho)',
+      type: 'number',
+      min: 1,
+      max: 5,
+    },
+    {
+      name: 'comentariosAdicionales',
+      label: 'Comentarios adicionales (opcional):',
+      type: 'textarea',
+    },
+  ];
+
+  const handleSurveyChange = (e) => {
+    const { name, value } = e.target;
+    setSurveyData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmitSurvey = (e) => {
+    e.preventDefault();
+    const today = new Date();
+    setLastSurveySubmissionDate(today);
+    localStorage.setItem(`lastSurveySubmission_${empleado.email}`, today.toISOString());
+    setCanSubmitSurvey(false);
+    alert("Encuesta enviada con éxito. Podrás volver a enviarla en 30 días.");
+    // Resetear formulario (opcional)
+    setSurveyData({
+      satisfaccionGeneral: '',
+      ambienteTrabajo: '',
+      comunicacionInterna: '',
+      desarrolloProfesional: '',
+      reconocimiento: '',
+      comentariosAdicionales: '',
+    });
+  };
+
+  const getNextSurveyDate = () => {
+    if (lastSurveySubmissionDate) {
+      const nextDate = new Date(lastSurveySubmissionDate);
+      nextDate.setDate(lastSurveySubmissionDate.getDate() + 30);
+      return nextDate.toLocaleDateString();
+    }
+    return null;
+  };
+  ;
+
 
 
   return (
@@ -107,6 +211,12 @@ const DashboardEmpleado = () => {
           onClick={() => mostrarSeccion('recibos')}
         >
          Mis Recibos
+        </button>
+         <button
+          className={`${styles.navButton} ${seccionVisible === 'encuestaClima' ? styles.active : ''}`}
+          onClick={() => mostrarSeccion('encuestaClima')}
+        >
+         Encuesta Satisfaccion
         </button>
       </nav>
 
@@ -293,11 +403,83 @@ const DashboardEmpleado = () => {
                 <p className={styles.infoText}>Aún no hay recibos de sueldo disponibles.</p>
              )}
           </div>
+          
+        )}
+        {/* Sección: Encuesta de Clima Laboral */}
+        {seccionVisible === 'encuestaClima' && (
+          <div className={styles.sectionContent}>
+            <h2 className={styles.cardTitle}>Encuesta de Clima Laboral</h2>
+            {!canSubmitSurvey ? (
+              <div className={styles.surveyCooldownMessage}>
+                <p>Ya has completado la encuesta recientemente.</p>
+                <p>Podrás volver a realizarla a partir del: <strong>{getNextSurveyDate()}</strong>.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitSurvey} className={styles.surveyForm}>
+                <p className={styles.infoText}>
+                  Tu opinión es importante para nosotros. Por favor, completa la siguiente encuesta de clima laboral. 
+                  Tus respuestas son confidenciales.
+                </p>
+                {surveyQuestions.map(q => (
+                  <div className={styles.formGroup} key={q.name}>
+                    <label htmlFor={q.name}>{q.label}</label>
+                    {q.type === 'textarea' ? (
+                      <textarea
+                        id={q.name}
+                        name={q.name}
+                        value={surveyData[q.name]}
+                        onChange={handleSurveyChange}
+                        rows="4"
+                        className={styles.inputField}
+                      />
+                    ) : q.type === 'number' ? (
+                       <input
+                        type="number"
+                        id={q.name}
+                        name={q.name}
+                        value={surveyData[q.name]}
+                        onChange={handleSurveyChange}
+                        min={q.min}
+                        max={q.max}
+                        required
+                        className={styles.inputField}
+                      />
+                    ) : (
+                      <input
+                        type={q.type}
+                        id={q.name}
+                        name={q.name}
+                        value={surveyData[q.name]}
+                        onChange={handleSurveyChange}
+                        required
+                        className={styles.inputField}
+                      />
+                    )}
+                  </div>
+                ))}
+                <div className={styles.cardActions}>
+                  <button type="submit" className={styles.buttonPrimary} disabled={!canSubmitSurvey}>
+                    Enviar Encuesta
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         )}
 
       </div> 
+      <NavLink to="/" className={styles.navLink}>
+            <div className={styles.logoutButtonContainer}>
+              <button className={styles.logoutButton} onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            </div>
+            </NavLink>
     </div> 
+
   );
+
 };
+
 
 export default DashboardEmpleado;

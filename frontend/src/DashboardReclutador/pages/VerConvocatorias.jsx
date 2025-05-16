@@ -32,7 +32,7 @@ export default function VerConvocatorias() {
     }, [fetchConvocatorias]);
 
     const handleNavigateVerCandidatos = (convocatoriaId) => {
-        navigate(`/dashboard/reclutador/convocatoria/${convocatoriaId}/candidatos`);
+        navigate(`/dashboard/empleadoRRHH/convocatoria/${convocatoriaId}/candidatos`);
     };
 
     return (
