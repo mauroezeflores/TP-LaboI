@@ -52,7 +52,7 @@ export default function DashboardGerenteLayout() {
             <div className={styles.navItemContent}>
               <div className={styles.navTextContainer}>
                 <span className={styles.navTitle}>Deteccion de rotacion</span>
-                <span className={styles.navDescription}>Prediccion de rotacion por empleados</span>
+                <span className={styles.navDescription}>Prediccion de posible desercion</span>
               </div>
             </div>
           </NavLink>
