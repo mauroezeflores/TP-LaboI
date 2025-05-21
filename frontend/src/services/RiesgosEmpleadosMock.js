@@ -1,37 +1,4 @@
-const empleados = [
-  {
-    id_empleado: 1,
-    nombre: "Juan",
-    apellido: "Pérez",
-    email: " juan@gmail.com",
-    nivel_educativo: "Secundario",
-    telefono: "123456789",
-    fecha_de_ingreso: "2022-01-01",
-    puesto:"Programador Junior",
-    riesgo: 36},
-    {
-    id_empleado: 2,
-    nombre: "María",
-    apellido: "Gómez",
-    email: "mariag@gmail.com",
-    nivel_educativo: "Terciario",
-    telefono: "987654321",
-    fecha_de_ingreso: "2021-05-15",
-    puesto:"Programador Senior",
-    riesgo: 45
-    },
-    {
-    id_empleado: 3,
-    nombre: "Pedro",
-    apellido: "López",
-    email: "PedroLpz@gmail.com",
-    nivel_educativo: "Secundario",
-    telefono: "456789123",
-    fecha_de_ingreso: "2020-03-10",
-    puesto:"Diseñador Grafico",
-    riesgo: 70
-    }
-]
+
 
 export const getEmpleadosRiesgo = () => {
   return new Promise((resolve) => {
@@ -40,3 +7,14 @@ export const getEmpleadosRiesgo = () => {
     }, 1000); // Simula un retraso de 1 segundo
   });
 }
+// Trae empleados sin riesgo
+export const getEmpleadosDetalle = async () => {
+  const res = await fetch("http://localhost:8000/empleados/detalle");
+  return await res.json();
+};
+
+// Calcula el riesgo de un empleado
+export const predecirRiesgoEmpleado = async (idEmpleado) => {
+  const res = await fetch(`http://localhost:8000/predecir/rotacion/${idEmpleado}`);
+  return await res.json();
+};
