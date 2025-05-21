@@ -18,3 +18,8 @@ export const predecirRiesgoEmpleado = async (idEmpleado) => {
   const res = await fetch(`http://localhost:8000/predecir/rotacion/${idEmpleado}`);
   return await res.json();
 };
+
+export const getDetalleRotacionEmpleado = async (idEmpleado) => {
+  const res = await fetch(`http://localhost:8000/empleados/detalle-rotacion/${idEmpleado}`);
+  return await res.json();
+};

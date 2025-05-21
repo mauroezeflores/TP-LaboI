@@ -229,23 +229,29 @@ async def insertar_evaluacion(data: NuevaEvaluacionInput):
     finally:
         db.cerrar_conexion(conn)
 
-@app.get("/empleados/rotacion")
-async def empleados_con_rotacion():
+@app.get("/empleados/detalle-rotacion/{empleado_id}")
+async def detalle_rotacion_empleado(empleado_id: int):
     conn = db.abrir_conexion()
     try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT id_empleado, nombre, apellido FROM empleado")
-        empleados = cursor.fetchall()
-        resultado = []
-        for emp in empleados:
-            try:
-                pred = await predecir(emp['id_empleado'])
-                emp['rotacion_prediccion'] = pred.get('prediccion')
-                emp['rotacion_probabilidad'] = pred.get('probabilidad')
-            except Exception as e:
-                emp['rotacion_prediccion'] = None
-                emp['rotacion_probabilidad'] = None
-            resultado.append(emp)
-        return resultado
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id_empleado, ausencias_90d, llegadas_tardes_90d, salidas_tempranas_90d, hs_extras_trabajadas_90d
+            FROM deteccion_rotacion
+            WHERE id_empleado = %s
+            LIMIT 1
+            """,
+            (empleado_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return {"error": "No hay datos de rotación para este empleado"}
+        return {
+            "id_empleado": row[0],
+            "ausencias_90d": row[1],
+            "llegadas_tarde_90d": row[2],
+            "salidas_tempranas_90d": row[3],
+            "hs_extras_trabajadas_90d": row[4]
+        }
     finally:
         db.cerrar_conexion(conn)

@@ -2,12 +2,22 @@ import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Paper } from "@mui/material";
 import styles from "./PantallaRiesgos.module.css";
 import { getEmpleadosDetalle, predecirRiesgoEmpleado } from "../services/RiesgosEmpleadosMock";
+import { getDetalleRotacionEmpleado } from "../services/RiesgosEmpleadosMock";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 
 export default function PantallaDeRiesgosEmpleados() {
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [calculando, setCalculando] = useState({});
   const [orden, setOrden] = useState("desc");
+  const [detalle, setDetalle] = useState(null);
+  const [modalAbierto, setModalAbierto] = useState(false);
+
+  const handleMostrarDetalles = async (id_empleado) => {
+        const data = await getDetalleRotacionEmpleado(id_empleado);
+        setDetalle(data);
+        setModalAbierto(true);
+};
 
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -109,10 +119,53 @@ export default function PantallaDeRiesgosEmpleados() {
                   {calculando[empleado.id_empleado] ? "Calculando..." : "Calcular Riesgo"}
                 </Button>
               </TableCell>
+              <TableCell>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleMostrarDetalles(empleado.id_empleado)}
+                >
+                    Mostrar detalles
+                </Button>
+                </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+<Dialog open={modalAbierto} onClose={() => setModalAbierto(false)}>
+  <DialogTitle>Detalles del riesgo</DialogTitle>
+  <DialogContent>
+    {detalle ? (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell><b>Ausencias (90d)</b></TableCell>
+              <TableCell>{detalle.ausencias_90d}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><b>Llegadas tarde (90d)</b></TableCell>
+              <TableCell>{detalle.llegadas_tarde_90d}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><b>Salidas tempranas (90d)</b></TableCell>
+              <TableCell>{detalle.salidas_tempranas_90d}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><b>Horas extra trabajadas (90d)</b></TableCell>
+              <TableCell>{detalle.hs_extras_trabajadas_90d}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    ) : (
+      <p>No hay datos.</p>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setModalAbierto(false)}>Cerrar</Button>
+  </DialogActions>
+</Dialog>
     </div>
   );
 }
