@@ -162,42 +162,45 @@ def obtener_etiquetas_cv(conexion, id_cv):
 
 
 
-def set_no_apto(conexion, id_cv):
+def set_no_apto(conexion, id_cv, id_convocatoria):
     try:
         cursor = conexion.cursor()
-        query = "UPDATE evaluacion_cv SET es_apto = 'FALSE' WHERE id_cv = %s"
-        cursor.execute(query, (id_cv,))
+        query = "UPDATE evaluacion_cv SET es_apto = FALSE WHERE id_cv = %s AND id_convocatoria = %s"
+        cursor.execute(query, (id_cv,id_convocatoria))
         cursor.close()
     except Exception as e:
         print(f"Error al marcar el candidato como no apto: {e}")
 
 
-def set_cantidad_etiquetas_deseables(conexion, id_cv, cantidad_etiquetas_deseables):
+def set_cantidad_etiquetas_deseables(conexion, id_cv,id_convocatoria, cantidad_etiquetas_deseables):
     try:
         cursor = conexion.cursor()
-        query = "UPDATE evaluacion_cv SET cantidad_etiquetas_deseables = %s WHERE id_cv = %s"
-        cursor.execute(query, (cantidad_etiquetas_deseables, id_cv))
+        query = "UPDATE evaluacion_cv SET cantidad_etiquetas_deseables = %s WHERE id_cv = %s AND id_convocatoria = %s"
+        cursor.execute(query, (cantidad_etiquetas_deseables, id_cv, id_convocatoria))
         cursor.close()
     except Exception as e:
         print(f"Error al marcar la cantidad de etiquetas deseables: {e}")
 
 
-def set_etiquetas_detectadas(conexion, id_cv, etiquetas_detectadas):
+def set_etiquetas_detectadas(conexion, id_cv,id_convocatoria, etiquetas_detectadas):
     try:
         cursor = conexion.cursor()
-        query = "UPDATE evaluacion_cv SET etiquetas_detectadas = %s WHERE id_cv = %s"
-        cursor.execute(query, (etiquetas_detectadas, id_cv))
+        query = "UPDATE evaluacion_cv SET etiquetas_detectadas = %s WHERE id_cv = %s AND id_convocatoria = %s"
+        cursor.execute(query, (etiquetas_detectadas, id_cv, id_convocatoria))
         cursor.close()
     except Exception as e:
         print(f"Error al marcar las etiquetas detectadas: {e}")
 
 
-def evaluar_cv(conexion, id_candidato, etiquetas_excluyentes, etiquetas_deseables):
+def evaluar_cv(conexion, id_candidato, id_convocatoria, etiquetas_excluyentes, etiquetas_deseables):
     id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
     etiquetas_cv = obtener_etiquetas_cv(conexion, id_cv)
-    etiquetas_detectadas_deseables, cantidad_etiquetas_deseables= verificar_etiquetas_deseables(etiquetas_cv, etiquetas_deseables)
     es_apto, etiquetas_detectadas_excluyentes = verificar_etiquetas_excluyentes(etiquetas_cv, etiquetas_excluyentes)
+    if not es_apto:
+        set_no_apto(conexion, id_cv, id_convocatoria)
+        return es_apto
+    etiquetas_detectadas_deseables, cantidad_etiquetas_deseables= verificar_etiquetas_deseables(etiquetas_cv, etiquetas_deseables)
     etiquetas_detectadas = etiquetas_detectadas_deseables + etiquetas_detectadas_excluyentes
     set_cantidad_etiquetas_deseables(conexion, id_cv, cantidad_etiquetas_deseables)
     set_etiquetas_detectadas(conexion, id_cv, etiquetas_detectadas)
@@ -235,14 +238,14 @@ def finalizar_convocatoria(conexion, id_convocatoria):
     cerrar_convocatoria(conexion, id_convocatoria)
     etiquetas_excluyentes, etiquetas_deseables =obtener_etiquetas_de_convocatoria(conexion,id_convocatoria)
     candidatos = obtener_candidatos(conexion, id_convocatoria)
-    candidatos_aptos = [c for c in candidatos if evaluar_cv(conexion,c, etiquetas_excluyentes, etiquetas_deseables)]
+    candidatos_aptos = [c for c in candidatos if evaluar_cv(conexion,c, id_convocatoria, etiquetas_excluyentes, etiquetas_deseables)]
     return candidatos_aptos #devuelve los id_candidatos de los aptos,
                             # sobre estos candidatos tendriamos que aplicar el modelo de machine learning
 
 
 def transformar_experiencia_en_etiqueta(conexion, experiencia):#transforma la experiencia en una/s etiqueta/s
     #necesitamos cargar las etiquetas
-    return None
+    return 1
 
 
 
@@ -277,11 +280,11 @@ def set_nivel_educativo(conexion, id_cv, nivel_educativo):
 
 
 
-def set_experiencia(conexion, id_cv, experiencia):
+def set_experiencia(conexion, id_cv, id_convocatoria, experiencia):
     try:
         cursor = conexion.cursor()
-        query = "UPDATE evaluacion_cv SET experiencia = %s WHERE id_cv = %s"
-        cursor.execute(query, (experiencia, id_cv))
+        query = "UPDATE evaluacion_cv SET experiencia = %s WHERE id_cv = %s AND id_convocatoria = %s"
+        cursor.execute(query, (experiencia, id_cv, id_convocatoria))
         conexion.commit()
         cursor.close()
     except Exception as e:
@@ -301,21 +304,29 @@ def obtener_id_candidato_de_id_usuario(conexion, id_usuario):
 
 def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_educativo): #actualiza la tabla candidatos_por_convocatorias
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
-    set_experiencia(conexion, id_cv, experiencia)
+    set_experiencia(conexion, id_cv,id_convocatoria, experiencia)
     set_nivel_educativo(conexion, id_cv, nivel_educativo)
     id_candidato = obtener_id_candidato_de_id_usuario(conexion, id_usuario)
+    if not verificar_postulacion(conexion, id_candidato, id_convocatoria):
+        try:
+            cursor = conexion.cursor()
+            query = "INSERT INTO candidatos_por_convocatorias(id_convocatoria, id_candidato) VALUES (%s,%s)"
+            cursor.execute(query, (id_convocatoria, id_candidato))
+            conexion.commit()
+            cursor.close()
+        except Exception as e:
+            print(f"Error al postular el candidato: {e}")
+
+def verificar_postulacion(conexion, id_candidato, id_convocatoria):#por si el candidato ya se postulo
     try:
         cursor = conexion.cursor()
-        query = "INSERT INTO candidatos_por_convocatorias(id_convocatoria, id_candidato) VALUES (%s,%s)"
+        query = "SELECT id_candidato FROM candidatos_por_convocatorias WHERE id_convocatoria = %s AND id_candidato = %s"
         cursor.execute(query, (id_convocatoria, id_candidato))
-        conexion.commit()
+        existe = cursor.fetchone() is not None
         cursor.close()
+        return existe
     except Exception as e:
-        print(f"Error al postular el candidato: {e}")
-
-def verificar_postulacion(): #por si el candidato ya se postulo
-
-    return
+        print(f"error al verificar si el candidato ya se postulo: {e}")
 
 def obtener_cantidad_de_certificaciones():
     return
