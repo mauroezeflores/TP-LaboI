@@ -289,11 +289,6 @@ export default function RegistroCandidato() {
                     <option value="Pasantia">Pasantía</option>
                 </select>
                 </div>
-
-                <div className={styles.inputGroup}>
-                <label>Expectativa Salarial (ARS)</label>
-                <input type="number" placeholder="Ej: 150000" value={expectativaSalarial} onChange={(e) => setExpectativaSalarial(e.target.value)} required />
-                </div>
             </div>
         </fieldset>
 

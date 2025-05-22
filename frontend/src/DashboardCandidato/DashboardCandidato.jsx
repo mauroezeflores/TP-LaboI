@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import styles from './DashboardCandidato.module.css';
-import { Link, NavLink ,useNavigate} from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 const convocatoriasDisponibles = [
-  { id: 1, tags: ['⚡ Postulación rápida', 'Nuevo'], title: 'Programador Frontend Jr.', company: 'Tech Solutions S.A.', desc: 'Nuestra Organización se encuentra en la búsqueda de un Programador...', location: 'Capital Federal, Buenos Aires', modality: 'Remoto', time: 'Publicado hace 1 hora' },
-  { id: 2, tags: [ '⚡ Postulación rápida'], title: 'Soporte Técnico Sistemas IT', company: 'Confidencial', desc: 'Atender las necesidades de la empresa en cuanto a hardware...', location: 'Capital Federal, Buenos Aires', modality: 'Híbrido', time: 'Actualizado hace 2h' },
-  { id: 3, tags: ['Urgente'], title: 'Analista Contable Jr.', company: 'Finanzas Corp', desc: 'Buscamos estudiantes o jóvenes Profesionales de Contador Público...', location: 'Capital Federal, Buenos Aires', modality: 'Presencial', time: 'Publicado ayer' },
-  { id: 4, tags: [], title: 'Asistente de Marketing Digital', company: 'Confidencial', desc: 'Importante empresa de tecnología audiovisual busca sumar talento...', location: 'Vicente López, Buenos Aires', modality: 'Presencial', time: 'Publicado hace 2 días' },
+  { id: 1, tags: ['⚡ Postulación rápida', 'Nuevo'], skillTags: ['HTML', 'CSS', 'JavaScript', 'React Principiante'], title: 'Programador Frontend Jr.', company: 'Tech Solutions S.A.', desc: 'Nuestra Organización se encuentra en la búsqueda de un Programador...', location: 'Capital Federal, Buenos Aires', modality: 'Remoto', time: 'Publicado hace 1 hora' },
+  { id: 2, tags: ['⚡ Postulación rápida'], skillTags: ['Soporte Hardware', 'Soporte Software', 'Redes', 'Windows Server'], title: 'Soporte Técnico Sistemas IT', company: 'Confidencial', desc: 'Atender las necesidades de la empresa en cuanto a hardware...', location: 'Capital Federal, Buenos Aires', modality: 'Híbrido', time: 'Actualizado hace 2h' },
+  { id: 3, tags: ['Urgente'], skillTags: ['Contabilidad General', 'Impuestos', 'Excel Avanzado'], title: 'Analista Contable Jr.', company: 'Finanzas Corp', desc: 'Buscamos estudiantes o jóvenes Profesionales de Contador Público...', location: 'Capital Federal, Buenos Aires', modality: 'Presencial', time: 'Publicado ayer' },
+  { id: 4, tags: [], skillTags: ['Marketing Digital', 'SEO', 'SEM', 'Redes Sociales'], title: 'Asistente de Marketing Digital', company: 'Confidencial', desc: 'Importante empresa de tecnología audiovisual busca sumar talento...', location: 'Vicente López, Buenos Aires', modality: 'Presencial', time: 'Publicado hace 2 días' },
 ];
 
 const filtros = {
@@ -27,41 +27,125 @@ const getStatusClass = (estado) => {
     case 'en revisión': return styles.statusRevision;
     case 'entrevista programada': return styles.statusEntrevista;
     case 'rechazado': return styles.statusRechazado;
-    case 'recibido': return styles.statusRecibido;
-    case 'contratado': return styles.statusContratado;
+    case 'recibido': return styles.statusRecibido; // Asegúrate que este estilo exista
+    case 'contratado': return styles.statusContratado; // Asegúrate que este estilo exista
     default: return styles.statusDefault;
   }
 };
 
 const DashboardCandidato = () => {
+  const navigate = useNavigate(); // Inicializar useNavigate
   const candidato = { nombre: "Lara", apellido: "Selser", email: "lara.selser@mail.com", ubicacion: "Buenos Aires", telefono: "1123456789", cvNombre: "CV_LaraSelser_2025.pdf" };
   const notificaciones = [ { id: 1, texto: "✔️ Su CV fue aprobado.", leida: false }, { id: 2, texto: "❗️ Nueva oferta de trabajo disponible.", leida: false }, { id: 3, texto: "✔️ Su entrevista está programada para el 15/10.", leida: true }, ];
 
   const [seccionVisible, setSeccionVisible] = useState('buscarConvocatorias');
 
+  // Estados para el modal de postulación
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [applyingJobDetails, setApplyingJobDetails] = useState(null);
+  const [yearsExperience, setYearsExperience] = useState('');
+  const [candidateSkillSelections, setCandidateSkillSelections] = useState({});
+
   const handleFileUploadClick = () => { console.log("Abrir selector de CV..."); };
   const handleSaveChanges = (e) => { e.preventDefault(); console.log("Guardando datos personales..."); };
   const mostrarSeccion = (nombreSeccion) => { setSeccionVisible(nombreSeccion); };
 
-  const handleApply = (jobId, jobTitle) => {
-    console.log(`Aplicando a la convocatoria ID: ${jobId}, Título: ${jobTitle}`);
+  const handleOpenApplyModal = (job) => {
+    setApplyingJobDetails(job);
+    setYearsExperience(''); // Resetear años de experiencia
+    // Inicializar selección de skills basado en los skillTags del job
+    const initialSkills = job.skillTags.reduce((acc, tag) => {
+      acc[tag] = false; // Todos deseleccionados por defecto
+      return acc;
+    }, {});
+    setCandidateSkillSelections(initialSkills);
+    setIsApplyModalOpen(true);
+  };
+
+  const handleCloseApplyModal = () => {
+    setIsApplyModalOpen(false);
+    setApplyingJobDetails(null);
+    setYearsExperience('');
+    setCandidateSkillSelections({});
+  };
+
+  const handleSkillSelectionChange = (skillTag) => {
+    setCandidateSkillSelections(prev => ({
+      ...prev,
+      [skillTag]: !prev[skillTag]
+    }));
+  };
+
+  const handleConfirmApplication = () => {
+    if (!applyingJobDetails) return;
+
+    const selectedSkills = Object.entries(candidateSkillSelections)
+      .filter(([isSelected]) => isSelected)
+      .map(([skillName]) => skillName);
+
+    console.log(`Postulación Confirmada para: ${applyingJobDetails.title} (ID: ${applyingJobDetails.id})`);
+    console.log(`Años de experiencia: ${yearsExperience}`);
+    console.log(`Skills seleccionados: ${selectedSkills.join(', ')}`);
     // TODO: Implementar lógica real de postulación (API call, etc.)
-    alert(`Simulación: Aplicando a "${jobTitle}" (ID: ${jobId}).`);
-  }
+    alert(`Postulación enviada para "${applyingJobDetails.title}" con ${yearsExperience} años de experiencia y skills: ${selectedSkills.join(', ') || 'Ninguno'}.`);
+    
+    handleCloseApplyModal();
+  };
+  
   const handleLogout = () => {
-     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
-    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
-
-    // Redirigir al usuario al inicio ("/")
+    localStorage.removeItem('rol'); 
     navigate('/');
-    // lógica de logout si querés agregar algo
-  }
-
-  ;
-
+  };
 
   return (
     <div className={styles.pageContainer}>
+       {/* Modal de Postulación */}
+       {isApplyModalOpen && applyingJobDetails && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3 className={styles.modalTitle}>Aplicar a: {applyingJobDetails.title}</h3>
+            
+            <div className={styles.formGroupModal}>
+              <label htmlFor="yearsExperience">Años de experiencia en el puesto/rol similar:</label>
+              <input 
+                type="label"
+                min="0"
+                id="yearsExperience" 
+                value={yearsExperience}
+                onChange={(e) => setYearsExperience(e.target.value)}
+                className={styles.inputFieldModal}
+                placeholder="Ej: 2 años"
+
+                
+              />
+            </div>
+
+            <div className={styles.formGroupModal}>
+              <label>Selecciona las tecnologías/habilidades que posees para este puesto:</label>
+              <div className={styles.skillTagsContainerModal}>
+                {applyingJobDetails.skillTags && applyingJobDetails.skillTags.map(skill => (
+                  <label key={skill} className={styles.skillTagCheckboxLabel}>
+                    <input 
+                      type="checkbox"
+                      checked={candidateSkillSelections[skill] || false}
+                      onChange={() => handleSkillSelectionChange(skill)}
+                    /> {skill}
+                  </label>
+                ))}
+                {(!applyingJobDetails.skillTags || applyingJobDetails.skillTags.length === 0) && (
+                  <p>Esta oferta no especificó habilidades requeridas.</p>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button onClick={handleConfirmApplication} className={`${styles.buttonPrimary} ${styles.buttonModalConfirm}`}>Confirmar Postulación</button>
+              <button onClick={handleCloseApplyModal} className={`${styles.buttonSecondary} ${styles.buttonModalCancel}`}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <NavLink to="/" className={styles.navLink}>
       <div className={styles.logoutButtonContainer}>
         <button className={styles.logoutButton} onClick={handleLogout}>
@@ -73,11 +157,12 @@ const DashboardCandidato = () => {
       <h1 className={styles.mainTitle}>Bienvenida, {candidato.nombre} {candidato.apellido}</h1>
 
       <nav className={styles.sectionNav}>
-      <button className={`${styles.navButton} ${seccionVisible === 'datosPersonales' ? styles.active : ''}`} onClick={() => mostrarSeccion('datosPersonales')}>
-          Datos Personales
+        {/* Botones de Navegación de Secciones (sin cambios) */}
+        <button className={`${styles.navButton} ${seccionVisible === 'datosPersonales' ? styles.active : ''}`} onClick={() => mostrarSeccion('datosPersonales')}>
+            Datos Personales
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'perfilProfesional' ? styles.active : ''}`} onClick={() => mostrarSeccion('perfilProfesional')}>
-          Perfil Profesional / CV
+            Perfil Profesional / CV
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'buscarConvocatorias' ? styles.active : ''}`} onClick={() => mostrarSeccion('buscarConvocatorias')}>
             Buscar Convocatorias
@@ -96,6 +181,7 @@ const DashboardCandidato = () => {
              <h2 className={styles.cardTitle}>Convocatorias Disponibles</h2>
              <div className={styles.jobBoardContainer}>
                <aside className={styles.sidebar}>
+                 {/* Filtros (sin cambios) */}
                  <h3 className={styles.filterTitle}>Filtrar Búsqueda</h3>
                  <div className={styles.filterGroup}>
                    <h4 className={styles.filterCategory}>Área</h4>
@@ -140,7 +226,8 @@ const DashboardCandidato = () => {
                        <span>🏢 {job.modality}</span>
                      </div>
                      <div className={styles.applyButtonContainer}>
-                       <button onClick={() => handleApply(job.id, job.title)} className={styles.applyButton}>
+                       {/* Cambiado para abrir el modal */}
+                       <button onClick={() => handleOpenApplyModal(job)} className={styles.applyButton}>
                          Aplicar Ahora
                        </button>
                      </div>
@@ -151,6 +238,7 @@ const DashboardCandidato = () => {
           </div>
         )}
 
+        {/* Otras secciones (estadoConvocatoria, datosPersonales, etc. sin cambios relevantes aquí) */}
         {seccionVisible === 'estadoConvocatoria' && (
           <div className={`${styles.card} ${styles.sectionCard}`}>
             <h2 className={styles.cardTitle}>Mis Postulaciones</h2>

@@ -325,6 +325,85 @@
     margin-bottom: 0.8rem;
     flex-wrap: wrap; /* Para que los tags bajen si no caben */
   }
+  .modalOverlay {
+  position: fixed; /* Esto es CRUCIAL */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center; /* Centra verticalmente el .modalContent */
+  justify-content: center; /* Centra horizontalmente el .modalContent */
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  /* No necesita position: absolute si .modalOverlay es flex y lo centra */
+}
+
+.formGroupModal { /* Asegúrate que este también esté si lo usas */
+  margin-bottom: 20px;
+}
+
+.formGroupModal label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+.inputFieldModal { /* Para el campo de años de experiencia */
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+/* Contenedor de las etiquetas de habilidades dentro del modal */
+.skillTagsContainerModal {
+  display: flex;
+  flex-wrap: wrap; /* Esto es CRUCIAL para que las etiquetas pasen a la siguiente línea */
+  gap: 10px;       /* Espacio entre las etiquetas */
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  margin-top: 5px; /* Pequeño margen superior */
+}
+
+/* Estilo para CADA etiqueta individual (el label del checkbox) */
+.skillTagCheckboxLabel {
+  display: flex; /* Importante para el layout interno y para que padding/background se apliquen bien */
+  align-items: center; /* Alinea el checkbox con el texto verticalmente */
+  background-color: #e9ecef; /* Fondo grisáceo claro para la píldora */
+  padding: 6px 12px;         /* Padding interno para dar forma de píldora */
+  border-radius: 15px;       /* Esquinas redondeadas para la forma de píldora */
+  font-size: 0.9em;
+  color: #333; /* Color de texto para la etiqueta */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 5px; /* Si flex-wrap está activo y hay varias líneas, esto ayuda */
+  margin-right: 5px; /* Si 'gap' no es suficiente o quieres asegurarlo */
+}
+
+.skillTagCheckboxLabel:hover {
+  background-color: #dde2e6; /* Un color ligeramente más oscuro al pasar el mouse */
+}
+
+.skillTagCheckboxLabel input[type="checkbox"] {
+  margin-right: 8px; /* Espacio entre el checkbox y el texto de la habilidad */
+}
   
   .tagsRow {
     display: flex;
