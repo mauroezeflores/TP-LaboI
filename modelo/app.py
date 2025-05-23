@@ -274,7 +274,7 @@ async def subir_cv(
         formato = aux_cv.detectar_formato_archivo(file)
         if formato == "archivo invalido":
             raise HTTPException(status_code = 400, detail ="formato erroneo")
-
+        await file.seek(0)
         url = aux_cv.procesar_cv(conexion, file, id_usuario)
         db.cerrar_conexion(conexion)
         return JSONResponse(content={"mensaje": "CV cargado correctamente","url": url})
