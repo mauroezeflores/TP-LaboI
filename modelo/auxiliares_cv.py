@@ -126,6 +126,7 @@ def cerrar_convocatoria(conexion, id_convocatoria):
         cursor = conexion.cursor()
         query = "UPDATE convocatoria SET estado = 'cerrada' WHERE id_convocatoria = %s"
         cursor.execute(query, (id_convocatoria,))
+        conexion.commit()
         cursor.close()
     except Exception as e:
         print(f"Error al cerrar la convocatoria: {e}")
@@ -134,7 +135,7 @@ def cerrar_convocatoria(conexion, id_convocatoria):
 def obtener_candidatos(conexion, id_convocatoria):
     try:
         cursor = conexion.cursor()
-        query = "SELECT id_candidato FROM candidatos_por_convocatorias WHERE id_convocatoria = %s"
+        query = "SELECT id_candidato FROM candidatos_por_convocatoria WHERE id_convocatoria = %s"
         cursor.execute(query, (id_convocatoria,))
         candidatos = cursor.fetchall()
         cursor.close()
@@ -172,6 +173,7 @@ def set_no_apto(conexion, id_cv, id_convocatoria):
         cursor = conexion.cursor()
         query = "UPDATE evaluacion_cv SET es_apto = FALSE WHERE id_cv = %s AND id_convocatoria = %s"
         cursor.execute(query, (id_cv,id_convocatoria))
+        conexion.commit()
         cursor.close()
     except Exception as e:
         print(f"Error al marcar el candidato como no apto: {e}")
@@ -182,6 +184,7 @@ def set_cantidad_etiquetas_deseables(conexion, id_cv,id_convocatoria, cantidad_e
         cursor = conexion.cursor()
         query = "UPDATE evaluacion_cv SET cantidad_etiquetas_deseables = %s WHERE id_cv = %s AND id_convocatoria = %s"
         cursor.execute(query, (cantidad_etiquetas_deseables, id_cv, id_convocatoria))
+        conexion.commit()
         cursor.close()
     except Exception as e:
         print(f"Error al marcar la cantidad de etiquetas deseables: {e}")
@@ -192,6 +195,7 @@ def set_etiquetas_detectadas(conexion, id_cv,id_convocatoria, etiquetas_detectad
         cursor = conexion.cursor()
         query = "UPDATE evaluacion_cv SET etiquetas_detectadas = %s WHERE id_cv = %s AND id_convocatoria = %s"
         cursor.execute(query, (etiquetas_detectadas, id_cv, id_convocatoria))
+        conexion.commit()
         cursor.close()
     except Exception as e:
         print(f"Error al marcar las etiquetas detectadas: {e}")
@@ -327,7 +331,7 @@ def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_
     if not verificar_postulacion(conexion, id_candidato, id_convocatoria):
         try:
             cursor = conexion.cursor()
-            query = "INSERT INTO candidatos_por_convocatorias(id_convocatoria, id_candidato) VALUES (%s,%s)"
+            query = "INSERT INTO candidatos_por_convocatoria(id_convocatoria, id_candidato) VALUES (%s,%s)"
             cursor.execute(query, (id_convocatoria, id_candidato))
             conexion.commit()
             cursor.close()
@@ -337,7 +341,7 @@ def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_
 def verificar_postulacion(conexion, id_candidato, id_convocatoria):#por si el candidato ya se postulo
     try:
         cursor = conexion.cursor()
-        query = "SELECT id_candidato FROM candidatos_por_convocatorias WHERE id_convocatoria = %s AND id_candidato = %s"
+        query = "SELECT id_candidato FROM candidatos_por_convocatoria WHERE id_convocatoria = %s AND id_candidato = %s"
         cursor.execute(query, (id_convocatoria, id_candidato))
         existe = cursor.fetchone() is not None
         cursor.close()
