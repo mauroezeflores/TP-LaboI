@@ -2,7 +2,10 @@ import pdfplumber #leer texto de pdf
 from docx import Document #leer texto de word
 import unicodedata #para eliminar caracteres especiales del texto del cv
 import re #para eliminar caracteres especiales del texto del cv
-
+import tempfile
+from pathlib import Path
+import os
+import uuid
 
 
 ###################################CARGA DE CV###########################
@@ -52,21 +55,42 @@ def detectar_formato_archivo(file): # esto tambien habria que usarlo para rechaz
         return "archivo invalido"
 
 def almacenar_cv(file):#subir el archivo a la base de datos
+    directorio= Path("cvs")
+    os.makedirs(directorio, exist_ok=True)
+    file.file.seek(0)
+    contenido = file.file.read()
+    _, ext = os.path.splitext(file.filename)
+    nombre = f"{uuid.uuid4().hex}{ext}"
+    ruta = os.path.join(directorio, nombre)
+    with open(ruta, "wb") as f:
+        f.write(contenido)
+
     return "url"
 
 def obtener_cv(id_usuario): #obtener el cv de la base de datos para volver a analizarlo si agregamos alguna etiqueta
-    return "1" #archivo
+    return "1" #archivos
 
 
 def extraer_texto(file,formato): #extraer texto del cv #falta actualizar tabla cv
     texto = ""
+
+    contenido = file.file.read()
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{formato}") as temp:
+        temp.write(contenido)
+        temp_path = temp.name
+
     if formato == "pdf":
-        with pdfplumber.open(file) as pdf:
+        with pdfplumber.open(temp_path) as pdf:
             for page in pdf.pages:
                 texto += page.extract_text()
     if formato == "docx":
-        texto = "\n".join(p.text for p in Document(file).paragraphs)
+        doc = Document(temp_path)
+        texto = "\n".join(p.text for p in doc.paragraphs)
     texto = normalizar_texto(texto)
+
+    Path(temp_path).unlink(missing_ok=True)
+
     return texto
 
 def normalizar_texto(texto):
@@ -324,7 +348,7 @@ def obtener_id_candidato_de_id_usuario(conexion, id_usuario):
 
 
 ##faltaria tener en cuenta las certificaciones
-def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_educativo): #actualiza la tabla candidatos_por_convocatorias
+def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia): #actualiza la tabla candidatos_por_convocatorias
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
     set_experiencia(conexion, id_cv,id_convocatoria, experiencia)
     id_candidato = obtener_id_candidato_de_id_usuario(conexion, id_usuario)

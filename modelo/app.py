@@ -280,7 +280,7 @@ async def subir_cv(
         formato = aux_cv.detectar_formato_archivo(file)
         if formato == "archivo invalido":
             raise HTTPException(status_code = 400, detail ="formato erroneo")
-
+        await file.seek(0)
         url = aux_cv.procesar_cv(conexion, file, id_usuario)
         db.cerrar_conexion(conexion)
         return JSONResponse(content={"mensaje": "CV cargado correctamente","url": url})
@@ -319,3 +319,20 @@ def cerrar_convocatoria(id_convocatoria: int):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+@app.post("/convocatoria/{id_convocatoria}/postularse")
+async def postularse(
+        id_convocatoria: int,
+        id_usuario: int,
+        experiencia: int = Form(...)
+):
+    try:
+        conexion = db.abrir_conexion()
+        aux_cv.postular_candidato(conexion,
+                                  id_usuario = id_usuario,
+                                  id_convocatoria = id_convocatoria,
+                                  experiencia = experiencia)
+
+        db.cerrar_conexion(conexion)
+        return {"mensaje": "Candidato postulado correctamente"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
