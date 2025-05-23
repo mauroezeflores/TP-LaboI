@@ -3,14 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from joblib import load
 import pandas as pd
 import auxiliares as aux
+import auxiliares_cv as aux_cv
 import db
 from fastapi import  HTTPException
 from pydantic import BaseModel
-from typing import Optional
-import auxiliares as aux
+from typing import Optional, List
 from psycopg2.extras import RealDictCursor  # Agrega esta importación al inicio
 import datetime
 from pydantic import BaseModel
+from fastapi import UploadFile, File, Form
+from fastapi.responses import JSONResponse
+
 
 app = FastAPI()
 
@@ -41,6 +44,15 @@ class EmpleadoInput(BaseModel):
     estado: str
     hace_horas_extra: bool
     tiene_movilidad_propia: bool
+
+class ConvocatoriaInput(BaseModel):
+    id_sede: int
+    id_puesto: int
+    descripcion: str
+    fecha_de_finalizacion: datetime
+    experiencia_requerida: int
+    etiquetas_deseables: List[str]
+    etiquetas_excluyentes: List[str]
 
 # CORS para conectar con React
 app.add_middleware(
@@ -255,3 +267,54 @@ async def detalle_rotacion_empleado(empleado_id: int):
         }
     finally:
         db.cerrar_conexion(conn)
+
+
+@app.post("/cv")
+async def subir_cv(
+        id_usuario: int = Form(...),
+        file: UploadFile = File(...)
+):
+    try:
+        conexion = db.abrir_conexion()
+        formato = aux_cv.detectar_formato_archivo(file)
+        if formato == "archivo invalido":
+            raise HTTPException(status_code = 400, detail ="formato erroneo")
+
+        url = aux_cv.procesar_cv(conexion, file, id_usuario)
+        db.cerrar_conexion(conexion)
+        return JSONResponse(content={"mensaje": "CV cargado correctamente","url": url})
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+@app.post("/convocatoria")
+def crear_nueva_convocatoria(data: ConvocatoriaInput):
+    try:
+        conexion = db.abrir_conexion()
+        id_convocatoria = aux_cv.crear_convocatoria(conexion=conexion,
+                                                    etiquetas_deseables = data.etiquetas_deseables,
+                                                    etiquetas_excluyentes = data.etiquetas_excluyentes,
+                                                    id_sede = data.id_sede,
+                                                    id_puesto = data.id_puesto,
+                                                    descripcion = data.descripcion,
+                                                    fecha_de_finalizacion = data.fecha_de_finalizacion,
+                                                    experiencia_requerida = data.experiencia_requerida)
+        db.cerrar_conexion(conexion)
+        return {"mensaje": "Convocatoria creada correctamente", "id_convocatoria": id_convocatoria}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+
+    ####faltaria que los candidatos aptos pasen por el modelo ml y los devuelva ordenados
+@app.post("/convocatoria/{id_convocatoria}/cerrar")
+def cerrar_convocatoria(id_convocatoria: int):
+    try:
+        conexion = db.abrir_conexion()
+        candidatos_aptos = aux_cv.finalizar_convocatoria(conexion, id_convocatoria)
+        db.cerrar_conexion(conexion)
+        return {"mensaje": "Convocatoria cerrada correctamente", "candidatos_aptos": [c[0] for c in candidatos_aptos]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+

@@ -5,9 +5,7 @@ import re #para eliminar caracteres especiales del texto del cv
 
 
 
-
-
-
+###################################CARGA DE CV###########################
 def procesar_cv(conexion,file, id_usuario): #actualiza la tabla cv
     formato = detectar_formato_archivo(file)
     texto = extraer_texto(file, formato)
@@ -78,6 +76,13 @@ def normalizar_texto(texto):
     texto = re.sub(r"[^\w\s\+#]", " ", texto) #no elimina los caracteres + o #
     texto = re.sub(r"\s+", " ", texto)
     return texto
+#################################################################################################
+
+
+
+
+
+
 
 def obtener_todas_las_etiquetas(conexion):
     cursor = conexion.cursor()
@@ -192,6 +197,16 @@ def set_etiquetas_detectadas(conexion, id_cv,id_convocatoria, etiquetas_detectad
         print(f"Error al marcar las etiquetas detectadas: {e}")
 
 
+def obtener_nivel_educativo(conexion,id_candidato):
+    try:
+        cursor = conexion.cursor()
+        query = "SELECT nivel_educativo FROM candidato WHERE id_candidato = %s"
+        cursor.execute(query, (id_candidato,))
+        cursor.close()
+        return cursor.fetchone()[0]
+    except Exception as e:
+        print(f"Error al obtener el nivel educativo: {e}")
+
 def evaluar_cv(conexion, id_candidato, id_convocatoria, etiquetas_excluyentes, etiquetas_deseables):
     id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
@@ -204,6 +219,8 @@ def evaluar_cv(conexion, id_candidato, id_convocatoria, etiquetas_excluyentes, e
     etiquetas_detectadas = etiquetas_detectadas_deseables + etiquetas_detectadas_excluyentes
     set_cantidad_etiquetas_deseables(conexion, id_cv, cantidad_etiquetas_deseables)
     set_etiquetas_detectadas(conexion, id_cv, etiquetas_detectadas)
+    nivel_educativo = obtener_nivel_educativo(id_candidato)
+    set_nivel_educativo(conexion, id_cv, nivel_educativo)
     return es_apto
 
 def verificar_etiquetas_excluyentes(etiquetas_cv, etiquetas_excluyentes):
@@ -302,10 +319,10 @@ def obtener_id_candidato_de_id_usuario(conexion, id_usuario):
         print(f"Error al obtener el id_candidato: {e}")
 
 
+##faltaria tener en cuenta las certificaciones
 def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_educativo): #actualiza la tabla candidatos_por_convocatorias
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
     set_experiencia(conexion, id_cv,id_convocatoria, experiencia)
-    set_nivel_educativo(conexion, id_cv, nivel_educativo)
     id_candidato = obtener_id_candidato_de_id_usuario(conexion, id_usuario)
     if not verificar_postulacion(conexion, id_candidato, id_convocatoria):
         try:
