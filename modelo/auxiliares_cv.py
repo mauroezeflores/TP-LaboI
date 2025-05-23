@@ -348,7 +348,7 @@ def obtener_id_candidato_de_id_usuario(conexion, id_usuario):
 
 
 ##faltaria tener en cuenta las certificaciones
-def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, nivel_educativo): #actualiza la tabla candidatos_por_convocatorias
+def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia): #actualiza la tabla candidatos_por_convocatorias
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
     set_experiencia(conexion, id_cv,id_convocatoria, experiencia)
     id_candidato = obtener_id_candidato_de_id_usuario(conexion, id_usuario)
