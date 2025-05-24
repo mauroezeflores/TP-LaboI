@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../DashboardReclutador.module.css';
 import { LuClipboardList } from "react-icons/lu";
 
- const fakeApi = {
-     getMisConvocatorias: async () => { await new Promise(r => setTimeout(r, 500)); return [ { id: 1, titulo: 'Desarrollador Frontend Sr.', fecha: '2025-04-25', estado: 'Activa', aptos: 5 }, { id: 2, titulo: 'Analista de Datos Jr.', fecha: '2025-04-20', estado: 'Activa', aptos: 12 }, { id: 3, titulo: 'Project Manager', fecha: '2025-03-15', estado: 'Cerrada', aptos: 8 }, ]; }
- };
+const API_BASE_URL = 'http://localhost:8000';
 
 export default function VerConvocatorias() {
     const [misConvocatorias, setMisConvocatorias] = useState([]);
@@ -17,11 +15,18 @@ export default function VerConvocatorias() {
         setIsLoadingConvocatorias(true);
         setConvocatoriasError('');
         try {
-            const data = await fakeApi.getMisConvocatorias();
+            const response = await fetch(`${API_BASE_URL}/convocatorias`);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
             setMisConvocatorias(data);
         } catch (error) {
-            setConvocatoriasError("Error al cargar convocatorias.");
-            console.error("Error fetching convocatorias:", error)
+            setConvocatoriasError("Error al cargar convocatorias desde el backend.");
+            console.error("Error fetching convocatorias:", error);
         } finally {
             setIsLoadingConvocatorias(false);
         }
@@ -37,18 +42,14 @@ export default function VerConvocatorias() {
 
     return (
         <section className={styles.section}>
-            {/* Título con estilo base h2 y alineación flex para el icono */}
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <LuClipboardList /> {/* Icono */}
+                <LuClipboardList />
                 Mis Convocatorias
             </h2>
 
-            {/* Muestra estado de carga */}
             {isLoadingConvocatorias && <p>Cargando convocatorias...</p>}
-            {/* Muestra error si existe, aplicando la clase de error */}
             {convocatoriasError && <p className={styles.errorMessage}>{convocatoriasError}</p>}
 
-            {/* Contenedor de la tabla con su clase específica */}
             {!isLoadingConvocatorias && !convocatoriasError && (
                  <div className={styles.tableContainer}>
                     {misConvocatorias.length > 0 ? (
@@ -56,9 +57,9 @@ export default function VerConvocatorias() {
                             <thead>
                                 <tr>
                                     <th>Título</th>
-                                    <th>Fecha Creación</th>
+                                    <th>Fecha Finalización</th>
                                     <th>Estado</th>
-                                    <th>Candidatos Aptos</th>
+                                    <th>Candidatos Inscritos</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -66,9 +67,9 @@ export default function VerConvocatorias() {
                                 {misConvocatorias.map((conv) => (
                                     <tr key={conv.id}>
                                         <td>{conv.titulo}</td>
-                                        <td>{conv.fecha}</td>
+                                        <td>{new Date(conv.fecha).toLocaleDateString()}</td>
                                         <td>
-                                            <span className={`${styles.statusBadge} ${styles[conv.estado.toLowerCase()] || styles.defaultStatus}`}>
+                                            <span className={`${styles.statusBadge} ${styles[conv.estado?.toLowerCase()] || styles.defaultStatus}`}>
                                                 {conv.estado}
                                             </span>
                                         </td>
@@ -86,8 +87,9 @@ export default function VerConvocatorias() {
                             </tbody>
                         </table>
                     ) : (
-                      // Mensaje si no hay convocatorias
-                      <p style={{textAlign: 'center', padding: '1rem', color: 'var(--text-light)' }}>No has creado ninguna convocatoria todavía.</p>
+                      <p style={{textAlign: 'center', padding: '1rem', color: 'var(--text-light)' }}>
+                          No hay convocatorias para mostrar o no se pudieron cargar.
+                      </p>
                      )}
                  </div>
             )}

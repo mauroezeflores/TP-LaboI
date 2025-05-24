@@ -55,6 +55,35 @@ class ConvocatoriaInput(BaseModel):
     etiquetas_deseables: List[str]
     etiquetas_excluyentes: List[str]
 
+class ConvocatoriaInfoOutput(BaseModel):
+    id: int
+    titulo: str
+    fecha: datetime
+    estado: str
+    aptos: int
+
+class ConvocatoriaInfoBasicaOutput(BaseModel):
+    id: int
+    titulo: str
+
+class CandidatoParaConvocatoriaOutput(BaseModel):
+    id: int # id_candidato
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    email: Optional[str] = None
+    telefono: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
+    ubicacion: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
+    cvUrl: Optional[str] = None
+
+class ConvocatoriaDisponibleOutput(BaseModel):
+    id: int
+    title: str
+    company: Optional[str] # Nombre de la sede o empresa
+    desc: str
+    location: Optional[str] # Ej: "Ciudad, Provincia"
+    modality: str # Ej: "Presencial", "Remoto", "Híbrido"
+    fecha_publicacion: datetime # Será fecha_de_finalizacion
+    skillTags: List[str] = []
 # CORS para conectar con React
 app.add_middleware(
     CORSMiddleware,
@@ -322,11 +351,18 @@ def cerrar_convocatoria(id_convocatoria: int):
 @app.post("/convocatoria/{id_convocatoria}/postularse")
 async def postularse(
         id_convocatoria: int,
-        id_usuario: int,
+        id_usuario: int = Form(...),
         experiencia: int = Form(...)
+
 ):
+    
     try:
         conexion = db.abrir_conexion()
+        id_candidato = aux_cv.obtener_id_candidato_de_id_usuario(conexion, id_usuario)
+        if aux_cv.verificar_postulacion(conexion, id_candidato, id_convocatoria):  
+            raise Exception("Ya te has postulado anteriormente a esta convocatoria.")
+
+
         aux_cv.postular_candidato(conexion,
                                   id_usuario = id_usuario,
                                   id_convocatoria = id_convocatoria,
@@ -336,3 +372,147 @@ async def postularse(
         return {"mensaje": "Candidato postulado correctamente"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+    
+@app.get("/convocatorias", response_model=List[ConvocatoriaInfoOutput])
+async def listar_convocatorias_publicadas():
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        query = """
+            SELECT 
+                c.id_convocatoria as id, 
+                c.descripcion as titulo, 
+                c.fecha_de_finalizacion as fecha,
+                c.estado,
+                COALESCE(
+                    (SELECT COUNT(DISTINCT cpc.id_candidato) 
+                     FROM candidatos_por_convocatoria cpc 
+                     WHERE cpc.id_convocatoria = c.id_convocatoria), 
+                    0
+                ) as aptos
+            FROM convocatoria c
+            ORDER BY c.id_convocatoria DESC;
+        """
+        cursor.execute(query)
+        convocatorias_db = cursor.fetchall()
+        
+        return convocatorias_db
+    except Exception as e:
+        print(f"Error en GET /convocatorias: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al obtener convocatorias.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+@app.get("/convocatoria/{convocatoria_id}/info", response_model=ConvocatoriaInfoBasicaOutput)
+async def obtener_info_convocatoria(convocatoria_id: int):
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute(
+            "SELECT id_convocatoria as id, descripcion as titulo FROM convocatoria WHERE id_convocatoria = %s",
+            (convocatoria_id,)
+        )
+        convocatoria = cursor.fetchone()
+        if not convocatoria:
+            raise HTTPException(status_code=404, detail="Convocatoria no encontrada")
+        return convocatoria
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error en GET /convocatoria/{convocatoria_id}/info: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al obtener información de la convocatoria.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+# --- Endpoint para listar candidatos de una convocatoria todavia no funcioan. ---
+@app.get("/convocatoria/{convocatoria_id}/candidatos", response_model=List[CandidatoParaConvocatoriaOutput])
+async def listar_candidatos_por_convocatoria(convocatoria_id: int):
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+        query = """
+            SELECT DISTINCT ON (cand.id_candidato)
+                cand.id_candidato as id,
+                cand.nombre,
+                cand.apellido,
+                cand.email,
+                cv.url as cvUrl
+            FROM candidatos_por_convocatoria cpc
+            JOIN candidato cand ON cpc.id_candidato = cand.id_candidato
+            LEFT JOIN cv ON cand.id_usuario = cv.id_usuario
+            WHERE cpc.id_convocatoria = %s
+            ORDER BY cand.id_candidato, cand.apellido, cand.nombre; 
+        """
+        
+        cursor.execute(query, (convocatoria_id,))
+        candidatos = cursor.fetchall()
+        return candidatos
+    except Exception as e:
+        print(f"Error en GET /convocatoria/{convocatoria_id}/candidatos: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno al obtener candidatos de la convocatoria.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+@app.get("/convocatorias/disponibles", response_model=List[ConvocatoriaDisponibleOutput])
+async def listar_convocatorias_para_candidatos():
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        query = """
+            SELECT 
+                c.id_convocatoria as id, 
+                COALESCE(pt.nombre, c.descripcion) as title,
+                COALESCE(s.nombre, 'Empresa Confidencial') as company, 
+                c.descripcion as desc, 
+                c.fecha_de_finalizacion as fecha_publicacion,
+                
+                -- Construyendo location desde la tabla 'direccion'
+                -- Fallback al nombre de la sede si ciudad o provincia_estado son NULL
+                COALESCE(d.ciudad || ', ' || d.provincia_estado, s.nombre, 'Ubicación no especificada') as location,
+                
+                CASE 
+                    WHEN pt.presencial = 1 AND pt.remoto = 1 THEN 'Híbrido'
+                    WHEN pt.presencial = 1 THEN 'Presencial'
+                    WHEN pt.remoto = 1 THEN 'Remoto'
+                    ELSE 'Modalidad no especificada'
+                END as modality,
+                
+                COALESCE(
+                    (SELECT ARRAY_AGG(e.nombre ORDER BY e.nombre)
+                     FROM etiquetas_por_convocatoria epc
+                     JOIN etiqueta e ON epc.id_etiqueta = e.id_etiqueta
+                     WHERE epc.id_convocatoria = c.id_convocatoria),
+                    ARRAY[]::VARCHAR[]
+                ) as "skillTags"
+            FROM convocatoria c
+            LEFT JOIN puesto_trabajo pt ON c.id_puesto = pt.id_puesto_trabajo
+            LEFT JOIN sede s ON c.id_sede = s.id_sede
+            LEFT JOIN direccion d ON s.id_direccion = d.id_direccion -- JOIN a la tabla direccion
+            WHERE c.estado = 'abierto' 
+            ORDER BY c.fecha_de_finalizacion DESC, c.id_convocatoria DESC;
+        """
+        
+        cursor.execute(query)
+        convocatorias_db = cursor.fetchall()
+        
+        return convocatorias_db
+    except Exception as e:
+        print(f"Error en GET /convocatorias/disponibles: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno al obtener convocatorias disponibles.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)

@@ -2,11 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from '../DashboardReclutador.module.css';
 
-// Simulación API (con cvUrl)
-const fakeApi = {
-    getCandidatosAptos: async (id) => { /* ... */ await new Promise(r => setTimeout(r, 500)); const db = { 1: [{ id: 101, nombre: 'Ana', apellido: 'García', email: 'ana.g@mail.com', telefono: '1122334455', ubicacion: 'CABA', cvUrl: '/path/to/ana_garcia_cv.pdf' }, { id: 102, nombre: 'Luis', apellido: 'Martínez', email: 'luis.m@mail.com', telefono: '5566778899', ubicacion: 'Rosario', cvUrl: '/path/to/cv_luis_martinez.docx' }], 2: [{ id: 201, nombre: 'Carla', apellido: 'López', email: 'carla.l@mail.com', telefono: '9988776655', ubicacion: 'Córdoba', cvUrl: '/path/to/candidatos/carla_cv.pdf' }], 3: [] }; return db[id] || []; },
-    getConvocatoriaInfo: async (id) => { /* ... */ await new Promise(r => setTimeout(r, 100)); const db = {1:{titulo:'Desarrollador Frontend Sr.'}, 2:{titulo:'Analista de Datos Jr.'}, 3:{titulo:'Project Manager'}}; return db[id];}
-};
+const API_BASE_URL = 'http://localhost:8000';
 
 export default function VerCandidatos() {
     const { convocatoriaId } = useParams();
@@ -19,15 +15,28 @@ export default function VerCandidatos() {
         setIsLoading(true);
         setError('');
         try {
-            const [info, candidatosData] = await Promise.all([
-                 fakeApi.getConvocatoriaInfo(convocatoriaId),
-                 fakeApi.getCandidatosAptos(convocatoriaId)
-             ]);
-             setConvocatoriaInfo(info);
-             setCandidatos(candidatosData);
+            const [infoResponse, candidatosResponse] = await Promise.all([
+                 fetch(`${API_BASE_URL}/convocatoria/${convocatoriaId}/info`),
+                 fetch(`${API_BASE_URL}/convocatoria/${convocatoriaId}/candidatos`)
+            ]);
+
+            if (!infoResponse.ok) {
+                const errorData = await infoResponse.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Error al cargar info de convocatoria: ${infoResponse.status}`);
+            }
+            const infoData = await infoResponse.json();
+            setConvocatoriaInfo(infoData);
+
+            if (!candidatosResponse.ok) {
+                const errorData = await candidatosResponse.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Error al cargar candidatos: ${candidatosResponse.status}`);
+            }
+            const candidatosData = await candidatosResponse.json();
+            setCandidatos(candidatosData);
+
         } catch (err) {
-            setError("Error al cargar datos de candidatos.");
-            console.error(err);
+            setError(err.message || "Error al cargar datos de la convocatoria y candidatos.");
+            console.error("Error fetching data:", err);
         } finally {
             setIsLoading(false);
         }
@@ -38,15 +47,14 @@ export default function VerCandidatos() {
     }, [fetchCandidatosData]);
 
     return (
-         // Usa la clase .section como contenedor principal
          <section className={styles.section}>
-             {/* Usa la clase .backLink para el enlace de volver */}
              <Link to="/dashboard/empleadoRRHH/mis-convocatorias" className={styles.backLink}>← Volver a Mis Convocatorias</Link>
 
-             <h2>👥 Candidatos Aptos para "{convocatoriaInfo?.titulo || '...'}"</h2>
-              {/* Usa clases de error y contenedor de tabla */}
-             {isLoading && <p>Cargando...</p>}
+             <h2>👥 Candidatos para "{convocatoriaInfo?.titulo || 'Cargando título...'}"</h2>
+             
+             {isLoading && <p>Cargando datos...</p>}
              {error && <p className={styles.errorMessage}>{error}</p>}
+             
              {!isLoading && !error && (
                  <>
                     {candidatos.length > 0 ? (
@@ -54,19 +62,24 @@ export default function VerCandidatos() {
                           <table>
                              <thead>
                                 <tr>
-                                   <th>Nombre</th><th>Apellido</th><th>Email</th>
-                                   <th>Teléfono</th><th>Ubicación</th><th>CV</th>
+                                   <th>Nombre</th>
+                                   <th>Apellido</th>
+                                   <th>Email</th>
+                                    <th>Teléfono</th> 
+                                    <th>Ubicación</th> 
+                                   <th>CV</th>
                                 </tr>
                               </thead>
                              <tbody>
                                 {candidatos.map(cand => (
                                     <tr key={cand.id}>
-                                        <td>{cand.nombre}</td><td>{cand.apellido}</td>
-                                        <td>{cand.email}</td><td>{cand.telefono}</td>
-                                        <td>{cand.ubicacion}</td>
+                                        <td>{cand.nombre || 'N/A'}</td>
+                                        <td>{cand.apellido || 'N/A'}</td>
+                                        <td>{cand.email || 'N/A'}</td>
+                                         <td>{cand.telefono || 'N/A'}</td>
+                                        <td>{cand.ubicacion || 'N/A'}</td>
                                         <td>
                                            {cand.cvUrl ? (
-                                              /* Usa clase .cvLink */
                                               <a href={cand.cvUrl} target="_blank" rel="noopener noreferrer" className={styles.cvLink}>
                                                  Ver CV
                                               </a>
@@ -77,7 +90,7 @@ export default function VerCandidatos() {
                              </tbody>
                           </table>
                        </div>
-                    ) : <p>No hay candidatos aptos.</p>}
+                    ) : <p>No hay candidatos para esta convocatoria o no se pudieron cargar.</p>}
                  </>
              )}
          </section>
