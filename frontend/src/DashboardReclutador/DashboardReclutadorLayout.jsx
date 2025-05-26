@@ -2,26 +2,27 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardReclutador.module.css';
 import LogoutButton from '../components/LogoutButton';
+import {getUsuarioActual} from '../services/authService';
 
 export default function DashboardReclutadorLayout() {
-  // Función para manejar el logout (ejemplo)
-  const handleLogout = () => {
-     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
-    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
-
-    // Redirigir al usuario al inicio ("/")
-    navigate('/');
-    // Aca iría la lógica para limpiar tokens/estado y redirigir al login
-  };
+   const usuario = getUsuarioActual();
 
   return (
+   
     <div className={styles.dashboardLayout}>
       {/* --- Sidebar / Menú Lateral --- */}
+      
       <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-           <h3 className={styles.sidebarTitle}>SIGRH+</h3>
-           <span className={styles.sidebarSubtitle}>Panel EmpleadoRRHH</span>
-        </div>
+         
+<div className={styles.sidebarHeader}>
+   <h3 className={styles.sidebarTitle}>SIGRH+</h3>
+   <span className={styles.sidebarSubtitle}>Panel EmpleadoRRHH</span><br />
+   {usuario && (
+     <span className={styles.sidebarWelcome}>
+       Bienvenido {usuario.email}
+     </span>
+   )}
+</div>
         <nav className={styles.sidebarNav}>
 
            {/* Link al Inicio del Dashboard */}
