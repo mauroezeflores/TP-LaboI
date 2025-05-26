@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './DashboardEmpleado.module.css';
 import { NavLink ,useNavigate} from 'react-router-dom';
-
+import { EncuestaSatisfaccionEmpleado } from "./EncuestaSatisfaccionEmpleado";
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
   const empleado = {
@@ -127,6 +127,12 @@ const DashboardEmpleado = () => {
           onClick={() => mostrarSeccion('recibos')}
         >
          Mis Recibos
+        </button>
+        <button
+          className={`${styles.navButton} ${seccionVisible === 'satisfaccion' ? styles.active : ''}`}
+          onClick={() => mostrarSeccion('satisfaccion')}
+        >
+          Encuesta de Satisfacción
         </button>
       </nav>
 
@@ -314,7 +320,12 @@ const DashboardEmpleado = () => {
              )}
           </div>
         )}
-
+        {/* Sección: Encuesta de Satisfacción */}
+        {seccionVisible === 'satisfaccion' && (
+            <div className={styles.sectionContent}>
+              <EncuestaSatisfaccionEmpleado />
+            </div>
+          )}
       </div> 
     </div> 
   );
