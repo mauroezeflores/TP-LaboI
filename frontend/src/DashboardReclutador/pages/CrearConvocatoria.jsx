@@ -8,34 +8,62 @@ const API_BASE_URL = 'http://localhost:8000'; // Cambia esto si tu backend corre
 
 
 export default function CrearConvocatoria() {
+    const [puestos, setPuestos] = useState([]);
+    const [sedes, setSedes] = useState([]);
+    const [idPuesto, setIdPuesto] = useState('');
+    const [idSede, setIdSede] = useState('');
+
     const [etiquetas, setEtiquetas] = useState([]);
     const [tagSettings, setTagSettings] = useState({});
     const [loadingEtiquetas, setLoadingEtiquetas] = useState(true);
 
-useEffect(() => {
-    const fetchEtiquetas = async () => {
+    useEffect(() => {
+        const fetchEtiquetas = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/etiquetas`);
+                const data = await res.json();
+                setEtiquetas(data);
+                // Inicializa tagSettings con las etiquetas traídas
+                const initial = {};
+                data.forEach(et => {
+                    initial[et.nombre] = { excluyente: false, deseable: false };
+                });
+                setTagSettings(initial);
+            } catch (e) {
+                console.error("Error al cargar etiquetas:", e);
+            } finally {
+                setLoadingEtiquetas(false);
+            }
+        };
+        fetchEtiquetas();
+    }, []);
+    useEffect(() => {
+    const fetchPuestos = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/etiquetas`);
+            const res = await fetch(`${API_BASE_URL}/puestos`);
             const data = await res.json();
-            setEtiquetas(data);
-            // Inicializa tagSettings con las etiquetas traídas
-            const initial = {};
-            data.forEach(et => {
-                initial[et.nombre] = { excluyente: false, deseable: false };
-            });
-            setTagSettings(initial);
+            setPuestos(data);
         } catch (e) {
-            console.error("Error al cargar etiquetas:", e);
-        } finally {
-            setLoadingEtiquetas(false);
+            console.error("Error al cargar puestos:", e);
         }
     };
-    fetchEtiquetas();
-}, []);
+    fetchPuestos();
+        }, []);
 
+    useEffect(() => {
+    const fetchSedes = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/sedes`);
+            const data = await res.json();
+            setSedes(data);
+        } catch (e) {
+            console.error("Error al cargar sedes:", e);
+        }
+    };
+    fetchSedes();
+}, []);
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
-    const [puesto, setPuesto] = useState(''); 
-    const [sede, setSede] = useState('');    
+
     const [descripcion, setDescripcion] = useState('');
     const [experienciaRequerida, setExperienciaRequerida] = useState(''); 
 
@@ -87,8 +115,8 @@ useEffect(() => {
             return;
         */}
         
-        const idSedeInt = parseInt(sede, 10);
-        const idPuestoInt = parseInt(puesto, 10);
+        const idSedeInt = parseInt(idSede, 10);
+        const idPuestoInt = parseInt(idPuesto, 10);
         const experienciaInt = parseInt(experienciaRequerida, 10);
 
         if (isNaN(idSedeInt) || isNaN(idPuestoInt) || isNaN(experienciaInt)) {
@@ -152,16 +180,41 @@ useEffect(() => {
                     <label htmlFor="tituloConvocatoria">Título de la Convocatoria *</label>
                     <input type="text" id="tituloConvocatoria" value={tituloConvocatoria} onChange={(e) => setTituloConvocatoria(e.target.value)} disabled={isSubmitting} required />
                 </div>
+<div className={styles.formGroup}>
+    <label htmlFor="puesto">Puesto *</label>
+    <select
+        id="puesto"
+        value={idPuesto}
+        onChange={e => setIdPuesto(e.target.value)}
+        disabled={isSubmitting}
+        required
+    >
+        <option value="">Seleccionar puesto</option>
+        {puestos.map(p => (
+            <option key={p.id_puesto_trabajo} value={p.id_puesto_trabajo}>
+                {p.nombre} {p.seniority ? `(${p.seniority})` : ""}
+            </option>
+        ))}
+    </select>
+</div>
 
-                <div className={styles.formGroup}>
-                    <label htmlFor="puesto">Puesto (ID Numérico) *</label>
-                    <input type="text" id="puesto" value={puesto} onChange={(e) => setPuesto(e.target.value)} disabled={isSubmitting} required placeholder="Ej: 1 (ID del puesto)" />
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label htmlFor="sede">Sede (ID Numérico) *</label>
-                    <input type="text" id="sede" value={sede} onChange={(e) => setSede(e.target.value)} disabled={isSubmitting} required placeholder="Ej: 1 (ID de la sede)"/>
-                </div>
+<div className={styles.formGroup}>
+    <label htmlFor="sede">Sede *</label>
+    <select
+        id="sede"
+        value={idSede}
+        onChange={e => setIdSede(e.target.value)}
+        disabled={isSubmitting}
+        required
+    >
+        <option value="">Seleccionar sede</option>
+        {sedes.map(s => (
+            <option key={s.id_sede} value={s.id_sede}>
+                {s.nombre}
+            </option>
+        ))}
+    </select>
+</div>
 
                 <div className={styles.formGroup}>
                     <label htmlFor="descripcion">Descripción Adicional del Puesto</label>
