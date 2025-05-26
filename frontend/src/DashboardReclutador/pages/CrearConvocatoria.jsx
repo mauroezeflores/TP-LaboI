@@ -1,30 +1,43 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import styles from '../DashboardReclutador.module.css'; // Asegúrate que la ruta a tus estilos sea correcta
 
 // URL base de tu API de FastAPI
 const API_BASE_URL = 'http://localhost:8000'; // Cambia esto si tu backend corre en otro puerto/URL
 
-// Lista ejemplo de etiquetas
-const ALL_POSSIBLE_TAGS = [
-    'Python', 'Java', 'JavaScript', 'React', 'Angular', 'Vue.js', 'Node.js',
-    'Spring Boot', 'PHP','SQL', 'MySQL', 'PostgreSQL', 'MongoDB',
-    'Firebase','Scrum', 'Kanban', 'Agile', 'JIRA','Git', 'Testing','Machine Learning',
-    'Data Science', 'Inteligencia Artificial','Inglés B2', 'Inglés C1', 'Inglés Avanzado'
-];
 
-const initialTagSettings = ALL_POSSIBLE_TAGS.reduce((acc, tag) => {
-    acc[tag] = { excluyente: false, deseable: false };
-    return acc;
-}, {});
 
 export default function CrearConvocatoria() {
+    const [etiquetas, setEtiquetas] = useState([]);
+    const [tagSettings, setTagSettings] = useState({});
+    const [loadingEtiquetas, setLoadingEtiquetas] = useState(true);
+
+useEffect(() => {
+    const fetchEtiquetas = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/etiquetas`);
+            const data = await res.json();
+            setEtiquetas(data);
+            // Inicializa tagSettings con las etiquetas traídas
+            const initial = {};
+            data.forEach(et => {
+                initial[et.nombre] = { excluyente: false, deseable: false };
+            });
+            setTagSettings(initial);
+        } catch (e) {
+            console.error("Error al cargar etiquetas:", e);
+        } finally {
+            setLoadingEtiquetas(false);
+        }
+    };
+    fetchEtiquetas();
+}, []);
+
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const [puesto, setPuesto] = useState(''); 
     const [sede, setSede] = useState('');    
     const [descripcion, setDescripcion] = useState('');
     const [experienciaRequerida, setExperienciaRequerida] = useState(''); 
-
-    const [tagSettings, setTagSettings] = useState(initialTagSettings);
 
     const [fechaFinalizacion, setFechaFinalizacion] = useState('');
 
@@ -160,34 +173,38 @@ export default function CrearConvocatoria() {
                     <input type="text" id="experienciaRequerida" value={experienciaRequerida} onChange={(e) => setExperienciaRequerida(e.target.value)} disabled={isSubmitting} required min="0" />
                 </div>
 
-                <div className={styles.formGroup}>
-                    <label>Etiquetas / Palabras Clave (Seleccione el tipo para cada una) *</label>
-                    <div className={styles.tagsListContainer}>
-                        {ALL_POSSIBLE_TAGS.map(tag => (
-                            <div key={tag} className={styles.tagItem}>
-                                <span className={styles.tagName}>{tag}</span>
-                                <div className={styles.tagCheckboxes}>
-                                    <label className={styles.tagCheckboxLabel}>
-                                        <input 
-                                            type="checkbox"
-                                            checked={tagSettings[tag]?.excluyente || false}
-                                            onChange={() => handleTagCheckboxChange(tag, 'excluyente')}
-                                            disabled={isSubmitting}
-                                        /> Excluyente
-                                    </label>
-                                    <label className={styles.tagCheckboxLabel}>
-                                        <input 
-                                            type="checkbox"
-                                            checked={tagSettings[tag]?.deseable || false}
-                                            onChange={() => handleTagCheckboxChange(tag, 'deseable')}
-                                            disabled={isSubmitting}
-                                        /> Deseable
-                                    </label>
-                                </div>
-                            </div>
-                        ))}
+<div className={styles.formGroup}>
+    <label>Etiquetas / Palabras Clave (Seleccione el tipo para cada una) *</label>
+    {loadingEtiquetas ? (
+        <p>Cargando etiquetas...</p>
+    ) : (
+        <div className={styles.tagsListContainer}>
+            {etiquetas.map(etiqueta => (
+                <div key={etiqueta.id_etiqueta} className={styles.tagItem}>
+                    <span className={styles.tagName}>{etiqueta.nombre}</span>
+                    <div className={styles.tagCheckboxes}>
+                        <label className={styles.tagCheckboxLabel}>
+                            <input 
+                                type="checkbox"
+                                checked={tagSettings[etiqueta.nombre]?.excluyente || false}
+                                onChange={() => handleTagCheckboxChange(etiqueta.nombre, 'excluyente')}
+                                disabled={isSubmitting}
+                            /> Excluyente
+                        </label>
+                        <label className={styles.tagCheckboxLabel}>
+                            <input 
+                                type="checkbox"
+                                checked={tagSettings[etiqueta.nombre]?.deseable || false}
+                                onChange={() => handleTagCheckboxChange(etiqueta.nombre, 'deseable')}
+                                disabled={isSubmitting}
+                            /> Deseable
+                        </label>
                     </div>
                 </div>
+            ))}
+        </div>
+    )}
+</div>
                 
                 <div className={styles.formGroup}> 
                     <label htmlFor="fechaFinalizacion">Fecha de Finalización *</label>
