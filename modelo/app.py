@@ -14,9 +14,14 @@ from pydantic import BaseModel
 from fastapi import UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from datetime import datetime
+from fastapi import APIRouter
 
 
 app = FastAPI()
+
+class LoginInput(BaseModel):
+    email: str
+    password: str
 
 class EmpleadoInput(BaseModel):
     nombre: str
@@ -555,5 +560,31 @@ async def listar_sedes():
         """)
         sedes = cursor.fetchall()
         return sedes
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.post("/login")
+def login(data: LoginInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT u.id_usuario, u.email, u.contraseña, u.id_rol, r.descripcion as rol
+            FROM usuario u
+            JOIN roles r ON u.id_rol = r.id_rol
+            WHERE u.email = %s AND r.estado_activo = TRUE
+        """, (data.email,))
+        user = cursor.fetchone()
+        if not user:
+            raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+        # ¡IMPORTANTE! Si las contraseñas están hasheadas, usa bcrypt o similar aquí
+        if user[2] != data.password:
+            raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+        return {
+            "id_usuario": user[0],
+            "email": user[1],
+            "rol": user[4],
+            "id_rol": user[3]
+        }
     finally:
         db.cerrar_conexion(conn)
