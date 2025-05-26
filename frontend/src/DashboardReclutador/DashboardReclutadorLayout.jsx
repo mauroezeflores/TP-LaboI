@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardReclutador.module.css';
-
+import LogoutButton from '../components/LogoutButton';
 
 export default function DashboardReclutadorLayout() {
   // Función para manejar el logout (ejemplo)
@@ -108,13 +108,11 @@ export default function DashboardReclutadorLayout() {
 
 
         {/* Botón/Link de Cerrar Sesión (Ejemplo) */}
-        <NavLink to="/" className={styles.navLink}>
-        <div className={styles.sidebarFooter}>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-                <span>Cerrar Sesión</span>
-            </button>
+
+         <div className={styles.sidebarFooter}>
+          <LogoutButton />
         </div>
-        </NavLink>
+
 
 
       </aside>

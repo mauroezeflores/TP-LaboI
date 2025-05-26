@@ -38,10 +38,8 @@ export default function Login() {
         return;
       }
 
-      // Guarda los datos en localStorage
       localStorage.setItem('usuario', JSON.stringify(data));
 
-      // Redirige según el rol
       switch (data.rol?.toLowerCase()) {
         case 'reclutador':
           navigate('/dashboard/empleadoRRHH');
@@ -67,23 +65,36 @@ export default function Login() {
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <h2 className={accentClass}>Iniciar Sesión</h2>
-      <form onSubmit={handleSubmit} className={styles.loginForm}>
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-        {error && <div className={styles.errorMsg}>{error}</div>}
-        <button type="submit">Ingresar</button>
+    <div className={styles.authContainer}>
+      <form onSubmit={handleSubmit} className={`${styles.authForm} ${accentClass}`}>
+        <h2 className={styles.formTitle}>Iniciar Sesión</h2>
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        <div className={styles.inputGroup}>
+          <label htmlFor="email">Correo electrónico</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            autoComplete="username"
+          />
+        </div>
+        <div className={styles.inputGroup}>
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+        </div>
+        <button type="submit" className={styles.submitButton}>Ingresar</button>
+        <div className={styles.linkContainer}>
+          <Link to="/">Volver al inicio</Link>
+        </div>
       </form>
     </div>
   );
