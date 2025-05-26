@@ -575,16 +575,29 @@ def login(data: LoginInput):
             WHERE u.email = %s AND r.estado_activo = TRUE
         """, (data.email,))
         user = cursor.fetchone()
-        if not user:
+        if not user or user[2] != data.password:
             raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
-        # ¡IMPORTANTE! Si las contraseñas están hasheadas, usa bcrypt o similar aquí
-        if user[2] != data.password:
-            raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
-        return {
+        
+        user_data = {
             "id_usuario": user[0],
             "email": user[1],
             "rol": user[4],
             "id_rol": user[3]
         }
+
+        # Si es candidato, trae datos de candidato
+        if user[3] == 4:  # 4 = candidato
+            cursor.execute("SELECT * FROM candidato WHERE id_usuario = %s", (user[0],))
+            candidato = cursor.fetchone()
+            if candidato:
+                user_data["candidato"] = dict(zip([desc[0] for desc in cursor.description], candidato))
+        # Si es empleado, trae datos de empleado
+        elif user[3] == 3:  # 3 = empleado
+            cursor.execute("SELECT * FROM empleado WHERE id_usuario = %s", (user[0],))
+            empleado = cursor.fetchone()
+            if empleado:
+                user_data["empleado"] = dict(zip([desc[0] for desc in cursor.description], empleado))
+
+        return user_data
     finally:
         db.cerrar_conexion(conn)
