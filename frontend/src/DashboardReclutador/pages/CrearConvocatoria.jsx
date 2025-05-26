@@ -97,13 +97,13 @@ export default function CrearConvocatoria() {
         setFormError('');
         setSuccessMessage('');
 
-        const excluyentes = Object.entries(tagSettings)
-            .filter(([, v]) => v.excluyente) 
-            .map(([k]) => k);
-        
-        const deseables = Object.entries(tagSettings)
-            .filter(([, v]) => v.deseable) 
-            .map(([k]) => k);
+const excluyentes = etiquetas
+    .filter(et => tagSettings[et.nombre]?.excluyente)
+    .map(et => et.id_etiqueta);
+
+const deseables = etiquetas
+    .filter(et => tagSettings[et.nombre]?.deseable)
+    .map(et => et.id_etiqueta);
 
         if (!tituloConvocatoria || !puesto || !sede || !fechaFinalizacion || !experienciaRequerida) {
             setFormError('Los campos: Título, Puesto (ID), Sede (ID), Experiencia Requerida y Fecha de Finalización son obligatorios.');
@@ -126,15 +126,15 @@ export default function CrearConvocatoria() {
 
         setIsSubmitting(true);
 
-        const payloadBackend = {
-            id_sede: idSedeInt,
-            id_puesto: idPuestoInt,
-            descripcion: `${tituloConvocatoria} - ${descripcion}`,
-            fecha_de_finalizacion: fechaFinalizacion, 
-            experiencia_requerida: experienciaInt,
-            etiquetas_deseables: deseables,
-            etiquetas_excluyentes: excluyentes,
-        };
+const payloadBackend = {
+    id_sede: idSedeInt,
+    id_puesto: idPuestoInt,
+    descripcion: `${tituloConvocatoria} - ${descripcion}`,
+    fecha_de_finalizacion: fechaFinalizacion, 
+    experiencia_requerida: experienciaInt,
+    etiquetas_deseables: deseables,      // array de IDs
+    etiquetas_excluyentes: excluyentes,  // array de IDs
+};
 
         try {
             const response = await fetch(`${API_BASE_URL}/convocatoria`, {
