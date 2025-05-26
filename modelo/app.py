@@ -52,8 +52,8 @@ class ConvocatoriaInput(BaseModel):
     descripcion: str
     fecha_de_finalizacion: datetime
     experiencia_requerida: int
-    etiquetas_deseables: List[str]
-    etiquetas_excluyentes: List[str]
+    etiquetas_deseables: List[int]         
+    etiquetas_excluyentes: List[int] 
 
 class ConvocatoriaInfoOutput(BaseModel):
     id: int

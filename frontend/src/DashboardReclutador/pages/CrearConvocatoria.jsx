@@ -155,11 +155,16 @@ const payloadBackend = {
             setSuccessMessage(`Convocatoria "${tituloConvocatoria}" creada con éxito (ID de Convocatoria: ${responseData.id_convocatoria}).`);
             // Limpiar formulario
             setTituloConvocatoria('');
-            setPuesto('');
-            setSede('');
+            setIdPuesto('');
+            setIdSede('');
             setDescripcion('');
             setExperienciaRequerida('');
-            setTagSettings(initialTagSettings);
+            setTagSettings(
+            etiquetas.reduce((acc, et) => {
+                acc[et.nombre] = { excluyente: false, deseable: false };
+                return acc;
+            }, {})
+            );
             setFechaFinalizacion('');
         } catch (error) {
             setFormError(error.message || "Error al crear la convocatoria.");
