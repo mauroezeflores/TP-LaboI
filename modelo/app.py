@@ -527,3 +527,33 @@ async def listar_etiquetas():
         return etiquetas
     finally:
         db.cerrar_conexion(conn)
+
+@app.get("/puestos")
+async def listar_puestos():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT id_puesto_trabajo, nombre, seniority, sueldo, presencial, remoto
+            FROM puesto_trabajo
+            ORDER BY nombre ASC
+        """)
+        puestos = cursor.fetchall()
+        return puestos
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.get("/sedes")
+async def listar_sedes():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT id_sede, nombre
+            FROM sede
+            ORDER BY nombre ASC
+        """)
+        sedes = cursor.fetchall()
+        return sedes
+    finally:
+        db.cerrar_conexion(conn)
