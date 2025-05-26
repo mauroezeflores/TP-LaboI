@@ -34,9 +34,9 @@ export default function PantallaDeRiesgosEmpleados() {
   }, []);
 
   const getColorDesempeno = (riesgo) => {
-    if (riesgo < 30) return styles.red;
+    if (riesgo < 30) return styles.green;
     if (riesgo >= 30 && riesgo < 70) return styles.orange;
-    if (riesgo >= 70) return styles.green;
+    if (riesgo >= 70) return styles.red;
     return styles.default;
   };
 

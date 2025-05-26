@@ -516,3 +516,14 @@ async def listar_convocatorias_para_candidatos():
     finally:
         if conn:
             db.cerrar_conexion(conn)
+
+@app.get("/etiquetas")
+async def listar_etiquetas():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_etiqueta, nombre FROM etiqueta ORDER BY nombre ASC;")
+        etiquetas = cursor.fetchall()
+        return etiquetas
+    finally:
+        db.cerrar_conexion(conn)
