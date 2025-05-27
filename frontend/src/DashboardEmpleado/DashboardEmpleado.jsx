@@ -171,10 +171,6 @@ const DashboardEmpleado = () => {
                         <input type="tel" readOnly value={empleadoInfo.telefono} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
-                        <label>Fecha de Ingreso</label>
-                        <input type="date" readOnly value={empleadoInfo.fechaIngreso} className={styles.inputFieldReadOnly} />
-                    </div>
-                    <div className={styles.formGroup}>
                         <label>DNI</label>
                         <input type="text" readOnly value={empleadoInfo.dni} className={styles.inputFieldReadOnly} />
                     </div>
