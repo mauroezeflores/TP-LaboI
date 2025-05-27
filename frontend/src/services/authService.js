@@ -8,6 +8,7 @@ export function logoutUsuario() {
   localStorage.removeItem(USUARIO_KEY);
 }
 
+
 export function getUsuarioActual() {
   const usuario = localStorage.getItem(USUARIO_KEY);
   return usuario ? JSON.parse(usuario) : null;

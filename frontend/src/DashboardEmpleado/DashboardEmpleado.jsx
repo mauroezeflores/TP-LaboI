@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
-import styles from './DashboardEmpleado.module.css';
+import styles from './Dashboardempleado.module.css';
 import { NavLink ,useNavigate} from 'react-router-dom';
 import { EncuestaSatisfaccionEmpleado } from "./EncuestaSatisfaccionEmpleado";
+import { useEffect } from 'react';
+import { getUsuarioActual } from '../services/authService';
 import LogoutButton from '../components/LogoutButton'; // Asegúrate de que la ruta sea correcta
 const DashboardEmpleado = () => {
-  // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
-  const empleado = {
-    nombre: "Juan",
-    apellido: "Perez",
-    puesto: "Analista de Marketing",
-    email: "juan.m@example.com",
-    telefono: "1122334455",
-    fechaIngreso: "2023-01-15",
-    dni: "12345678",
-  };
+  const navigate = useNavigate();
+    const usuario = getUsuarioActual();
+  useEffect(() => {
+      if (!usuario || usuario.rol?.toLowerCase() !== 'empleado') {
+        navigate('/login/candidato');
+      }
+    }, [usuario, navigate]);
+  
+    // Extrae datos del empleado si existen
+    const empleado = usuario?.empleado || {};
+    const [empleadoInfo, setempleadoInfo] = useState({
+      nombre: empleado.nombre || '',
+      apellido: empleado.apellido || '',
+      puesto: empleado.puesto || '',
+      fechaIngreso: empleado.fecha_ingreso || '',
+      dni: empleado.dni || '',
+      email: empleado.email || usuario?.email || '',
+      ubicacion: empleado.ciudad || '',
+      telefono: empleado.tel_num_telefono || '',
+    });
 
   const licencias = [
     // Datos de ejemplo de licencias del empleado
@@ -89,7 +101,7 @@ const DashboardEmpleado = () => {
     <div className={styles.pageContainer}>
       <LogoutButton />
       <h1 className={styles.mainTitle}>Portal del Empleado</h1>
-      <p className={styles.welcomeMessage}>Hola, {empleado.nombre}. Aquí puedes gestionar tu información.</p>
+      <p className={styles.welcomeMessage}>Hola, {empleadoInfo.nombre}. Aquí puedes gestionar tu información.</p>
 
       {/* --- Menú de Navegación tipo Tabs --- */}
       <nav className={styles.sectionNav}>
@@ -144,27 +156,27 @@ const DashboardEmpleado = () => {
                  <div className={styles.formGrid}>
                     <div className={styles.formGroup}>
                         <label>Nombre Completo</label>
-                        <input type="text" readOnly value={`${empleado.nombre} ${empleado.apellido}`} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={`${empleadoInfo.nombre} ${empleadoInfo.apellido}`} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>Puesto</label>
-                        <input type="text" readOnly value={empleado.puesto} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={empleadoInfo.puesto} className={styles.inputFieldReadOnly} />
                     </div>
                      <div className={styles.formGroup}>
                         <label>Email</label>
-                        <input type="email" readOnly value={empleado.email} className={styles.inputFieldReadOnly} />
+                        <input type="email" readOnly value={empleadoInfo.email} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>Teléfono</label>
-                        <input type="tel" readOnly value={empleado.telefono} className={styles.inputFieldReadOnly} />
+                        <input type="tel" readOnly value={empleadoInfo.telefono} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>Fecha de Ingreso</label>
-                        <input type="date" readOnly value={empleado.fechaIngreso} className={styles.inputFieldReadOnly} />
+                        <input type="date" readOnly value={empleadoInfo.fechaIngreso} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>DNI</label>
-                        <input type="text" readOnly value={empleado.dni} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={empleadoInfo.dni} className={styles.inputFieldReadOnly} />
                     </div>
                  </div>
                   <div className={styles.cardActions}>
