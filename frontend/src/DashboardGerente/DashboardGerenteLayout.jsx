@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardGerente.module.css'; // creás un nuevo CSS con los mismos estilos
-
+import LogoutButton from '../components/LogoutButton';
 export default function DashboardGerenteLayout() {
   const handleLogout = () => {
      // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
@@ -70,13 +70,11 @@ export default function DashboardGerenteLayout() {
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
         
-        <NavLink to="/" className={styles.navLink}>
+
           <div className={styles.sidebarFooter}>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              <span>Cerrar Sesión</span>
-            </button>
+            <LogoutButton/>
           </div>
-        </NavLink>
+
       </aside>
 
       <main className={styles.contentArea}>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './DashboardEmpleado.module.css';
 import { NavLink ,useNavigate} from 'react-router-dom';
 import { EncuestaSatisfaccionEmpleado } from "./EncuestaSatisfaccionEmpleado";
+import LogoutButton from '../components/LogoutButton'; // Asegúrate de que la ruta sea correcta
 const DashboardEmpleado = () => {
   // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
   const empleado = {
@@ -86,13 +87,7 @@ const DashboardEmpleado = () => {
     // Contenedor principal de la página del empleado
     
     <div className={styles.pageContainer}>
-      <NavLink to="/" className={styles.navLink}>
-            <div className={styles.logoutButtonContainer}>
-              <button className={styles.logoutButton} onClick={handleLogout}>
-                Cerrar sesión
-              </button>
-            </div>
-            </NavLink>
+      <LogoutButton />
       <h1 className={styles.mainTitle}>Portal del Empleado</h1>
       <p className={styles.welcomeMessage}>Hola, {empleado.nombre}. Aquí puedes gestionar tu información.</p>
 
