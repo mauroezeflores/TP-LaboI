@@ -19,6 +19,11 @@ from fastapi import APIRouter
 
 app = FastAPI()
 
+class EncuestaInput(BaseModel):
+    id_empleado: int
+    satisfaccion_laboral: int
+    satisfaccion_ambiente_laboral: int
+
 class LoginInput(BaseModel):
     email: str
     password: str
@@ -599,5 +604,27 @@ def login(data: LoginInput):
                 user_data["empleado"] = dict(zip([desc[0] for desc in cursor.description], empleado))
 
         return user_data
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.post("/encuesta")
+def crear_encuesta(encuesta: EncuestaInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO encuesta (id_empleado, fecha_de_realizacion, satisfaccion_laboral, satisfaccion_ambiente_laboral)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            encuesta.id_empleado,
+            datetime.now(),
+            encuesta.satisfaccion_laboral,
+            encuesta.satisfaccion_ambiente_laboral
+        ))
+        conn.commit()
+        return {"mensaje": "Encuesta enviada correctamente"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.cerrar_conexion(conn)

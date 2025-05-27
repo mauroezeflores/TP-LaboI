@@ -3,6 +3,8 @@ import { Box, Typography, Slider, Button } from "@mui/material";
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 
+const API_BASE_URL = 'http://localhost:8000';
+
 function SatisfactionSlider({ label, value, setValue }) {
   return (
     <Box sx={{ mb: 4 }}>
@@ -28,11 +30,35 @@ export function EncuestaSatisfaccionEmpleado() {
   const [satisfaccionPuesto, setSatisfaccionPuesto] = useState(50);
   const [satisfaccionAmbiente, setSatisfaccionAmbiente] = useState(50);
   const [enviado, setEnviado] = useState(false);
+  const [mensaje, setMensaje] = useState('');
 
-  const handleSubmit = () => {
-    // Aquí puedes enviar los datos al backend si lo deseas
+const handleSubmit = async () => {
+  setMensaje('');
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  const id_empleado = usuario?.id_usuario;
+
+  if (!id_empleado) {
+    setMensaje('No se pudo identificar al empleado.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/encuesta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id_empleado: id_empleado,
+        satisfaccion_laboral: satisfaccionPuesto,
+        satisfaccion_ambiente_laboral: satisfaccionAmbiente
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Error al enviar encuesta');
     setEnviado(true);
-  };
+  } catch (err) {
+    setMensaje('Error: ' + err.message);
+  }
+};
 
   if (enviado) {
     return <Typography variant="h6" align="center" color="success.main">¡Gracias por tu respuesta!</Typography>;
@@ -62,6 +88,7 @@ export function EncuestaSatisfaccionEmpleado() {
       >
         Enviar respuesta
       </Button>
+      {mensaje && <Typography color="error" align="center" sx={{ mt: 2 }}>{mensaje}</Typography>}
     </Box>
   );
 }

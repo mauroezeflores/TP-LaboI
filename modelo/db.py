@@ -56,3 +56,5 @@ def cerrar_conexion(conexion):
 
     except Exception as e:
         print(f"Error al cerrar la conexion: {e}")
+
+
