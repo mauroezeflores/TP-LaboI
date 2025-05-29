@@ -13,10 +13,38 @@ import datetime
 from pydantic import BaseModel
 from fastapi import UploadFile, File, Form
 from fastapi.responses import JSONResponse
-from datetime import datetime
+from fastapi import APIRouter
+from datetime import date, datetime
+from pydantic.networks import EmailStr
 
 
 app = FastAPI()
+
+class EmpleadoCreateInput(BaseModel):
+    nombre: str
+    apellido: str
+    fecha_de_nacimiento: date
+    email_personal: EmailStr
+    estado_civil: str
+    tiene_hijos: bool
+    nivel_educativo: str
+    id_direccion: int
+    id_puesto_trabajo: int
+    id_jornada: int
+    estado: str  # Estado laboral, ej: "Contratado", "Activo"
+    hace_horas_extra: Optional[bool] = False
+    tiene_movilidad_propia: Optional[bool] = False
+    dni: Optional[str] = None
+    tiene_presentismo: Optional[bool] = False
+
+class EncuestaInput(BaseModel):
+    id_empleado: int
+    satisfaccion_laboral: int
+    satisfaccion_ambiente_laboral: int
+
+class LoginInput(BaseModel):
+    email: str
+    password: str
 
 class EmpleadoInput(BaseModel):
     nombre: str
@@ -45,6 +73,7 @@ class EmpleadoInput(BaseModel):
     estado: str
     hace_horas_extra: bool
     tiene_movilidad_propia: bool
+    
 
 class ConvocatoriaInput(BaseModel):
     id_sede: int
@@ -52,8 +81,44 @@ class ConvocatoriaInput(BaseModel):
     descripcion: str
     fecha_de_finalizacion: datetime
     experiencia_requerida: int
-    etiquetas_deseables: List[str]
-    etiquetas_excluyentes: List[str]
+    etiquetas_deseables: List[int]         
+    etiquetas_excluyentes: List[int] 
+
+class ConvocatoriaInfoOutput(BaseModel):
+    id: int
+    titulo: str
+    fecha: datetime
+    estado: str
+    aptos: int
+
+class ConvocatoriaInfoBasicaOutput(BaseModel):
+    id: int
+    titulo: str
+
+class CandidatoParaConvocatoriaOutput(BaseModel):
+    id: int # id_candidato
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    email: Optional[str] = None
+    telefono: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
+    ubicacion: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
+    cvUrl: Optional[str] = None
+
+class ConvocatoriaDisponibleOutput(BaseModel):
+    id: int
+    title: str
+    company: Optional[str] # Nombre de la sede o empresa
+    desc: str
+    location: Optional[str] # Ej: "Ciudad, Provincia"
+    modality: str # Ej: "Presencial", "Remoto", "Híbrido"
+    fecha_publicacion: datetime # Será fecha_de_finalizacion
+    skillTags: List[str] = []
+
+#Clase para la salida de la lista de convocatorias disponibles
+class CandidatoRankeadoML(BaseModel):
+    id_candidato: int
+    score_ml: float
+    decision_ml:str # "Apto" o "No Apto" puede ser boolean
 
 # CORS para conectar con React
 app.add_middleware(
@@ -67,6 +132,11 @@ app.add_middleware(
 modelo_desempeno = load("modelo_prediccion_de_desempeno.joblib")
 modelo_rotacion = load("../modelo/modelo_prediccion_de_rotacion.joblib")
 scaler_rotacion = load("../modelo/scaler.joblib")
+#Evaluación de CVs
+modelo_evaluacion_cv = load("../modelo/modelo_evaluacion_cv.joblib")
+scaler_evaluacion_cv = load("../modelo/scaler_evaluacion_cv.joblib")
+fetures_evaluacion_cv = load("../modelo/features_evaluacion_cv.joblib")
+threshold_evaluacion_cv = load("../modelo/threshold_evaluacion_cv.joblib")
 
 # Endpoint 1: Predicción individual de datos
 @app.get("/predecir/desempeno/{id_empleado}")
@@ -146,28 +216,57 @@ async def presentismo(empleado_id: int):
         db.cerrar_conexion(conexion)
 
 ## escribir endpoints de todos los datos y luego conectarlos con el frontend
-@app.post("/empleado")
-async def registrar_empleado(data: EmpleadoInput):
-    conexion = db.abrir_conexion()
+@app.post("/empleado", summary="Registrar un nuevo empleado", tags=["Empleados"])
+async def endpoint_registrar_empleado_nuevo(empleado_data: EmpleadoCreateInput):
+    """
+    Endpoint para registrar un nuevo empleado en el sistema.
+    Se esperan los datos del empleado según el modelo EmpleadoCreateInput.
+    Los campos como `id_direccion` y `id_usuario` deben ser IDs válidos
+    de registros existentes en sus respectivas tablas.
+    """
+    conexion = None
     try:
-        id_empleado = aux.nuevo_empleado(
-            conexion,
-            data.nombre, data.apellido, data.fecha_de_nacimiento, data.email_personal,
-            data.estado_civil, data.tiene_hijos, data.nivel_educativo,
-            data.direccion, data.pais, data.provincia, data.ciudad, data.cod_postal, data.latitud, data.longitud,
-            data.codigo_pais, data.codigo_area, data.numero_telefono, data.tipo_telefono,
-            data.id_puesto_trabajo, data.id_jornada, data.estado,
-            data.hace_horas_extra, data.tiene_movilidad_propia
+        conexion = db.abrir_conexion()
+        
+        datos_para_db = empleado_data.model_dump()
+        
+        id_nuevo_empleado = aux.crear_nuevo_empleado_directo(conexion, datos_para_db)
+        
+        return {
+            "mensaje": "Empleado registrado con éxito.",
+            "id_empleado": id_nuevo_empleado,
+            "datos_registrados": empleado_data.model_dump() # Devuelve lo que se registró
+        }
+    except Exception as e:
+        print(f"Error detallado en endpoint_registrar_empleado_nuevo: {type(e).__name__} - {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error interno del servidor al intentar registrar el empleado: {str(e)}"
         )
-        if id_empleado is None:
-            raise HTTPException(status_code=400, detail="No se pudo crear el empleado")
-        return {"mensaje": "Empleado registrado con éxito", "id_empleado": id_empleado}
+    finally:
+        if conexion:
+            db.cerrar_conexion(conexion)
+
+@app.get("/empleado/{id_empleado}", summary="Obtener detalle de un empleado", tags=["Empleados"])
+async def endpoint_obtener_empleado(id_empleado: int):
+    # Implementa la lógica para buscar en DB usando el id_empleado
+    # y devolver los datos o un 404 si no se encuentra.
+    # Ejemplo (necesitas la función aux.obtener_empleado_por_id):
+    conexion = None
+    try:
+        conexion = db.abrir_conexion()
+        # Asume que tienes una función que retorna un diccionario o un objeto compatible con Pydantic
+        empleado = aux.obtener_empleado_por_id(conexion, id_empleado) 
+        if not empleado:
+                 raise HTTPException(status_code=404, detail="Empleado no encontrado")
+        return empleado 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        db.cerrar_conexion(conexion)
-
-
+        if conexion:
+            db.cerrar_conexion(conexion)
 
 @app.get("/empleados")
 async def listar_empleados():
@@ -242,24 +341,30 @@ async def insertar_evaluacion(data: NuevaEvaluacionInput):
     finally:
         db.cerrar_conexion(conn)
 
-@app.get("/empleados/rotacion")
-async def empleados_con_rotacion():
+@app.get("/empleados/detalle-rotacion/{empleado_id}")
+async def detalle_rotacion_empleado(empleado_id: int):
     conn = db.abrir_conexion()
     try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT id_empleado, nombre, apellido FROM empleado")
-        empleados = cursor.fetchall()
-        resultado = []
-        for emp in empleados:
-            try:
-                pred = await predecir(emp['id_empleado'])
-                emp['rotacion_prediccion'] = pred.get('prediccion')
-                emp['rotacion_probabilidad'] = pred.get('probabilidad')
-            except Exception as e:
-                emp['rotacion_prediccion'] = None
-                emp['rotacion_probabilidad'] = None
-            resultado.append(emp)
-        return resultado
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id_empleado, ausencias_90d, llegadas_tardes_90d, salidas_tempranas_90d, hs_extras_trabajadas_90d
+            FROM deteccion_rotacion
+            WHERE id_empleado = %s
+            LIMIT 1
+            """,
+            (empleado_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return {"error": "No hay datos de rotación para este empleado"}
+        return {
+            "id_empleado": row[0],
+            "ausencias_90d": row[1],
+            "llegadas_tarde_90d": row[2],
+            "salidas_tempranas_90d": row[3],
+            "hs_extras_trabajadas_90d": row[4]
+        }
     finally:
         db.cerrar_conexion(conn)
 
@@ -316,11 +421,18 @@ def cerrar_convocatoria(id_convocatoria: int):
 @app.post("/convocatoria/{id_convocatoria}/postularse")
 async def postularse(
         id_convocatoria: int,
-        id_usuario: int,
+        id_usuario: int = Form(...),
         experiencia: int = Form(...)
+
 ):
+    
     try:
         conexion = db.abrir_conexion()
+        id_candidato = aux_cv.obtener_id_candidato_de_id_usuario(conexion, id_usuario)
+        if aux_cv.verificar_postulacion(conexion, id_candidato, id_convocatoria):  
+            raise Exception("Ya te has postulado anteriormente a esta convocatoria.")
+
+
         aux_cv.postular_candidato(conexion,
                                   id_usuario = id_usuario,
                                   id_convocatoria = id_convocatoria,
@@ -330,3 +442,379 @@ async def postularse(
         return {"mensaje": "Candidato postulado correctamente"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+    
+@app.get("/convocatorias", response_model=List[ConvocatoriaInfoOutput])
+async def listar_convocatorias_publicadas():
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        query = """
+            SELECT 
+                c.id_convocatoria as id, 
+                c.descripcion as titulo, 
+                c.fecha_de_finalizacion as fecha,
+                c.estado,
+                COALESCE(
+                    (SELECT COUNT(DISTINCT cpc.id_candidato) 
+                     FROM candidatos_por_convocatoria cpc 
+                     WHERE cpc.id_convocatoria = c.id_convocatoria), 
+                    0
+                ) as aptos
+            FROM convocatoria c
+            ORDER BY c.id_convocatoria DESC;
+        """
+        cursor.execute(query)
+        convocatorias_db = cursor.fetchall()
+        
+        return convocatorias_db
+    except Exception as e:
+        print(f"Error en GET /convocatorias: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al obtener convocatorias.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+@app.get("/convocatoria/{convocatoria_id}/info", response_model=ConvocatoriaInfoBasicaOutput)
+async def obtener_info_convocatoria(convocatoria_id: int):
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute(
+            "SELECT id_convocatoria as id, descripcion as titulo FROM convocatoria WHERE id_convocatoria = %s",
+            (convocatoria_id,)
+        )
+        convocatoria = cursor.fetchone()
+        if not convocatoria:
+            raise HTTPException(status_code=404, detail="Convocatoria no encontrada")
+        return convocatoria
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error en GET /convocatoria/{convocatoria_id}/info: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al obtener información de la convocatoria.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+# --- Endpoint para listar candidatos de una convocatoria todavia no funcioan. ---
+@app.get("/convocatoria/{convocatoria_id}/candidatos", response_model=List[CandidatoParaConvocatoriaOutput])
+async def listar_candidatos_por_convocatoria(convocatoria_id: int):
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+        query = """
+            SELECT DISTINCT ON (cand.id_candidato)
+                cand.id_candidato as id,
+                cand.nombre,
+                cand.apellido,
+                cand.email,
+                cv.url as cvUrl
+            FROM candidatos_por_convocatoria cpc
+            JOIN candidato cand ON cpc.id_candidato = cand.id_candidato
+            LEFT JOIN cv ON cand.id_usuario = cv.id_usuario
+            WHERE cpc.id_convocatoria = %s
+            ORDER BY cand.id_candidato, cand.apellido, cand.nombre; 
+        """
+        
+        cursor.execute(query, (convocatoria_id,))
+        candidatos = cursor.fetchall()
+        return candidatos
+    except Exception as e:
+        print(f"Error en GET /convocatoria/{convocatoria_id}/candidatos: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno al obtener candidatos de la convocatoria.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+@app.get("/convocatorias/disponibles", response_model=List[ConvocatoriaDisponibleOutput])
+async def listar_convocatorias_para_candidatos():
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        query = """
+            SELECT 
+                c.id_convocatoria as id, 
+                COALESCE(pt.nombre, c.descripcion) as title,
+                COALESCE(s.nombre, 'Empresa Confidencial') as company, 
+                c.descripcion as desc, 
+                c.fecha_de_finalizacion as fecha_publicacion,
+                
+                -- Construyendo location desde la tabla 'direccion'
+                -- Fallback al nombre de la sede si ciudad o provincia_estado son NULL
+                COALESCE(d.ciudad || ', ' || d.provincia_estado, s.nombre, 'Ubicación no especificada') as location,
+                
+                CASE 
+                    WHEN pt.presencial = 1 AND pt.remoto = 1 THEN 'Híbrido'
+                    WHEN pt.presencial = 1 THEN 'Presencial'
+                    WHEN pt.remoto = 1 THEN 'Remoto'
+                    ELSE 'Modalidad no especificada'
+                END as modality,
+                
+                COALESCE(
+                    (SELECT ARRAY_AGG(e.nombre ORDER BY e.nombre)
+                     FROM etiquetas_por_convocatoria epc
+                     JOIN etiqueta e ON epc.id_etiqueta = e.id_etiqueta
+                     WHERE epc.id_convocatoria = c.id_convocatoria),
+                    ARRAY[]::VARCHAR[]
+                ) as "skillTags"
+            FROM convocatoria c
+            LEFT JOIN puesto_trabajo pt ON c.id_puesto = pt.id_puesto_trabajo
+            LEFT JOIN sede s ON c.id_sede = s.id_sede
+            LEFT JOIN direccion d ON s.id_direccion = d.id_direccion -- JOIN a la tabla direccion
+            WHERE c.estado = 'abierto' 
+            ORDER BY c.fecha_de_finalizacion DESC, c.id_convocatoria DESC;
+        """
+        
+        cursor.execute(query)
+        convocatorias_db = cursor.fetchall()
+        
+        return convocatorias_db
+    except Exception as e:
+        print(f"Error en GET /convocatorias/disponibles: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno al obtener convocatorias disponibles.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
+
+@app.get("/etiquetas")
+async def listar_etiquetas():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_etiqueta, nombre FROM etiqueta ORDER BY nombre ASC;")
+        etiquetas = cursor.fetchall()
+        return etiquetas
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.get("/puestos")
+async def listar_puestos():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT id_puesto_trabajo, nombre, seniority, sueldo, presencial, remoto
+            FROM puesto_trabajo
+            ORDER BY nombre ASC
+        """)
+        puestos = cursor.fetchall()
+        return puestos
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.get("/sedes")
+async def listar_sedes():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT id_sede, nombre
+            FROM sede
+            ORDER BY nombre ASC
+        """)
+        sedes = cursor.fetchall()
+        return sedes
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.post("/login")
+def login(data: LoginInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT u.id_usuario, u.email, u.contraseña, u.id_rol, r.descripcion as rol
+            FROM usuario u
+            JOIN roles r ON u.id_rol = r.id_rol
+            WHERE u.email = %s AND r.estado_activo = TRUE
+        """, (data.email,))
+        user = cursor.fetchone()
+        if not user or user[2] != data.password:
+            raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+        
+        user_data = {
+            "id_usuario": user[0],
+            "email": user[1],
+            "rol": user[4],
+            "id_rol": user[3]
+        }
+
+        # Si es candidato, trae datos de candidato
+        if user[3] == 4:  # 4 = candidato
+            cursor.execute("SELECT * FROM candidato WHERE id_usuario = %s", (user[0],))
+            candidato = cursor.fetchone()
+            if candidato:
+                user_data["candidato"] = dict(zip([desc[0] for desc in cursor.description], candidato))
+        # Si es empleado, trae datos de empleado
+        elif user[3] == 3:  # 3 = empleado
+            cursor.execute("SELECT * FROM empleado WHERE id_usuario = %s", (user[0],))
+            empleado = cursor.fetchone()
+            if empleado:
+                user_data["empleado"] = dict(zip([desc[0] for desc in cursor.description], empleado))
+
+        return user_data
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.post("/encuesta")
+def crear_encuesta(encuesta: EncuestaInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO encuesta (id_empleado, fecha_de_realizacion, satisfaccion_laboral, satisfaccion_ambiente_laboral)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            encuesta.id_empleado,
+            datetime.now(),
+            encuesta.satisfaccion_laboral,
+            encuesta.satisfaccion_ambiente_laboral
+        ))
+        conn.commit()
+        return {"mensaje": "Encuesta enviada correctamente"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.cerrar_conexion(conn)
+
+@app.get("/puestos")
+def listar_puestos_trabajo():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_puesto_trabajo, nombre FROM puesto_trabajo ORDER BY nombre ASC;")
+        puestos = cursor.fetchall()
+        return puestos
+    finally:
+        db.cerrar_conexion(conn)
+
+
+# --- Función para Preprocesar y Predecir con el Modelo de Ranking de CVs ---
+def predecir_con_modelo_cargado_api(lista_datos_candidatos_features: List[dict]):
+
+    
+    global modelo_evaluacion_cv, scaler_evaluacion_cv, fetures_evaluacion_cv, threshold_evaluacion_cv
+
+    if modelo_evaluacion_cv is None:
+        print("Modelo de Ranking de CVs no cargado. No se pueden realizar predicciones.")
+        return [{"id_candidato": cand.get("id_candidato_original"), "score_ml": -1.0, "decision_ml_num": -1, "decision_ml_texto": "Error: Modelo no disponible", "error_prediccion": "Modelo no disponible"} for cand in lista_datos_candidatos_features]
+
+    if not lista_datos_candidatos_features:
+        print("No hay datos de candidatos para predecir.")
+        return []
+
+    # Extraer los IDs originales y preparar DataFrame para procesamiento
+    df_for_prediction = pd.DataFrame(lista_datos_candidatos_features)
+    # Guardar cualquier información extra que quieras devolver, como el id original.
+    # El diccionario de entrada de esta función viene de aux_cv.obtener_features_ml_para_un_candidato
+    # y ya incluye "id_candidato_original".
+    
+    # Asegurar que 'nivel_educativo' exista para get_dummies
+    if 'nivel_educativo' not in df_for_prediction.columns:
+        df_for_prediction['nivel_educativo'] = 'secundario' # O tu default más apropiado
+        
+    df_encoded = pd.get_dummies(df_for_prediction, columns=['nivel_educativo'], drop_first=True)
+    
+    # Alinear columnas con las que el modelo fue entrenado
+    df_aligned = df_encoded.reindex(columns=fetures_evaluacion_cv, fill_value=0)
+    
+    # Seleccionar solo las features en el orden correcto para el scaler y el modelo
+    X_to_scale = df_aligned[fetures_evaluacion_cv]
+    
+    try:
+        X_scaled_array = fetures_evaluacion_cv.transform(X_to_scale)
+    except Exception as e:
+        print(f"Error durante escalado en API: {e}");
+        return [{"id_candidato": cand.get("id_candidato_original"), "score_ml": -1.0, "decision_ml_num": -1, "decision_ml_texto": "Error de preprocesamiento", "error_prediccion": f"Escalado fallido: {e}"} for cand in lista_datos_candidatos_features]
+    
+    try:
+        probs = modelo_evaluacion_cv.predict_proba(X_scaled_array)[:, 1]
+    except Exception as e:
+        print(f"Error durante predict_proba en API: {e}");
+        return [{"id_candidato": cand.get("id_candidato_original"), "score_ml": -1.0, "decision_ml_num": -1, "decision_ml_texto": "Error de predicción", "error_prediccion": f"Predicción fallida: {e}"} for cand in lista_datos_candidatos_features]
+        
+    decisions = (probs >= threshold_evaluacion_cv).astype(int)
+    
+    resultados_completos = []
+    for i in range(len(lista_datos_candidatos_features)):
+        resultados_completos.append({
+            "id_candidato": lista_datos_candidatos_features[i]["id_candidato_original"],
+            "score_ml": round(probs[i], 4),
+            "decision_ml_num": decisions[i], # Para guardar en BD
+            "decision_ml_texto": "Recomendado por SIGRH+" if decisions[i] == 1 else "No Recomendado por SIGRH+"
+        })
+    
+    return sorted(resultados_completos, key=lambda x: x['score_ml'], reverse=True)
+
+# --- ENDPOINT MODIFICADO PARA CERRAR Y RANKEAR CONVOCATORIA USANDO ML ---
+@app.post("/convocatoria/{id_convocatoria}/procesar_y_rankear_ml", response_model=List[CandidatoRankeadoML])
+def endpoint_procesar_y_rankear_convocatoria(id_convocatoria: int):
+    if not modelo_evaluacion_cv:
+        raise HTTPException(status_code=503, detail="Modelo de Ranking de CVs no está disponible en este momento.")
+    
+    conexion = None
+    try:
+        conexion = db.abrir_conexion()
+        
+        print(f"Iniciando procesamiento y ranking ML para convocatoria {id_convocatoria}...")
+        
+        # 1. Llamar a la función de auxiliares_cv para obtener la lista de features 
+        #    de candidatos que ya pasaron los filtros duros.
+        #    Esta función asume que aux_cv.evaluar_cv ya se ejecutó para todos los candidatos
+        #    y actualizó la tabla 'evaluacion_cv' con 'es_apto' y los datos base.
+        lista_features_candidatos_aptos = aux_cv.finalizar_convocatoria_y_preparar_para_ml(conexion, id_convocatoria)
+        
+        if not lista_features_candidatos_aptos:
+            # No es necesario cerrar la convocatoria aquí si finalizar_convocatoria_y_preparar_para_ml ya lo hizo.
+            # Revisa la lógica en auxiliares_cv.py. Si cerrar_convocatoria se llama allí, está bien.
+            # Si no, puedes llamar a aux_cv.cerrar_convocatoria(conexion, id_convocatoria) aquí.
+            print(f"No hay candidatos aptos para aplicar el modelo de ML en convocatoria {id_convocatoria}.")
+            # aux_cv.cerrar_convocatoria(conexion, id_convocatoria) # Asegurar que se cierre
+            return []
+
+        # 2. Aplicar el modelo de ML a estos candidatos
+        print(f"Aplicando modelo de ML a {len(lista_features_candidatos_aptos)} candidatos...")
+        candidatos_con_score_ml = predecir_con_modelo_cargado_api(lista_features_candidatos_aptos)
+
+        # 3. Guardar los scores y decisiones en la BD
+        print(f"Guardando scores de ML en la base de datos para convocatoria {id_convocatoria}...")
+        for candidato_ml in candidatos_con_score_ml:
+            if "error_prediccion" not in candidato_ml: # Solo si no hubo error en la predicción para este candidato
+                aux_cv.guardar_score_ml_candidato(
+                    conexion,
+                    candidato_ml["id_candidato"], # Este es el id_candidato original
+                    id_convocatoria,
+                    candidato_ml["score_ml"],
+                    candidato_ml["decision_ml_num"] 
+                )
+        
+        # 4. Cerrar formalmente la convocatoria (si no se hizo en finalizar_convocatoria_y_preparar_para_ml)
+        # La función finalizar_convocatoria_y_preparar_para_ml ya debería llamar a aux_cv.cerrar_convocatoria
+        # Asegúrate de que no se llame dos veces.
+        # Si aux_cv.finalizar_convocatoria_y_preparar_para_ml NO cierra, descomenta:
+        # aux_cv.cerrar_convocatoria(conexion, id_convocatoria)
+        # print(f"Convocatoria {id_convocatoria} formalmente cerrada en la BD (si no se cerró antes).")
+
+        return candidatos_con_score_ml
+
+    except HTTPException as http_exc:
+        raise http_exc # Re-lanzar excepciones HTTP para que FastAPI las maneje
+    except Exception as e:
+        print(f"Error en POST /convocatoria/{id_convocatoria}/procesar_y_rankear_ml: {e}")
+        # import traceback; traceback.print_exc() # Para debug detallado
+        raise HTTPException(status_code=500, detail=f"Error interno al procesar la convocatoria: {str(e)}")
+    finally:
+        if conexion:
+            db.cerrar_conexion(conexion)
