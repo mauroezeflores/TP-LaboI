@@ -85,7 +85,7 @@ const AltaBajaMod = () => {
             </TableHead>
             <TableBody>
               {empleados.map((empleado) => (
-                <TableRow key={empleado.id}>
+                <TableRow key={empleado.id_empleado}>
                   <TableCell>{empleado.nombre}</TableCell>
                   <TableCell>{empleado.apellido}</TableCell>
                   <TableCell>{empleado.email_personal}</TableCell>

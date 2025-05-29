@@ -13,11 +13,29 @@ import datetime
 from pydantic import BaseModel
 from fastapi import UploadFile, File, Form
 from fastapi.responses import JSONResponse
-from datetime import datetime
 from fastapi import APIRouter
+from datetime import date, datetime
+from pydantic.networks import EmailStr
 
 
 app = FastAPI()
+
+class EmpleadoCreateInput(BaseModel):
+    nombre: str
+    apellido: str
+    fecha_de_nacimiento: date
+    email_personal: EmailStr
+    estado_civil: str
+    tiene_hijos: bool
+    nivel_educativo: str
+    id_direccion: int
+    id_puesto_trabajo: int
+    id_jornada: int
+    estado: str  # Estado laboral, ej: "Contratado", "Activo"
+    hace_horas_extra: Optional[bool] = False
+    tiene_movilidad_propia: Optional[bool] = False
+    dni: Optional[str] = None
+    tiene_presentismo: Optional[bool] = False
 
 class EncuestaInput(BaseModel):
     id_empleado: int
@@ -55,6 +73,7 @@ class EmpleadoInput(BaseModel):
     estado: str
     hace_horas_extra: bool
     tiene_movilidad_propia: bool
+    
 
 class ConvocatoriaInput(BaseModel):
     id_sede: int
@@ -185,28 +204,57 @@ async def presentismo(empleado_id: int):
         db.cerrar_conexion(conexion)
 
 ## escribir endpoints de todos los datos y luego conectarlos con el frontend
-@app.post("/empleado")
-async def registrar_empleado(data: EmpleadoInput):
-    conexion = db.abrir_conexion()
+@app.post("/empleado", summary="Registrar un nuevo empleado", tags=["Empleados"])
+async def endpoint_registrar_empleado_nuevo(empleado_data: EmpleadoCreateInput):
+    """
+    Endpoint para registrar un nuevo empleado en el sistema.
+    Se esperan los datos del empleado según el modelo EmpleadoCreateInput.
+    Los campos como `id_direccion` y `id_usuario` deben ser IDs válidos
+    de registros existentes en sus respectivas tablas.
+    """
+    conexion = None
     try:
-        id_empleado = aux.nuevo_empleado(
-            conexion,
-            data.nombre, data.apellido, data.fecha_de_nacimiento, data.email_personal,
-            data.estado_civil, data.tiene_hijos, data.nivel_educativo,
-            data.direccion, data.pais, data.provincia, data.ciudad, data.cod_postal, data.latitud, data.longitud,
-            data.codigo_pais, data.codigo_area, data.numero_telefono, data.tipo_telefono,
-            data.id_puesto_trabajo, data.id_jornada, data.estado,
-            data.hace_horas_extra, data.tiene_movilidad_propia
+        conexion = db.abrir_conexion()
+        
+        datos_para_db = empleado_data.model_dump()
+        
+        id_nuevo_empleado = aux.crear_nuevo_empleado_directo(conexion, datos_para_db)
+        
+        return {
+            "mensaje": "Empleado registrado con éxito.",
+            "id_empleado": id_nuevo_empleado,
+            "datos_registrados": empleado_data.model_dump() # Devuelve lo que se registró
+        }
+    except Exception as e:
+        print(f"Error detallado en endpoint_registrar_empleado_nuevo: {type(e).__name__} - {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error interno del servidor al intentar registrar el empleado: {str(e)}"
         )
-        if id_empleado is None:
-            raise HTTPException(status_code=400, detail="No se pudo crear el empleado")
-        return {"mensaje": "Empleado registrado con éxito", "id_empleado": id_empleado}
+    finally:
+        if conexion:
+            db.cerrar_conexion(conexion)
+
+@app.get("/empleado/{id_empleado}", summary="Obtener detalle de un empleado", tags=["Empleados"])
+async def endpoint_obtener_empleado(id_empleado: int):
+    # Implementa la lógica para buscar en DB usando el id_empleado
+    # y devolver los datos o un 404 si no se encuentra.
+    # Ejemplo (necesitas la función aux.obtener_empleado_por_id):
+    conexion = None
+    try:
+        conexion = db.abrir_conexion()
+        # Asume que tienes una función que retorna un diccionario o un objeto compatible con Pydantic
+        empleado = aux.obtener_empleado_por_id(conexion, id_empleado) 
+        if not empleado:
+                 raise HTTPException(status_code=404, detail="Empleado no encontrado")
+        return empleado 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        db.cerrar_conexion(conexion)
-
-
+        if conexion:
+            db.cerrar_conexion(conexion)
 
 @app.get("/empleados")
 async def listar_empleados():
@@ -628,3 +676,15 @@ def crear_encuesta(encuesta: EncuestaInput):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.cerrar_conexion(conn)
+
+@app.get("/puestos")
+def listar_puestos_trabajo():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_puesto_trabajo, nombre FROM puesto_trabajo ORDER BY nombre ASC;")
+        puestos = cursor.fetchall()
+        return puestos
+    finally:
+        db.cerrar_conexion(conn)
+

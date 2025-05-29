@@ -30,6 +30,7 @@ import ConfiguracionSistemaAdmin from './DashboardAdmin/pages/ConfiguracionSiste
 import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
 import DatosDeDesempeno from './DashboardGerente/DatosDeDesempeno.jsx';
+import ABMEmpleados from './DashboardReclutador/pages/ABMEmpleados.jsx';
 
 function App() {
   return (
@@ -53,7 +54,7 @@ function App() {
            <Route path="convocatoria/:convocatoriaId/candidatos" element={<VerCandidatos />} />
            <Route path="gestion-empleados" element={<GestionEmpleados />} />
            <Route path="gestion-licencias" element={<GestionLicencias />} />
-           <Route path="AltaBajaMod" element={<AltaBajaMod />} />
+           <Route path="abm-empleados" element={<ABMEmpleados />} />
         </Route>
         <Route
                         path="/dashboard/admin"

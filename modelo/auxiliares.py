@@ -1,4 +1,5 @@
 import db
+from typing import Optional, Dict, Any
 
 
 # obtener habilidades, certificacion y presencia en proyectos, devuelve un numero del 1 al 5
@@ -135,48 +136,66 @@ def nuevo_telefono(conexion, codigo_pais, codigo_area, numero_telefono, id_emple
         return None
 
 
-def nuevo_empleado(
-        conexion,
-        nombre, apellido, fecha_de_nacimiento, email_personal,
-        estado_civil, tiene_hijos, nivel_educativo,
-        direccion, pais, provincia, ciudad, cod_postal, latitud, longitud,
-        codigo_pais, codigo_area, numero_telefono, tipo_telefono,
-        id_puesto_trabajo, id_jornada, estado,
-        hace_horas_extra, tiene_movilidad_propia
-):
-    id_direccion = nueva_direccion(conexion, direccion, pais, provincia, ciudad, cod_postal, latitud, longitud)
-    if id_direccion is None:
-        raise Exception("No se pudo crear la dirección")
+def crear_nuevo_empleado_directo(conexion, data: Dict[str, Any]) -> Optional[int]:
+    column_names = [
+        "nombre", "apellido", "fecha_de_nacimiento", "email_personal", "estado_civil",
+        "tiene_hijos", "nivel_educativo", "id_direccion", "id_puesto_trabajo", "id_jornada",
+        "estado", "hace_horas_extra", "tiene_movilidad_propia", "dni", "tiene_presentismo", "id_usuario"
+    ]
 
+    values_list = []
+    for col_name in column_names:
+        values_list.append(data.get(col_name))
+
+    placeholders = ", ".join(["%s"] * len(column_names))
+    
+    query = f"""
+        INSERT INTO empleado ({", ".join(column_names)})
+        VALUES ({placeholders}) 
+        RETURNING id_empleado
+    """
+    
+    cursor = None
     try:
         cursor = conexion.cursor()
-        query = """
-                INSERT INTO empleado (nombre, apellido, fecha_de_nacimiento, email_personal,
-                                      estado_civil, tiene_hijos, nivel_educativo,
-                                      id_direccion, id_puesto_trabajo, id_jornada, estado,
-                                      hace_horas_extra, tiene_movilidad_propia)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id_empleado \
-                """
-        cursor.execute(query, (
-            nombre, apellido, fecha_de_nacimiento, email_personal,
-            estado_civil, tiene_hijos, nivel_educativo,
-            id_direccion, id_puesto_trabajo, id_jornada, estado,
-            hace_horas_extra, tiene_movilidad_propia
-        ))
-
-        id_empleado = cursor.fetchone()[0]
-        id_telefono = nuevo_telefono(conexion, codigo_pais, codigo_area, numero_telefono, id_empleado, tipo_telefono)
-
-        if id_telefono is None:
-            raise Exception("No se pudo crear el teléfono")
-
+        cursor.execute(query, tuple(values_list))
+        id_empleado_nuevo = cursor.fetchone()[0]
         conexion.commit()
-        return id_empleado
+        return id_empleado_nuevo
     except Exception as e:
-        conexion.rollback()
-        print(f"Error al insertar empleado: {e}")
+        if conexion:
+            conexion.rollback()
+        print(f"Error al insertar nuevo empleado en DB: {e}")
+        raise # Re-lanza la excepción para que FastAPI la maneje
+    finally:
+        if cursor:
+            cursor.close()
+    
+def obtener_empleado_por_id(conexion, id_empleado):
+    row = db.realizar_consulta(conexion, "SELECT * FROM empleado WHERE id_empleado = %s;", (id_empleado,))
+    if not row:
         return None
-
+    empleado = row[0]
+    empleado_dict = {
+        "id_empleado": empleado[0],
+        "nombre": empleado[1],
+        "apellido": empleado[2],
+        "fecha_de_nacimiento": empleado[3],
+        "email_personal": empleado[4],
+        "estado_civil": empleado[5],
+        "tiene_hijos": empleado[6],
+        "nivel_educativo": empleado[7],
+        "id_direccion": empleado[8],
+        "id_puesto_trabajo": empleado[9],
+        "id_jornada": empleado[10],
+        "estado": empleado[11],
+        "hace_horas_extra": empleado[12],
+        "tiene_movilidad_propia": empleado[13],
+        "dni": empleado[14],
+        "tiene_presentismo": empleado[15],
+        "id_usuario": empleado[16]
+    }
+    return empleado_dict 
 
 def obtener_edad(conexion, id_empleado):
     row = db.realizar_consulta(conexion, "SELECT " \
