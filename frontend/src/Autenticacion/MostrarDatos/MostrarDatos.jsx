@@ -3,89 +3,82 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Butto
 import supabase from "../../services/SupaBaseService"; // Importa la conexión a Supabase
 import styles from "./MostrarDatos.module.css"; // Archivo CSS para estilos personalizados
 import getEmpleados from "../../services/ServiceEmpleadosMock";
-import  {obtenerHistoriaDesempeno, agregarDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
+import  {obtenerHistoriaDesempeno} from "../../services/DesempenoServiceMock"; // Importa la función mock para obtener la historia de desempeño
 import GraficoDesempeno from "./GraficoDesempeno";
-import { getUnPuesto } from "../../services/ServicePuestosMock"; // Importa la función mock para obtener los puestos
+
 const MostrarDatos = () => {
   const [empleados, setEmpleados] = useState([]); // Estado para almacenar los empleados
   const [loading, setLoading] = useState(true); // Estado para manejar el estado de carga general
   const [loadingEmpleado, setLoadingEmpleado] = useState(null); // Estado para manejar el cálculo de desempeño por empleado
 
-  // Función para obtener los datos de empleados desde Supabase
-  // const fetchEmpleados = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("empleado") // Nombre de la tabla en Supabase
-  //       .select("id_empleado, nombre, apellido, email, nivel_educativo, telefono, fecha_de_ingreso"); // Selecciona las columnas necesarias
-  //     if (error) throw error; // Manejo de errores
-  //     setEmpleados(data); // Actualiza el estado con los datos obtenidos
-  //   } catch (error) {
-  //     console.error("Error al obtener empleados:", error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+
 const [historiaActual, setHistoriaActual] = useState([]);
 const [modalAbierto, setModalAbierto] = useState(false);
 
 const handleVerHistoria = async (idEmpleado) => {
   const historia = await obtenerHistoriaDesempeno(idEmpleado);
+  console.log("Historia de desempeño:", historia);
   setHistoriaActual(historia);
   setModalAbierto(true);
 };
 
 
-  const fetchEmpleados = async () => {
-    setLoading(true);
-    try {
-      const data = await getEmpleados(); // Llama a la función mock para obtener empleados
-      setEmpleados(data); // Actualiza el estado con los datos obtenidos
-    } catch (error) {
-      console.error("Error al obtener empleados:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchEmpleados = async () => {
+  setLoading(true);
+  try {
+    const data = await getEmpleados();
+    // Para cada empleado, obtenemos el desempeño
+    const empleadosConDesempeno = await Promise.all(
+      data.map(async (empleado) => {
+        try {
+          const response = await fetch(`http://localhost:8000/predecir/desempeno/${empleado.id_empleado}`);
+          if (!response.ok) throw new Error();
+          const result = await response.json();
+          return { ...empleado, desempeño: result.prediccion };
+        } catch {
+          return { ...empleado, desempeño: null };
+        }
+      })
+    );
+    setEmpleados(empleadosConDesempeno);
+  } catch (error) {
+    console.error("Error al obtener empleados:", error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-
-  const manejarCalculoDesempeno = (id_empleado) => {
+const manejarCalculoDesempeno = async (id_empleado) => {
   setLoadingEmpleado(id_empleado);
 
-  setTimeout(() => {
-    const nuevoDesempeno = Math.floor(Math.random() * 101); // del 0 al 100
+  try {
+    // Llama a tu backend para obtener la predicción real
+    const response = await fetch(`http://localhost:8000/predecir/desempeno/${id_empleado}`);
+    if (!response.ok) throw new Error("Error al obtener desempeño");
+    const data = await response.json();
 
-    // 1. Actualizás el estado
     setEmpleados((prevEmpleados) =>
       prevEmpleados.map((empleado) =>
         empleado.id_empleado === id_empleado
-          ? { ...empleado, desempeño: nuevoDesempeno }
+          ? { ...empleado, desempeño: data.prediccion }
           : empleado
       )
     );
-
-    // 2. Agregás el nuevo desempeño al historial
-    agregarDesempeno(id_empleado, nuevoDesempeno)
-      .then(() => {
-        console.log("Desempeño agregado al historial");
-      })
-      .catch((err) => {
-        console.error("Error al agregar desempeño:", err);
-      });
-
+  } catch (error) {
+    console.error(error);
+  } finally {
     setLoadingEmpleado(null);
-  }, 1500);
+  }
 };
 
-
   // Función para determinar el color del desempeño
-  const getColorDesempeno = (desempeno , index) => {
-    if (desempeno < getUnPuesto(index).rendimientoMinimo) return styles.red;
-    if (desempeno >= getUnPuesto(index).rendimientoMinimo && desempeno < getUnPuesto(index).rendimientoAceptable) return styles.orange;
-    if (desempeno >= getUnPuesto(index).rendimientoAceptable) return styles.green;
+  // Función para determinar el color del desempeño
+  const getColorDesempeno = (desempeno) => {
+    if (desempeno < 30) return styles.red;
+    if (desempeno >= 30 && desempeno < 70) return styles.orange;
+    if (desempeno >= 70) return styles.green;
     return styles.default;
   };
-
   // useEffect para cargar los datos al montar el componente
   useEffect(() => {
     fetchEmpleados();
@@ -103,62 +96,59 @@ const handleVerHistoria = async (idEmpleado) => {
             <TableHead>
               <TableRow>
                 {empleados.length > 0 &&
-                  Object.keys(empleados[0]).map((key) => (
+                  Object.keys(empleados[0]).map((key) =>
                     key !== "id_empleado" && key !== "desempeño" && (
-                      <TableCell key={key}>
+                      <TableCell key={`header-${key}`}>
                         {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                       </TableCell>
                     )
-                  ))}
-                <TableCell>Desempeño</TableCell>
-                <TableCell>Acciones</TableCell>
+                  )}
+                <TableCell key="header-desempeno">Desempeño</TableCell>
+                <TableCell key="header-acciones">Acciones</TableCell>
               </TableRow>
             </TableHead>
 
-            <TableBody>
-              {empleados.map((empleado) => (
-                <TableRow key={empleado.id_empleado}>
-                  {Object.entries(empleado).map(([key, value]) =>
-                    key !== "id_empleado" && key !== "desempeño" ? (
-                      <TableCell key={key}>{value}</TableCell>
-                    ) : null
-                  )}
-                  <TableCell>
-                    <div
-                      className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño, empleado.id_empleado)}`}
-                    >
-                      {loadingEmpleado === empleado.id_empleado ? (
-                        <CircularProgress size={20} />
-                      ) : empleado.desempeño !== null && empleado.desempeño !== undefined ? (
-                        `${empleado.desempeño}%`
-                      ) : (
-                        "N/A"
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
-                      
-                      disabled={loadingEmpleado === empleado.id_empleado}
-                    >
-                      Calcular Desempeño
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => handleVerHistoria(empleado.id_empleado)}
-                    >
-                      Ver Historia
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+              <TableBody>
+  {empleados.map((empleado) => (
+    <TableRow key={`row-${empleado.id_empleado}`}>
+      {Object.entries(empleado).map(([key, value]) =>
+        key !== "id_empleado" && key !== "desempeño" ? (
+          <TableCell key={`cell-${empleado.id_empleado}-${key}`}>{value}</TableCell>
+        ) : null
+      )}
+      <TableCell key={`cell-desempeno-${empleado.id_empleado}`}>
+        <div className={`${styles.desempenoBox} ${getColorDesempeno(empleado.desempeño)}`}>
+          {loadingEmpleado === empleado.id_empleado ? (
+            <CircularProgress size={20} />
+          ) : empleado.desempeño !== null && empleado.desempeño !== undefined ? (
+            `${empleado.desempeño}%`
+          ) : (
+            "N/A"
+          )}
+        </div>
+      </TableCell>
+      <TableCell key={`cell-acciones-${empleado.id_empleado}`}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => manejarCalculoDesempeno(empleado.id_empleado)}
+          disabled={loadingEmpleado === empleado.id_empleado}
+        >
+          Mostrar Prediccion de desempeño
+        </Button>
+      </TableCell>
+      <TableCell key={`cell-historia-${empleado.id_empleado}`}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => handleVerHistoria(empleado.id_empleado)}
+        >
+          Ver Historia
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
           </Table>
         </TableContainer>
         )}

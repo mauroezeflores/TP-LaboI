@@ -1,25 +1,36 @@
 import React from 'react';
-import { Typography, Paper, Button, Box, TextField, Chip } from '@mui/material';
+import { Typography, Paper, Box } from '@mui/material';
+import { Link } from 'react-router-dom';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import Button from '@mui/material/Button'; 
 
 export default function GestionLicenciasAdmin() {
     return (
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{
+            p: 4, 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            minHeight: 'calc(100vh - 64px - 48px - 48px)', 
+            backgroundColor: 'background.paper' 
+        }}>
+            <ConstructionIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
             <Typography variant="h5" component="h2" gutterBottom>
-                Gestión de Licencias (Administrador)
+                Gestión de Licencias y Ausentismos
             </Typography>
-            <Typography paragraph>
-                Configuración de los tipos de licencias permitidos en el sistema,
-                políticas asociadas, y supervisión general de las solicitudes de licencia.
-                Capacidad de aprobación/rechazo global si es necesario.
-            </Typography>
-             <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-                <Button variant="contained">Configurar Tipos de Licencia</Button>
-                <Button variant="outlined">Ver Todas las Solicitudes <Chip label="5 Pendientes" color="info" size="small" /></Button>
-                <TextField label="Buscar solicitud..." variant="outlined" size="small" />
-            </Box>
             <Typography variant="body1" color="text.secondary">
-                (Listado/Tabla de solicitudes de licencia, filtros, y opciones de gestión aquí...)
+                ¡Estamos trabajando en esta sección!
             </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Próximamente podrás administrar todas las solicitudes de licencia y ausentismos desde aquí.
+            </Typography>
+            <Box sx={{ mt: 4 }}>
+             <Button variant="outlined" component={Link} to="/dashboard/admin">
+                    Volver al Inicio Admin
+                </Button> 
+            </Box>
         </Paper>
     );
 }

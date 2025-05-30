@@ -1,11 +1,14 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardGerente.module.css'; // creás un nuevo CSS con los mismos estilos
-
+import LogoutButton from '../components/LogoutButton';
 export default function DashboardGerenteLayout() {
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
-    // lógica de logout si querés agregar algo
+     // Eliminar el rol del almacenamiento (localStorage o sessionStorage)
+    localStorage.removeItem('rol'); // O sessionStorage.removeItem('rol') si lo usas
+
+    // Redirigir al usuario al inicio ("/")
+    navigate('/');
   };
 
   return (
@@ -30,17 +33,7 @@ export default function DashboardGerenteLayout() {
             </div>
           </NavLink>
 
-          <NavLink
-            to="registro-candidato"
-            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
-          >
-            <div className={styles.navItemContent}>
-              <div className={styles.navTextContainer}>
-                <span className={styles.navTitle}>Registro Candidatos</span>
-                <span className={styles.navDescription}>formulario de registro</span>
-              </div>
-            </div>
-          </NavLink>
+        
           <NavLink
             to="config"
             className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
@@ -58,21 +51,30 @@ export default function DashboardGerenteLayout() {
           >
             <div className={styles.navItemContent}>
               <div className={styles.navTextContainer}>
-                <span className={styles.navTitle}>Pantalla de Riesgos</span>
-                <span className={styles.navDescription}>Riesgo de desercion por empleado</span>
+                <span className={styles.navTitle}>Deteccion de rotacion</span>
+                <span className={styles.navDescription}>Prediccion de posible desercion</span>
+              </div>
+            </div>
+          </NavLink>
+                     <NavLink
+            to="datos-desempeno"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+            <div className={styles.navItemContent}>
+              <div className={styles.navTextContainer}>
+                <span className={styles.navTitle}>Desempeno predictivo</span>
+                <span className={styles.navDescription}>Prediccion de desempeño por empleados</span>
               </div>
             </div>
           </NavLink>
           {/* Agregás las secciones que correspondan al gerente */}
         </nav>
+        
 
-        <NavLink to="/" className={styles.navLink}>
           <div className={styles.sidebarFooter}>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              <span>Cerrar Sesión</span>
-            </button>
+            <LogoutButton/>
           </div>
-        </NavLink>
+
       </aside>
 
       <main className={styles.contentArea}>

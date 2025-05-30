@@ -1,18 +1,33 @@
 import React, { useState } from 'react';
+import styles from './Dashboardempleado.module.css';
+import { NavLink ,useNavigate} from 'react-router-dom';
+import { EncuestaSatisfaccionEmpleado } from "./EncuestaSatisfaccionEmpleado";
+import { useEffect } from 'react';
+import { getUsuarioActual } from '../services/authService';
+import LogoutButton from '../components/LogoutButton'; // Asegúrate de que la ruta sea correcta
 import styles from './DashboardEmpleado.module.css';
 import { useNavigate, NavLink } from 'react-router-dom';
 
 const DashboardEmpleado = () => {
-  // --- Datos de Ejemplo (Reemplazar con datos reales del empleado logueado) ---
-  const empleado = {
-    nombre: "Juan",
-    apellido: "Perez",
-    puesto: "Analista de Marketing",
-    email: "juan.m@example.com",
-    telefono: "1122334455",
-    fechaIngreso: "2023-01-15",
-    dni: "12345678",
-  };
+    const usuario = getUsuarioActual();
+  useEffect(() => {
+      if (!usuario || usuario.rol?.toLowerCase() !== 'empleado') {
+        navigate('/login/candidato');
+      }
+    }, [usuario, navigate]);
+  
+    // Extrae datos del empleado si existen
+    const empleado = usuario?.empleado || {};
+    const [empleadoInfo, setempleadoInfo] = useState({
+      nombre: empleado.nombre || '',
+      apellido: empleado.apellido || '',
+      puesto: empleado.puesto || '',
+      fechaIngreso: empleado.fecha_ingreso || '',
+      dni: empleado.dni || '',
+      email: empleado.email || usuario?.email || '',
+      ubicacion: empleado.ciudad || '',
+      telefono: empleado.tel_num_telefono || '',
+    });
 
   const licencias = [
     // Datos de ejemplo de licencias del empleado
@@ -72,7 +87,7 @@ const DashboardEmpleado = () => {
   // Función para cambiar la sección visible
   const mostrarSeccion = (nombreSeccion) => {
     setSeccionVisible(nombreSeccion);
-  };
+  }
   
   //no me funciona el useNavigate
   const handleLogout = () => {
@@ -83,102 +98,16 @@ const DashboardEmpleado = () => {
     // Redirigir al usuario al inicio ("/")
     navigate('/');
   }
-  // Estado y lógica para la encuesta de clima laboral
-  const [surveyData, setSurveyData] = useState({
-    satisfaccionGeneral: '',
-    ambienteTrabajo: '',
-    comunicacionInterna: '',
-    desarrolloProfesional: '',
-    reconocimiento: '',
-    comentariosAdicionales: '',
-  });
-
-  const surveyQuestions = [
-    {
-      name: 'satisfaccionGeneral',
-      label: '¿Qué tan satisfecho/a estás con tu trabajo en general? (1 = Nada satisfecho, 5 = Muy satisfecho)',
-      type: 'number',
-      min: 1,
-      max: 5,
-    },
-    {
-      name: 'ambienteTrabajo',
-      label: '¿Cómo calificarías el ambiente laboral? (1 = Muy malo, 5 = Excelente)',
-      type: 'number',
-      min: 1,
-      max: 5,
-    },
-    {
-      name: 'comunicacionInterna',
-      label: '¿Consideras que la comunicación interna es efectiva? (1 = Nada efectiva, 5 = Muy efectiva)',
-      type: 'number',
-      min: 1,
-      max: 5,
-    },
-    {
-      name: 'desarrolloProfesional',
-      label: '¿Sientes que tienes oportunidades de desarrollo profesional? (1 = Ninguna, 5 = Muchas)',
-      type: 'number',
-      min: 1,
-      max: 5,
-    },
-    {
-      name: 'reconocimiento',
-      label: '¿Te sientes reconocido/a por tu trabajo? (1 = Nada, 5 = Mucho)',
-      type: 'number',
-      min: 1,
-      max: 5,
-    },
-    {
-      name: 'comentariosAdicionales',
-      label: 'Comentarios adicionales (opcional):',
-      type: 'textarea',
-    },
-  ];
-
-  const handleSurveyChange = (e) => {
-    const { name, value } = e.target;
-    setSurveyData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmitSurvey = (e) => {
-    e.preventDefault();
-    const today = new Date();
-    setLastSurveySubmissionDate(today);
-    localStorage.setItem(`lastSurveySubmission_${empleado.email}`, today.toISOString());
-    setCanSubmitSurvey(false);
-    alert("Encuesta enviada con éxito. Podrás volver a enviarla en 30 días.");
-    // Resetear formulario (opcional)
-    setSurveyData({
-      satisfaccionGeneral: '',
-      ambienteTrabajo: '',
-      comunicacionInterna: '',
-      desarrolloProfesional: '',
-      reconocimiento: '',
-      comentariosAdicionales: '',
-    });
-  };
-
-  const getNextSurveyDate = () => {
-    if (lastSurveySubmissionDate) {
-      const nextDate = new Date(lastSurveySubmissionDate);
-      nextDate.setDate(lastSurveySubmissionDate.getDate() + 30);
-      return nextDate.toLocaleDateString();
-    }
-    return null;
-  };
   ;
-
 
 
   return (
     // Contenedor principal de la página del empleado
+    
     <div className={styles.pageContainer}>
+      <LogoutButton />
       <h1 className={styles.mainTitle}>Portal del Empleado</h1>
-      <p className={styles.welcomeMessage}>Hola, {empleado.nombre}. Aquí puedes gestionar tu información.</p>
+      <p className={styles.welcomeMessage}>Hola, {empleadoInfo.nombre}. Aquí puedes gestionar tu información.</p>
 
       {/* --- Menú de Navegación tipo Tabs --- */}
       <nav className={styles.sectionNav}>
@@ -212,11 +141,11 @@ const DashboardEmpleado = () => {
         >
          Mis Recibos
         </button>
-         <button
-          className={`${styles.navButton} ${seccionVisible === 'encuestaClima' ? styles.active : ''}`}
-          onClick={() => mostrarSeccion('encuestaClima')}
+        <button
+          className={`${styles.navButton} ${seccionVisible === 'satisfaccion' ? styles.active : ''}`}
+          onClick={() => mostrarSeccion('satisfaccion')}
         >
-         Encuesta Satisfaccion
+          Encuesta de Satisfacción
         </button>
       </nav>
 
@@ -233,27 +162,23 @@ const DashboardEmpleado = () => {
                  <div className={styles.formGrid}>
                     <div className={styles.formGroup}>
                         <label>Nombre Completo</label>
-                        <input type="text" readOnly value={`${empleado.nombre} ${empleado.apellido}`} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={`${empleadoInfo.nombre} ${empleadoInfo.apellido}`} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>Puesto</label>
-                        <input type="text" readOnly value={empleado.puesto} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={empleadoInfo.puesto} className={styles.inputFieldReadOnly} />
                     </div>
                      <div className={styles.formGroup}>
                         <label>Email</label>
-                        <input type="email" readOnly value={empleado.email} className={styles.inputFieldReadOnly} />
+                        <input type="email" readOnly value={empleadoInfo.email} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>Teléfono</label>
-                        <input type="tel" readOnly value={empleado.telefono} className={styles.inputFieldReadOnly} />
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label>Fecha de Ingreso</label>
-                        <input type="date" readOnly value={empleado.fechaIngreso} className={styles.inputFieldReadOnly} />
+                        <input type="tel" readOnly value={empleadoInfo.telefono} className={styles.inputFieldReadOnly} />
                     </div>
                     <div className={styles.formGroup}>
                         <label>DNI</label>
-                        <input type="text" readOnly value={empleado.dni} className={styles.inputFieldReadOnly} />
+                        <input type="text" readOnly value={empleadoInfo.dni} className={styles.inputFieldReadOnly} />
                     </div>
                  </div>
                   <div className={styles.cardActions}>
@@ -466,7 +391,12 @@ const DashboardEmpleado = () => {
             )}
           </div>
         )}
-
+        {/* Sección: Encuesta de Satisfacción */}
+        {seccionVisible === 'satisfaccion' && (
+            <div className={styles.sectionContent}>
+              <EncuestaSatisfaccionEmpleado />
+            </div>
+          )}
       </div> 
       <NavLink to="/" className={styles.navLink}>
             <div className={styles.logoutButtonContainer}>

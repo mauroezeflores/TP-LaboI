@@ -392,9 +392,92 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
+
+.formGroup input[type="checkbox"] {
+    width: 20px; /* Ajustar tamaño */
+    height: 20px; /* Ajustar tamaño */
+    margin-right: 0.5rem; /* Espacio entre checkbox y label */
+}
+
+.formGroup input[type="date"] {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
 .formGroup textarea {
     resize: vertical;
     min-height: 80px; /* Altura mínima */
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem; 
+}
+
+.formRow .formGroup {
+  flex: 1; 
+}
+
+/* Estilos para el contenedor de la lista de etiquetas */
+.tagsListContainer {
+  display: grid;
+  /* Define cuántas columnas quieres. 
+     'auto-fill' crea tantas columnas como quepan según 'minmax'.
+     'minmax(220px, 1fr)' significa que cada columna tendrá un mínimo de 220px 
+     y se expandirá para ocupar el espacio disponible (1fr). 
+     Ajusta '220px' según el ancho que desees para cada item de etiqueta.
+  */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px; /* Espacio entre los items de etiquetas (horizontal y vertical) */
+  
+  max-height: 350px; /* Altura máxima antes de que aparezca el scroll vertical */
+  overflow-y: auto;   /* Scroll vertical si el contenido excede la altura */
+  
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #f9f9f9; /* Un fondo ligero para el contenedor */
+}
+
+/* Estilos para cada item de etiqueta individual en la lista */
+.tagItem {
+  padding: 10px;
+  border: 1px solid #ddd; 
+  border-radius: 4px;    
+  background-color: #fff; 
+}
+
+.tagName {
+  display: block; 
+  font-weight: bold;
+  margin-bottom: 8px; 
+  font-size: 0.95em;
+  color: #333;
+}
+
+.tagCheckboxes {
+  /* Contenedor para los checkboxes 'Excluyente' y 'Deseable' */
+  /* display: flex; /* Si quieres alinear los labels de forma más específica */
+  /* flex-wrap: wrap; */
+  /* gap: 5px; */
+}
+
+.tagCheckboxLabel {
+  font-size: 0.9em;
+  display: inline-flex; 
+  align-items: center;
+  margin-right: 15px; 
+  cursor: pointer;
+}
+.tagCheckboxLabel:last-child {
+  margin-right: 0; 
+}
+
+.tagCheckboxLabel input[type="checkbox"] {
+  margin-right: 5px; 
 }
 
 /* --- Estilos para Tablas --- */

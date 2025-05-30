@@ -1,27 +1,33 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import styles from './DashboardReclutador.module.css';
+import LogoutButton from '../components/LogoutButton';
+import {getUsuarioActual} from '../services/authService';
 
 export default function DashboardReclutadorLayout() {
-  // Función para manejar el logout (ejemplo)
-  const handleLogout = () => {
-    console.log("Cerrando sesión...");
-    // Aca iría la lógica para limpiar tokens/estado y redirigir al login
-  };
+   const usuario = getUsuarioActual();
 
   return (
+   
     <div className={styles.dashboardLayout}>
       {/* --- Sidebar / Menú Lateral --- */}
+      
       <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-           <h3 className={styles.sidebarTitle}>SIGRH+</h3>
-           <span className={styles.sidebarSubtitle}>Panel Reclutador</span>
-        </div>
+         
+<div className={styles.sidebarHeader}>
+   <h3 className={styles.sidebarTitle}>SIGRH+</h3>
+   <span className={styles.sidebarSubtitle}>Panel EmpleadoRRHH</span><br />
+   {usuario && (
+     <span className={styles.sidebarWelcome}>
+       Bienvenido {usuario.email}
+     </span>
+   )}
+</div>
         <nav className={styles.sidebarNav}>
 
            {/* Link al Inicio del Dashboard */}
            <NavLink
-             to="/dashboard/reclutador" 
+             to="/dashboard/empleadoRRHH" 
              end 
              className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
            >
@@ -66,7 +72,7 @@ export default function DashboardReclutadorLayout() {
           >
              <div className={styles.navItemContent}>
                 <div className={styles.navTextContainer}>
-                   <span className={styles.navTitle}>Gestión Empleados</span>
+                   <span className={styles.navTitle}>Desempeño de Empleados</span>
                    <span className={styles.navDescription}>Ver desempeño</span>
                 </div>
              </div>
@@ -83,10 +89,10 @@ export default function DashboardReclutadorLayout() {
                   </div>
                </div>
             </NavLink>
+            
              
-            {/* Link ABM */}
           <NavLink
-            to="AltaBajaMod"
+            to="abm-empleados"
             className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
           >
              <div className={styles.navItemContent}>
@@ -96,18 +102,17 @@ export default function DashboardReclutadorLayout() {
                 </div>
              </div>
           </NavLink>
+          
 
         </nav>
 
 
         {/* Botón/Link de Cerrar Sesión (Ejemplo) */}
-        <NavLink to="/" className={styles.navLink}>
-        <div className={styles.sidebarFooter}>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-                <span>Cerrar Sesión</span>
-            </button>
+
+         <div className={styles.sidebarFooter}>
+          <LogoutButton />
         </div>
-        </NavLink>
+
 
 
       </aside>

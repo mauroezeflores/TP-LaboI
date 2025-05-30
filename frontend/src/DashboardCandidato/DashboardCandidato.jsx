@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from './DashboardCandidato.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import LogoutButton from '../components/LogoutButton';
+import { getUsuarioActual } from '../services/authService';
 
-const convocatoriasDisponibles = [
-  { id: 1, tags: ['⚡ Postulación rápida', 'Nuevo'], title: 'Programador Frontend Jr.', company: 'Tech Solutions S.A.', desc: 'Nuestra Organización se encuentra en la búsqueda de un Programador...', location: 'Capital Federal, Buenos Aires', modality: 'Remoto', time: 'Publicado hace 1 hora' },
-  { id: 2, tags: [ '⚡ Postulación rápida'], title: 'Soporte Técnico Sistemas IT', company: 'Confidencial', desc: 'Atender las necesidades de la empresa en cuanto a hardware...', location: 'Capital Federal, Buenos Aires', modality: 'Híbrido', time: 'Actualizado hace 2h' },
-  { id: 3, tags: ['Urgente'], title: 'Analista Contable Jr.', company: 'Finanzas Corp', desc: 'Buscamos estudiantes o jóvenes Profesionales de Contador Público...', location: 'Capital Federal, Buenos Aires', modality: 'Presencial', time: 'Publicado ayer' },
-  { id: 4, tags: [], title: 'Asistente de Marketing Digital', company: 'Confidencial', desc: 'Importante empresa de tecnología audiovisual busca sumar talento...', location: 'Vicente López, Buenos Aires', modality: 'Presencial', time: 'Publicado hace 2 días' },
-];
+const API_BASE_URL = 'http://localhost:8000';
 
-const filtros = {
-  area: [ { name: 'Programacion', count: 1 }, { name: 'Soporte tecnico', count: 1 }, { name: 'Analista Contable', count: 1 }, { name: 'Asistente de Marketing', count: 1 }, ],
-  modalidad: [ { name: 'Presencial', count: 2 }, { name: 'Híbrido', count: 1 }, { name: 'Remoto', count: 1 }, ],
-  fecha: [ { name: 'Hoy', count: 2 }, { name: 'Menor a 2 días', count: 2 }, { name: 'Menor a 4 días', count: 0 }, ],
-  lugardetrabajo: [ { name: 'Buenos Aires', count: 4 }, { name: 'CABA', count: 3 }, { name: 'Vicente López', count: 1 }, ]
+const formatTimeAgo = (isoDateString) => {
+  if (!isoDateString) return 'Fecha no disponible';
+  const date = new Date(isoDateString);
+  const now = new Date();
+  const seconds = Math.round((now - date) / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(hours / 24);
+
+  if (days > 1) return `Finaliza en ${days} días`;
+  if (days === 1) return `Finaliza en 1 día`;
+  if (hours > 1) return `Finaliza en ${hours} horas`;
+  if (hours === 1) return `Finaliza en 1 hora`;
+  if (minutes > 1) return `Finaliza en ${minutes} minutos`;
+  if (minutes === 1) return `Finaliza en 1 minuto`;
+  return 'Finaliza pronto';
 };
-
-const misPostulaciones = [
-  { id: 101, puesto: 'Desarrollador Backend', empresa: 'Innovatech', estado: 'En Revisión' },
-  { id: 102, puesto: 'Project Manager', empresa: 'Global Solutions', estado: 'Entrevista Programada' },
-  { id: 103, puesto: 'Tester QA', empresa: 'QualityFirst', estado: 'Rechazado' },
-];
 
 const getStatusClass = (estado) => {
   switch (estado?.toLowerCase()) {
@@ -34,102 +36,313 @@ const getStatusClass = (estado) => {
 };
 
 const DashboardCandidato = () => {
-  const candidato = { nombre: "Lara", apellido: "Selser", email: "lara.selser@mail.com", ubicacion: "Buenos Aires", telefono: "1123456789", cvNombre: "CV_JuanPerez_2025.pdf" };
-  const notificaciones = [ { id: 1, texto: "✔️ Su CV fue aprobado.", leida: false }, { id: 2, texto: "❗️ Nueva oferta de trabajo disponible.", leida: false }, { id: 3, texto: "✔️ Su entrevista está programada para el 15/10.", leida: true }, ];
+  const navigate = useNavigate();
+  const usuario = getUsuarioActual();
+
+  // Redirige si no está logueado o no es candidato
+  useEffect(() => {
+    if (!usuario || usuario.rol?.toLowerCase() !== 'candidato') {
+      navigate('/login/candidato');
+    }
+  }, [usuario, navigate]);
+
+  // Extrae datos del candidato si existen
+  const candidato = usuario?.candidato || {};
+  const [candidatoInfo, setCandidatoInfo] = useState({
+    id_usuario: usuario?.id_usuario || candidato.id_usuario || '',
+    nombre: candidato.nombre || '',
+    apellido: candidato.apellido || '',
+    email: candidato.email || usuario?.email || '',
+    ubicacion: candidato.ciudad || '',
+    telefono: candidato.tel_num_telefono || '',
+    cvNombre: null
+  });
 
   const [seccionVisible, setSeccionVisible] = useState('buscarConvocatorias');
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [applyingJobDetails, setApplyingJobDetails] = useState(null);
+  const [yearsExperience, setYearsExperience] = useState('');
+  const [candidateSkillSelections, setCandidateSkillSelections] = useState({});
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
+  const [applicationError, setApplicationError] = useState('');
+  const [applicationSuccessMessage, setApplicationSuccessMessage] = useState('');
+  const [convocatoriasDisponibles, setConvocatoriasDisponibles] = useState([]);
+  const [isLoadingConvocatorias, setIsLoadingConvocatorias] = useState(false);
+  const [convocatoriasError, setConvocatoriasError] = useState('');
+  const [filtros] = useState({
+    area: [ { name: 'Programacion', count: 0 }, { name: 'Soporte tecnico', count: 0 } ],
+    modalidad: [ { name: 'Presencial', count: 0 }, { name: 'Híbrido', count: 0 }, { name: 'Remoto', count: 0 } ],
+    fecha: [ { name: 'Hoy', count: 0 }, { name: 'Menor a 2 días', count: 0 } ],
+    lugardetrabajo: [ { name: 'Buenos Aires', count: 0 }, { name: 'CABA', count: 0 } ]
+  });
+  const [misPostulaciones] = useState([
+    { id: 101, puesto: 'Desarrollador Backend Ejemplo', empresa: 'Innovatech', estado: 'En Revisión' },
+  ]);
+  const [notificaciones] = useState([
+    { id: 1, texto: "✔️ Ejemplo: Su CV fue aprobado.", leida: false },
+  ]);
 
-  const handleFileUploadClick = () => { console.log("Abrir selector de CV..."); };
-  const handleSaveChanges = (e) => { e.preventDefault(); console.log("Guardando datos personales..."); };
-  const mostrarSeccion = (nombreSeccion) => { setSeccionVisible(nombreSeccion); };
+  // Fetch convocatorias disponibles
+  const fetchConvocatoriasDisponibles = useCallback(async () => {
+    setIsLoadingConvocatorias(true);
+    setConvocatoriasError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/convocatorias/disponibles`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      const convocatoriasConTiempo = data.map(job => ({
+        ...job,
+        tags: [],
+        time: formatTimeAgo(job.fecha_publicacion)
+      }));
+      setConvocatoriasDisponibles(convocatoriasConTiempo);
+    } catch (error) {
+      setConvocatoriasError(error.message || "No se pudieron cargar las convocatorias.");
+    } finally {
+      setIsLoadingConvocatorias(false);
+    }
+  }, []);
 
-  const handleApply = (jobId, jobTitle) => {
-    console.log(`Aplicando a la convocatoria ID: ${jobId}, Título: ${jobTitle}`);
-    // TODO: Implementar lógica real de postulación (API call, etc.)
-    alert(`Simulación: Aplicando a "${jobTitle}" (ID: ${jobId}).`);
+  useEffect(() => {
+    if (seccionVisible === 'buscarConvocatorias') {
+      fetchConvocatoriasDisponibles();
+    }
+  }, [seccionVisible, fetchConvocatoriasDisponibles]);
+
+  const handleSaveChanges = (e) => { e.preventDefault(); /* lógica de guardado */ };
+  const mostrarSeccion = (nombreSeccion) => {
+    setApplicationError('');
+    setApplicationSuccessMessage('');
+    setSeccionVisible(nombreSeccion);
+  };
+
+  const handleOpenApplyModal = (job) => {
+    setApplyingJobDetails(job);
+    setYearsExperience('');
+    setApplicationError('');
+    setApplicationSuccessMessage('');
+    const initialSkills = job.skillTags?.reduce((acc, tag) => {
+      acc[tag] = false;
+      return acc;
+    }, {}) || {};
+    setCandidateSkillSelections(initialSkills);
+    setIsApplyModalOpen(true);
+  };
+
+  const handleCloseApplyModal = () => {
+    setIsApplyModalOpen(false);
+    setApplyingJobDetails(null);
+    setYearsExperience('');
+    setCandidateSkillSelections({});
+  };
+
+  const handleSkillSelectionChange = (skillTag) => {
+    setCandidateSkillSelections(prev => ({
+      ...prev,
+      [skillTag]: !prev[skillTag]
+    }));
+  };
+
+  const handleConfirmApplication = async () => {
+    if (!applyingJobDetails || !candidatoInfo.id_usuario) {
+      setApplicationError("Datos de postulación incompletos o falta ID de usuario.");
+      return;
+    }
+    if (yearsExperience.trim() === '' || isNaN(parseInt(yearsExperience)) || parseInt(yearsExperience) < 0) {
+      setApplicationError("Por favor, ingresa un número válido y positivo de años de experiencia.");
+      return;
+    }
+
+    setIsSubmittingApplication(true);
+    setApplicationError('');
+    setApplicationSuccessMessage('');
+
+    const formData = new FormData();
+    formData.append('id_usuario', candidatoInfo.id_usuario);
+    formData.append('experiencia', parseInt(yearsExperience, 10));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/convocatoria/${applyingJobDetails.id}/postularse`, {
+        method: 'POST',
+        body: formData,
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.detail || responseData.error || `Error HTTP: ${response.status}`);
+      }
+      setApplicationSuccessMessage(responseData.mensaje || `Postulación enviada con éxito para "${applyingJobDetails.title}".`);
+      setTimeout(() => {
+        handleCloseApplyModal();
+      }, 3000);
+    } catch (error) {
+      setApplicationError(error.message || "Ocurrió un error al enviar la postulación.");
+    } finally {
+      setIsSubmittingApplication(false);
+    }
+  };
+
+  const [selectedCvFile, setSelectedCvFile] = useState(null);
+  const [cvUploadMessage, setCvUploadMessage] = useState('');
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
+
+  const handleCvFileChange = (event) => {
+    setSelectedCvFile(event.target.files[0]);
+    setCvUploadMessage('');
+  };
+
+  const handleUploadCvSubmit = async () => {
+    if (!selectedCvFile) {
+      setCvUploadMessage('Por favor, selecciona un archivo CV.');
+      return;
+    }
+    if (!candidatoInfo.id_usuario) {
+      setCvUploadMessage('ID de usuario no encontrado. No se puede subir el CV.');
+      return;
+    }
+    setIsUploadingCv(true);
+    setCvUploadMessage('Subiendo CV...');
+    const formData = new FormData();
+    formData.append('file', selectedCvFile);
+    formData.append('id_usuario', candidatoInfo.id_usuario);
+    try {
+      const response = await fetch(`${API_BASE_URL}/cv`, {
+        method: 'POST',
+        body: formData,
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.detail || responseData.error || 'Error al subir CV');
+      }
+      setCvUploadMessage(responseData.mensaje || 'CV subido con éxito.');
+      setCandidatoInfo(prev => ({ ...prev, cvNombre: selectedCvFile.name }));
+    } catch (error) {
+      setCvUploadMessage(`Error: ${error.message}`);
+    } finally {
+      setIsUploadingCv(false);
+    }
   };
 
   return (
     <div className={styles.pageContainer}>
-      <h1 className={styles.mainTitle}>Bienvenida, {candidato.nombre} {candidato.apellido}</h1>
+      <div className={styles.logoutButtonContainer}>
+        <LogoutButton />
+      </div>
+      <h1 className={styles.mainTitle}>
+        Bienvenida, {candidatoInfo.nombre || candidatoInfo.email}
+        {candidatoInfo.apellido ? ` ${candidatoInfo.apellido}` : ''}
+      </h1>
 
       <nav className={styles.sectionNav}>
-      <button className={`${styles.navButton} ${seccionVisible === 'datosPersonales' ? styles.active : ''}`} onClick={() => mostrarSeccion('datosPersonales')}>
+        <button className={`${styles.navButton} ${seccionVisible === 'datosPersonales' ? styles.active : ''}`} onClick={() => mostrarSeccion('datosPersonales')}>
           Datos Personales
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'perfilProfesional' ? styles.active : ''}`} onClick={() => mostrarSeccion('perfilProfesional')}>
           Perfil Profesional / CV
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'buscarConvocatorias' ? styles.active : ''}`} onClick={() => mostrarSeccion('buscarConvocatorias')}>
-            Buscar Convocatorias
+          Buscar Convocatorias
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'estadoConvocatoria' ? styles.active : ''}`} onClick={() => mostrarSeccion('estadoConvocatoria')}>
-            Mis Postulaciones
+          Mis Postulaciones
         </button>
         <button className={`${styles.navButton} ${seccionVisible === 'notificaciones' ? styles.active : ''}`} onClick={() => mostrarSeccion('notificaciones')}>
-            Notificaciones
+          Notificaciones
         </button>
       </nav>
-
       <div className={styles.sectionsContainer}>
 
         {seccionVisible === 'buscarConvocatorias' && (
           <div className={styles.jobBoardSection}>
-             <h2 className={styles.cardTitle}>Convocatorias Disponibles</h2>
-             <div className={styles.jobBoardContainer}>
-               <aside className={styles.sidebar}>
-                 <h3 className={styles.filterTitle}>Filtrar Búsqueda</h3>
-                 <div className={styles.filterGroup}>
-                   <h4 className={styles.filterCategory}>Área</h4>
-                   <ul className={styles.filterList}>
-                     {filtros.area.slice(0, 6).map((item, index) => ( <li key={index} className={styles.filterItem}><a href="#" className={styles.filterLink}>{item.name}</a><span className={styles.filterCount}>({item.count})</span></li> ))}
-                   </ul>
-                 </div>
-                 <div className={styles.filterGroup}>
-                   <h4 className={styles.filterCategory}>Modalidad</h4>
-                   <ul className={styles.filterList}>
-                     {filtros.modalidad.map((item, index) => ( <li key={index} className={styles.filterItem}><a href="#" className={styles.filterLink}>{item.name}</a><span className={styles.filterCount}>({item.count})</span></li> ))}
-                   </ul>
-                 </div>
+            <h2 className={styles.cardTitle}>Convocatorias Disponibles</h2>
+            {isLoadingConvocatorias && <p>Cargando convocatorias...</p>}
+            {convocatoriasError && <p className={styles.errorMessage}>{convocatoriasError}</p>}
+            {!isLoadingConvocatorias && !convocatoriasError && (
+              <div className={styles.jobBoardContainer}>
+                <aside className={styles.sidebar}>
+                  <h3 className={styles.filterTitle}>Filtrar Búsqueda</h3>
                   <div className={styles.filterGroup}>
-                   <h4 className={styles.filterCategory}>Fecha</h4>
-                   <ul className={styles.filterList}>
-                     {filtros.fecha.slice(0, 4).map((item, index) => ( <li key={index} className={styles.filterItem}><a href="#" className={styles.filterLink}>{item.name}</a><span className={styles.filterCount}>({item.count})</span></li> ))}
-                   </ul>
-                 </div>
+                    <h4 className={styles.filterCategory}>Área</h4>
+                    <ul className={styles.filterList}>
+                      {filtros.area.slice(0, 6).map((item, index) => (
+                        <li key={index} className={styles.filterItem}>
+                          <a href="#" className={styles.filterLink}>{item.name}</a>
+                          <span className={styles.filterCount}>({item.count})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className={styles.filterGroup}>
+                    <h4 className={styles.filterCategory}>Modalidad</h4>
+                    <ul className={styles.filterList}>
+                      {filtros.modalidad.map((item, index) => (
+                        <li key={index} className={styles.filterItem}>
+                          <a href="#" className={styles.filterLink}>{item.name}</a>
+                          <span className={styles.filterCount}>({item.count})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className={styles.filterGroup}>
+                    <h4 className={styles.filterCategory}>Fecha</h4>
+                    <ul className={styles.filterList}>
+                      {filtros.fecha.slice(0, 4).map((item, index) => (
+                        <li key={index} className={styles.filterItem}>
+                          <a href="#" className={styles.filterLink}>{item.name}</a>
+                          <span className={styles.filterCount}>({item.count})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   <div className={styles.filterGroup}>
                     <h4 className={styles.filterCategory}>Lugar de Trabajo</h4>
                     <ul className={styles.filterList}>
-                      {filtros.lugardetrabajo.map((item, index) => ( <li key={index} className={styles.filterItem}><a href="#" className={styles.filterLink}>{item.name}</a><span className={styles.filterCount}>({item.count})</span></li> ))}
+                      {filtros.lugardetrabajo.map((item, index) => (
+                        <li key={index} className={styles.filterItem}>
+                          <a href="#" className={styles.filterLink}>{item.name}</a>
+                          <span className={styles.filterCount}>({item.count})</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
-               </aside>
+                </aside>
 
-               <section className={styles.jobListings}>
-                 {convocatoriasDisponibles.map(job => (
-                   <article key={job.id} className={styles.jobCard}>
-                     <div className={styles.jobCardHeader}>
-                       <div className={styles.tagsRow}>
-                         {job.tags.map((tag, i) => (<span key={i} className={`${styles.tag} ${tag === 'Nuevo' ? styles.tagNuevo : ''}`}>{tag}</span>))}
-                       </div>
-                       <span className={styles.tagTime}>{job.time}</span>
-                     </div>
-                     <h3 className={styles.cardTitleJob}><Link to={`/convocatoria/${job.id}`}>{job.title}</Link></h3>
-                     <div className={styles.cardCompany}>{job.company}</div>
-                     <p className={styles.cardDesc}>{job.desc}</p>
-                     <div className={styles.meta}>
-                       <span>📍 {job.location}</span>
-                       <span>🏢 {job.modality}</span>
-                     </div>
-                     <div className={styles.applyButtonContainer}>
-                       <button onClick={() => handleApply(job.id, job.title)} className={styles.applyButton}>
-                         Aplicar Ahora
-                       </button>
-                     </div>
-                   </article>
-                 ))}
-               </section>
-             </div>
+                <section className={styles.jobListings}>
+                  {convocatoriasDisponibles.length > 0 ? convocatoriasDisponibles.map(job => (
+                    <article key={job.id} className={styles.jobCard}>
+                      <div className={styles.jobCardHeader}>
+                        <div className={styles.tagsRow}>
+                          {job.tags?.map((tag, i) => (
+                            <span key={i} className={`${styles.tag} ${tag === 'Nuevo' ? styles.tagNuevo : ''}`}>{tag}</span>
+                          ))}
+                        </div>
+                        <span className={styles.tagTime}>{job.time}</span>
+                      </div>
+                      <h3 className={styles.cardTitleJob}>
+                        <Link to={`/dashboard/candidato/convocatoria/${job.id}`}>{job.title}</Link>
+                      </h3>
+                      <div className={styles.cardCompany}>{job.company}</div>
+                      <p className={styles.cardDesc}>{job.desc?.substring(0, 150)}...</p>
+                      <div className={styles.skillTagsCard}>
+                        {job.skillTags?.slice(0, 4).map(skill => <span key={skill} className={styles.skillTagItem}>{skill}</span>)}
+                        {job.skillTags?.length > 4 && <span className={styles.skillTagItem}>...</span>}
+                      </div>
+                      <div className={styles.meta}>
+                        <span>📍 {job.location}</span>
+                        <span><span role="img" aria-label="company-icon">🏢</span> {job.modality}</span>
+                      </div>
+                      <div className={styles.applyButtonContainer}>
+                        <button onClick={() => handleOpenApplyModal(job)} className={styles.applyButton}>
+                          Aplicar Ahora
+                        </button>
+                      </div>
+                    </article>
+                  )) : <p>No hay convocatorias disponibles en este momento.</p>}
+                </section>
+              </div>
+            )}
           </div>
         )}
 
@@ -159,64 +372,144 @@ const DashboardCandidato = () => {
         )}
 
         {seccionVisible === 'datosPersonales' && (
-           <div className={`${styles.card} ${styles.sectionCard}`}>
-             <h2 className={styles.cardTitle}>Datos personales</h2>
-             <form className={styles.formPersonalData} onSubmit={handleSaveChanges}>
-               <div className={styles.formGrid}>
-                  <div className={styles.formGroup}>
-                     <label htmlFor="nombre">Nombre</label>
-                     <input type="text" id="nombre" defaultValue={candidato.nombre} className={styles.inputField} />
-                  </div>
-                   <div className={styles.formGroup}>
-                     <label htmlFor="apellido">Apellido</label>
-                     <input type="text" id="apellido" defaultValue={candidato.apellido} className={styles.inputField} />
-                  </div>
-                   <div className={styles.formGroup}>
-                     <label htmlFor="email">Email</label>
-                     <input type="email" id="email" defaultValue={candidato.email} className={styles.inputField} />
-                  </div>
-                   <div className={styles.formGroup}>
-                     <label htmlFor="ubicacion">Ubicación</label>
-                     <input type="text" id="ubicacion" defaultValue={candidato.ubicacion} className={styles.inputField} />
-                  </div>
-                   <div className={styles.formGroup}>
-                     <label htmlFor="telefono">Teléfono</label>
-                     <input type="tel" id="telefono" defaultValue={candidato.telefono} className={styles.inputField} />
-                  </div>
-               </div>
-               <div className={styles.cardActions}>
-                  <button type="submit" className={styles.buttonPrimary}>
-                      Guardar cambios
-                  </button>
-               </div>
-             </form>
-           </div>
+          <div className={`${styles.card} ${styles.sectionCard}`}>
+            <h2 className={styles.cardTitle}>Datos personales</h2>
+            <form className={styles.formPersonalData} onSubmit={handleSaveChanges}>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="nombre">Nombre</label>
+                  <input type="text" id="nombre" defaultValue={candidatoInfo.nombre} className={styles.inputField} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="apellido">Apellido</label>
+                  <input type="text" id="apellido" defaultValue={candidatoInfo.apellido} className={styles.inputField} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email">Email</label>
+                  <input type="email" id="email" defaultValue={candidatoInfo.email} className={styles.inputField} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="ubicacion">Ubicación</label>
+                  <input type="text" id="ubicacion" defaultValue={candidatoInfo.ubicacion} className={styles.inputField} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="telefono">Teléfono</label>
+                  <input type="tel" id="telefono" defaultValue={candidatoInfo.telefono} className={styles.inputField} />
+                </div>
+              </div>
+              <div className={styles.cardActions}>
+                <button type="submit" className={styles.buttonPrimary}>
+                  Guardar cambios
+                </button>
+              </div>
+            </form>
+          </div>
         )}
 
         {seccionVisible === 'perfilProfesional' && (
-           <div className={`${styles.card} ${styles.sectionCard}`}>
-             <h2 className={styles.cardTitle}>Tu Perfil Profesional</h2>
-             <div className={styles.buttonGroup}>
-                <button className={styles.buttonPrimary} onClick={handleFileUploadClick}>
-                   Subir o actualizar CV
-                </button>
-             </div>
-             <p className={styles.infoText}>Tu CV actual es: {candidato.cvNombre || "No tienes un CV subido."}</p>
-           </div>
+          <div className={`${styles.card} ${styles.sectionCard}`}>
+            <h2 className={styles.cardTitle}>Tu Perfil Profesional</h2>
+            <div className={styles.formGroup}>
+              <label htmlFor="cvFile">Agregar/Actualizar CV (PDF o DOCX):</label>
+              <input
+                type="file"
+                id="cvFile"
+                accept=".pdf,.docx"
+                className={styles.inputField}
+                onChange={handleCvFileChange}
+              />
+              <button
+                onClick={handleUploadCvSubmit}
+                className={styles.buttonPrimary}
+                style={{ marginTop: '10px' }}
+                disabled={isUploadingCv}
+              >
+                {isUploadingCv ? 'Subiendo...' : 'Subir CV'}
+              </button>
+              {cvUploadMessage && <p className={styles.infoText} style={{ marginTop: '10px' }}>{cvUploadMessage}</p>}
+            </div>
+            <p className={styles.infoText}>Tu CV actual es: {candidatoInfo.cvNombre || "No tienes un CV subido."}</p>
+          </div>
         )}
 
-         {seccionVisible === 'notificaciones' && (
-              <div className={`${styles.card} ${styles.sectionCard}`}>
-                 <h2 className={styles.cardTitle}> Notificaciones</h2>
-                 {notificaciones.length > 0 ? (
-                     <ul className={styles.notificationList}>
-                         {notificaciones.map(notif => ( <li key={notif.id}>{notif.texto}</li> ))}
-                     </ul>
-                 ) : ( <p className={styles.noItemsText}>No tienes notificaciones nuevas.</p> )}
-             </div>
-         )}
-
+        {seccionVisible === 'notificaciones' && (
+          <div className={`${styles.card} ${styles.sectionCard}`}>
+            <h2 className={styles.cardTitle}> Notificaciones</h2>
+            {notificaciones.length > 0 ? (
+              <ul className={styles.notificationList}>
+                {notificaciones.map(notif => (
+                  <li key={notif.id} className={notif.leida ? styles.leida : styles.noLeida}>{notif.texto}</li>
+                ))}
+              </ul>
+            ) : (<p className={styles.noItemsText}>No tienes notificaciones nuevas.</p>)}
+          </div>
+        )}
       </div>
+
+      {/* Modal de postulación */}
+      {isApplyModalOpen && applyingJobDetails && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3 className={styles.modalTitle}>Aplicar a: {applyingJobDetails.title}</h3>
+            {applicationError && <p className={styles.errorMessageModal}>{applicationError}</p>}
+            {applicationSuccessMessage && <p className={styles.successMessageModal}>{applicationSuccessMessage}</p>}
+            {!applicationSuccessMessage && (
+              <>
+                <div className={styles.formGroupModal}>
+                  <label htmlFor="yearsExperience">Años de experiencia en el puesto/rol similar *:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    id="yearsExperience"
+                    value={yearsExperience}
+                    onChange={(e) => setYearsExperience(e.target.value)}
+                    className={styles.inputFieldModal}
+                    placeholder="Ej: 2"
+                    disabled={isSubmittingApplication}
+                  />
+                </div>
+                <div className={styles.formGroupModal}>
+                  <label>Tecnologías/habilidades que posees para este puesto :</label>
+                  <div className={styles.skillTagsContainerModal}>
+                    {applyingJobDetails.skillTags && applyingJobDetails.skillTags.length > 0 ?
+                      applyingJobDetails.skillTags.map(skill => (
+                        <label key={skill} className={styles.skillTagCheckboxLabel}>
+                          <input
+                            type="checkbox"
+                            checked={candidateSkillSelections[skill] || false}
+                            onChange={() => handleSkillSelectionChange(skill)}
+                            disabled={isSubmittingApplication}
+                          /> {skill}
+                        </label>
+                      )) : (
+                        <p>No se especificaron habilidades para esta oferta.</p>
+                      )}
+                  </div>
+                </div>
+              </>
+            )}
+            <div className={styles.modalActions}>
+              {!applicationSuccessMessage && (
+                <button
+                  onClick={handleConfirmApplication}
+                  className={`${styles.buttonPrimary} ${styles.buttonModalConfirm}`}
+                  disabled={isSubmittingApplication}
+                >
+                  {isSubmittingApplication ? 'Enviando...' : 'Confirmar Postulación'}
+                </button>
+              )}
+              <button
+                onClick={handleCloseApplyModal}
+                className={`${styles.buttonSecondary} ${styles.buttonModalCancel}`}
+                disabled={isSubmittingApplication && !applicationSuccessMessage}
+              >
+                {applicationSuccessMessage ? 'Cerrar' : 'Cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

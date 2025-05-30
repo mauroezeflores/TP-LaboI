@@ -44,7 +44,7 @@ def realizar_consulta(conexion, query, params=None):
 
     
     except Exception as e:
-        print("Error al realizar la consulta: {e}")
+        print(f"Error al realizar la consulta: {e}")
         return None
 
 
@@ -56,3 +56,5 @@ def cerrar_conexion(conexion):
 
     except Exception as e:
         print(f"Error al cerrar la conexion: {e}")
+
+
