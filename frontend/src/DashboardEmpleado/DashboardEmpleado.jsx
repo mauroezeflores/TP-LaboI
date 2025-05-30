@@ -5,8 +5,6 @@ import { EncuestaSatisfaccionEmpleado } from "./EncuestaSatisfaccionEmpleado";
 import { useEffect } from 'react';
 import { getUsuarioActual } from '../services/authService';
 import LogoutButton from '../components/LogoutButton'; // Asegúrate de que la ruta sea correcta
-import styles from './DashboardEmpleado.module.css';
-import { useNavigate, NavLink } from 'react-router-dom';
 
 const DashboardEmpleado = () => {
     const usuario = getUsuarioActual();
