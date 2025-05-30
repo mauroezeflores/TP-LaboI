@@ -348,10 +348,11 @@ def obtener_id_candidato_de_id_usuario(conexion, id_usuario):
 
 
 ##faltaria tener en cuenta las certificaciones
-def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia): #actualiza la tabla candidatos_por_convocatorias
+def postular_candidato(conexion, id_usuario,id_convocatoria, experiencia, certificaciones): #actualiza la tabla candidatos_por_convocatorias
     id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
     set_experiencia(conexion, id_cv,id_convocatoria, experiencia)
     id_candidato = obtener_id_candidato_de_id_usuario(conexion, id_usuario)
+    set_certificaciones_por_candidato(conexion,id_candidato, certificaciones)
     if not verificar_postulacion(conexion, id_candidato, id_convocatoria):
         try:
             cursor = conexion.cursor()
@@ -373,8 +374,31 @@ def verificar_postulacion(conexion, id_candidato, id_convocatoria):#por si el ca
     except Exception as e:
         print(f"error al verificar si el candidato ya se postulo: {e}")
 
-def obtener_cantidad_de_certificaciones():
-    return
+def obtener_nivel_certificacion_candidato(conexion, id_candidato, id_puesto):
+    try:
+        cursor = conexion.cursor()
+        query = "SELECT SUM(cert.peso) AS total_peso FROM certificaciones_por_candidato cpc INNER JOIN certificaciones_validas_por_puesto cvp ON cpc.id_certificaciones = cvp.id_certificacion INNER JOIN certificacion cert ON cert.id_certificacion = cpc.id_certificaciones WHERE cpc.id_candidato = %s AND cvp.id_puesto   = %s;"
+        cursor.execute(query, (id_candidato, id_puesto))
+        peso = cursor.fetchone()[0]
+        cursor.close()
+        if peso is None:
+            return 0
+        else:
+            return peso
+    except Exception as e:
+        print(f"Error al obtener el nivel de certificacion del candidato: {e}")
+
+def set_certificaciones_por_candidato(conexion, id_candidato, certificaciones):
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO certificaciones_por_candidato(id_candidato,  id_certificacion) VALUES (%s,%s)"
+        for id_certificacion in certificaciones:
+            cursor.execute(query, (id_candidato, id_certificacion))
+        conexion.commit()
+        cursor.close()
+
+    except Exception as e:
+        print(f"Error al setear las certificaciones: {e}")
 
 
 

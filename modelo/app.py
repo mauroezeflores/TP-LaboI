@@ -411,6 +411,7 @@ async def postularse(
         id_convocatoria: int,
         id_usuario: int = Form(...),
         experiencia: int = Form(...)
+        ,certificaciones = list()
 
 ):
     
@@ -424,7 +425,8 @@ async def postularse(
         aux_cv.postular_candidato(conexion,
                                   id_usuario = id_usuario,
                                   id_convocatoria = id_convocatoria,
-                                  experiencia = experiencia)
+                                  experiencia = experiencia,
+                                  certificaciones = certificaciones)
 
         db.cerrar_conexion(conexion)
         return {"mensaje": "Candidato postulado correctamente"}
