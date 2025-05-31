@@ -56,7 +56,7 @@ export default function DashboardGerenteLayout() {
               </div>
             </div>
           </NavLink>
-                     <NavLink
+          <NavLink
             to="datos-desempeno"
             className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
           >
@@ -64,6 +64,17 @@ export default function DashboardGerenteLayout() {
               <div className={styles.navTextContainer}>
                 <span className={styles.navTitle}>Desempeno predictivo</span>
                 <span className={styles.navDescription}>Prediccion de desempeño por empleados</span>
+              </div>
+            </div>
+          </NavLink>
+                    <NavLink
+            to="subir-certificaciones"
+            className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}
+          >
+            <div className={styles.navItemContent}>
+              <div className={styles.navTextContainer}>
+                <span className={styles.navTitle}>Crear Certificaciones</span>
+                <span className={styles.navDescription}>ver y crear nuevas certificaciones que sean relevantes para la empresa</span>
               </div>
             </div>
           </NavLink>

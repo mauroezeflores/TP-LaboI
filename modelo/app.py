@@ -20,6 +20,11 @@ from pydantic.networks import EmailStr
 
 app = FastAPI()
 
+
+class CertificacionInput(BaseModel):
+    nombre: str
+    peso: int
+
 class EmpleadoCreateInput(BaseModel):
     nombre: str
     apellido: str
@@ -688,3 +693,32 @@ def listar_puestos_trabajo():
     finally:
         db.cerrar_conexion(conn)
 
+#crear certificaciones
+
+@app.post("/certificaciones")
+def crear_certificacion(cert: CertificacionInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO certificacion (nombre, peso) VALUES (%s, %s)",
+            (cert.nombre, cert.peso)
+        )
+        conn.commit()
+        return {"mensaje": "Certificación creada"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.cerrar_conexion(conn)
+# Listar certificaciones
+@app.get("/certificaciones")
+def listar_certificaciones():
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT id_certificacion, nombre, peso FROM certificacion ORDER BY id_certificacion ASC;")
+        certificaciones = cursor.fetchall()
+        return certificaciones
+    finally:
+        db.cerrar_conexion(conn)

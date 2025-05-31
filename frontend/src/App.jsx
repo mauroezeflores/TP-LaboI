@@ -31,6 +31,7 @@ import GestionUsuarios from './DashboardAdmin/pages/GestionUsuarios.jsx';
 import AdminHome from './DashboardAdmin/pages/AdminHome.jsx';
 import DatosDeDesempeno from './DashboardGerente/DatosDeDesempeno.jsx';
 import ABMEmpleados from './DashboardReclutador/pages/ABMEmpleados.jsx';
+import CrearCertificaciones from './DashboardGerente/CrearCertificaciones.jsx';
 
 function App() {
   return (
@@ -83,6 +84,7 @@ function App() {
             <Route path="config" element={<ConfiguracionPorPuesto />} />
             <Route path="riesgos-empleados" element={<PantallaDeRiesgosEmpleados />} />
             <Route path="datos-desempeno" element={<DatosDeDesempeno />} />
+            <Route path="subir-certificaciones" element={<CrearCertificaciones />} />
             {/* Acá van más rutas del gerente */}
         </Route>
 
