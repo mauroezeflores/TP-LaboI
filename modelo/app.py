@@ -126,6 +126,12 @@ modelo_desempeno = load("modelo_prediccion_de_desempeno.joblib")
 modelo_rotacion = load("../modelo/modelo_prediccion_de_rotacion.joblib")
 scaler_rotacion = load("../modelo/scaler.joblib")
 
+#Evaluación de CVs
+modelo_evaluacion_cv = load("../modelo/modelo_evaluacion_cv.joblib")
+scaler_evaluacion_cv = load("../modelo/scaler_evaluacion_cv.joblib")
+fetures_evaluacion_cv = load("../modelo/features_evaluacion_cv.joblib")
+threshold_evaluacion_cv = load("../modelo/threshold_evaluacion_cv.joblib")
+
 # Endpoint 1: Predicción individual de datos
 @app.get("/predecir/desempeno/{id_empleado}")
 async def predecir(id_empleado: int):
@@ -393,18 +399,6 @@ def crear_nueva_convocatoria(data: ConvocatoriaInput):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-
-
-    ####faltaria que los candidatos aptos pasen por el modelo ml y los devuelva ordenados
-@app.post("/convocatoria/{id_convocatoria}/cerrar")
-def cerrar_convocatoria(id_convocatoria: int):
-    try:
-        conexion = db.abrir_conexion()
-        candidatos_aptos = aux_cv.finalizar_convocatoria(conexion, id_convocatoria)
-        db.cerrar_conexion(conexion)
-        return {"mensaje": "Convocatoria cerrada correctamente", "candidatos_aptos": [c[0] for c in candidatos_aptos]}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/convocatoria/{id_convocatoria}/postularse")
 async def postularse(
@@ -689,4 +683,130 @@ def listar_puestos_trabajo():
         return puestos
     finally:
         db.cerrar_conexion(conn)
+
+   ####faltaria que los candidatos aptos pasen por el modelo ml y los devuelva ordenados
+@app.post("/convocatoria/{id_convocatoria}/cerrar")
+def cerrar_convocatoria(id_convocatoria: int):
+    try:
+        conexion = db.abrir_conexion()
+        candidatos_aptos = aux_cv.finalizar_convocatoria(conexion, id_convocatoria)
+        db.cerrar_conexion(conexion)
+        return {"mensaje": "Convocatoria cerrada correctamente", "candidatos_aptos": [c[0] for c in candidatos_aptos]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+        
+
+def obtener_datos_ml_para_candidato(conexion, id_candidato, id_convocatoria):
+
+    id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
+    if not id_usuario:
+        #print(f"No se encontró el id_usuario para el id_candidato: {id_candidato}")
+        return None
+
+    id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
+    if not id_cv:
+        #print(f"No se encontró el id_cv para el id_usuario: {id_usuario}")
+        return None
+
+
+    try:
+        cursor = conexion.cursor()
+        query = """
+            SELECT
+                    experiencia,
+                    nivel_estudio,
+                    etiquetas_deseables_encontradas,
+                    cant_etiquetas_deseables,
+                    nivel_certificacion
+            FROM
+                    evaluacion_cv
+            WHERE
+                    id_cv = %s AND id_convocatoria = %s AND es_apto = TRUE;
+                """
+        cursor.execute(query, (id_cv,id_convocatoria))
+        datos = cursor.fetchone()
+
+        features = None
+        if datos:
+            anios_experiencia = float(datos[0]) if datos[0] is not None else 0.0 
+            nivel_educativo = str(datos[1]).lower() if datos[1] is not None else "secundario"
+
+            etiquetas_deseables_encontradas = int(datos[2]) if datos[2] is not None else 0
+            cant_total_deseables = int(datos[3]) if datos[3] is not None and datos[3] > 0 else 1 #para evitar division por cero
+
+            skill_deseables_ratio = etiquetas_deseables_encontradas / cant_total_deseables if cant_total_deseables > 0 else 0.0
+            peso_certificaciones = int(datos[4]) if datos[4] is not None else 0
+
+            features={
+                "id_candidato_original": id_candidato, 
+                "anios_experiencia": anios_experiencia,
+                "nivel_educativo": nivel_educativo,
+                "skills_deseables_ratio": skill_deseables_ratio,
+                "peso_certificaciones": peso_certificaciones
+            }
+            print(f"  Features para ML obtenidas para candidato {id_candidato}: {features}")
+        else:
+            print(f"No se encontraron datos de evaluación (o no es apto) para id_cv {id_cv}, convocatoria {id_convocatoria}")
+
+        cursor.close()
+        return features
+    except Exception as e:
+        print(f"Error al obtener los datos para el modelo de ML: {e}")
+        return None
+
+def finalizar_convocatoria_y_preparar_para_ml(conexion, id_convocatoria):
+    #Falta hacer cierre de convocatoria 
+    #print(f"Preparando datos para ML de convocatoria {id_convocatoria}...")
+    # No cerramos la convocatoria aquí, eso lo hace el endpoint
+
+    # Obtener IDs de candidatos que YA fueron marcados como aptos en evaluacion_cv
+    cursor = conexion.cursor()
+    query_aptos = """
+        SELECT DISTINCT cand.id_candidato
+        FROM evaluacion_cv ecv
+        JOIN cv ON ecv.id_cv = cv.id_cv
+        JOIN candidato cand ON cv.id_usuario = cand.id_usuario
+        WHERE ecv.id_convocatoria = %s AND ecv.es_apto = TRUE;
+    """
+    cursor.execute(query_aptos, (id_convocatoria,))
+    candidatos_aptos_tuplas = cursor.fetchall()
+    cursor.close()
+
+    if not candidatos_aptos_tuplas:
+        print(f"No hay candidatos marcados como 'aptos' en la BD para la convocatoria {id_convocatoria} para enviar al ML.")
+        return []
+
+    candidatos_aptos_ids = [c[0] for c in candidatos_aptos_tuplas]
+    #print(f"Candidatos aptos (de BD) para ML en conv {id_convocatoria}: {candidatos_aptos_ids}")
+
+    candidatos_features_para_ml = []
+    for id_candidato in candidatos_aptos_ids:
+        features_candidato = obtener_datos_ml_para_candidato(conexion, id_candidato, id_convocatoria)
+        if features_candidato:
+            candidatos_features_para_ml.append(features_candidato)
+
+    #print(f"Se han preparado features para {len(candidatos_features_para_ml)} candidatos para el modelo de ML.")
+    return candidatos_features_para_ml
+
+def guardar_score_ml_candidato(conexion, id_candidato, id_convocatoria, score_ml, decision_ml):
+    id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
+    if not id_usuario: return
+    id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
+    if not id_cv: return
+
+    try:
+        cursor = conexion.cursor()
+        query = """
+            UPDATE evaluacion_cv 
+            SET score_ml = %s, decision_ml = %s
+            WHERE id_cv = %s AND id_convocatoria = %s
+        """
+        cursor.execute(query, (score_ml, decision_ml, id_cv, id_convocatoria))
+        conexion.commit()
+        print(f"  Score ML para candidato {id_candidato} en conv {id_convocatoria} guardado en BD.")
+    except Exception as e:
+        print(f"  Error al guardar score ML para candidato {id_candidato}: {e}")
+    finally:
+        if cursor: cursor.close()
+    
 
