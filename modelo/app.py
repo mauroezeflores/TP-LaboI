@@ -20,6 +20,9 @@ from pydantic.networks import EmailStr
 
 app = FastAPI()
 
+class CertificacionPuestoInput(BaseModel):
+    id_certificacion: int
+    id_puesto_trabajo: int
 
 class CertificacionInput(BaseModel):
     nombre: str
@@ -720,5 +723,23 @@ def listar_certificaciones():
         cursor.execute("SELECT id_certificacion, nombre, peso FROM certificacion ORDER BY id_certificacion ASC;")
         certificaciones = cursor.fetchall()
         return certificaciones
+    finally:
+        db.cerrar_conexion(conn)
+        
+# Asociar certificación a puesto de trabajo
+@app.post("/certificaciones_validas_por_puesto")
+def asociar_certificacion_puesto(data: CertificacionPuestoInput):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO certificaciones_validas_por_puesto (id_certificacion, id_puesto_trabajo) VALUES (%s, %s)",
+            (data.id_certificacion, data.id_puesto_trabajo)
+        )
+        conn.commit()
+        return {"mensaje": "Asociación creada"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.cerrar_conexion(conn)
