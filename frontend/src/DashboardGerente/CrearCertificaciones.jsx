@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// Puedes usar MUI o estilos propios, aquí va con estilos CSS-in-JS simples
+// ...estilos existentes...
 const cardStyle = {
   background: "#f8fafc",
   borderRadius: "10px",
@@ -51,26 +51,14 @@ export function CrearCertificacion() {
   const [mensaje, setMensaje] = useState("");
   const [certificaciones, setCertificaciones] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [puestos, setPuestos] = useState([]);
+  const [puestosSeleccionados, setPuestosSeleccionados] = useState([]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMensaje("");
-    try {
-      const res = await fetch("http://localhost:8000/certificaciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, peso }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Error al crear certificación");
-      setMensaje("¡Certificación creada!");
-      setNombre("");
-      setPeso(1);
-      fetchCertificaciones();
-    } catch (err) {
-      setMensaje("Error: " + err.message);
-    }
-  };
+  // Traer certificaciones y puestos de trabajo al montar
+  useEffect(() => {
+    fetchCertificaciones();
+    fetchPuestos();
+  }, []);
 
   const fetchCertificaciones = async () => {
     try {
@@ -83,9 +71,57 @@ export function CrearCertificacion() {
     }
   };
 
-  useEffect(() => {
-    fetchCertificaciones();
-  }, []);
+  const fetchPuestos = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/puestos");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Error al obtener puestos");
+      setPuestos(data);
+    } catch (err) {
+      setMensaje("Error: " + err.message);
+    }
+  };
+
+  const handleCheckbox = (id) => {
+    setPuestosSeleccionados(prev =>
+      prev.includes(id)
+        ? prev.filter(pid => pid !== id)
+        : [...prev, id]
+    );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMensaje("");
+    try {
+      // 1. Crear certificación
+      const res = await fetch("http://localhost:8000/certificaciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, peso }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Error al crear certificación");
+      const id_certificacion = data.id_certificacion ?? data.id ?? data.insertId;
+
+      // 2. Asociar con puestos seleccionados
+      for (const id_puesto_trabajo of puestosSeleccionados) {
+        await fetch("http://localhost:8000/certificaciones_validas_por_puesto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_certificacion, id_puesto_trabajo }),
+        });
+      }
+
+      setMensaje("¡Certificación creada y asociada!");
+      setNombre("");
+      setPeso(1);
+      setPuestosSeleccionados([]);
+      fetchCertificaciones();
+    } catch (err) {
+      setMensaje("Error: " + err.message);
+    }
+  };
 
   // Filtrado por búsqueda
   const certificacionesFiltradas = certificaciones.filter(cert =>
@@ -133,6 +169,25 @@ export function CrearCertificacion() {
             color: "#4f8cff"
           }}>{peso}</span>
         </label>
+        <div style={{ flexBasis: "100%", marginTop: "1rem" }}>
+          <label style={{ fontWeight: "bold" }}>Puestos de trabajo válidos:</label>
+          <div style={{
+            maxHeight: 120, overflowY: "auto", border: "1px solid #ccc",
+            borderRadius: 6, padding: 8, background: "#fff", marginTop: 4
+          }}>
+            {puestos.length === 0 && <span style={{ color: "#888" }}>No hay puestos disponibles.</span>}
+            {puestos.map(p => (
+              <label key={p.id_puesto_trabajo} style={{ display: "block", marginBottom: 4 }}>
+                <input
+                  type="checkbox"
+                  checked={puestosSeleccionados.includes(p.id_puesto_trabajo)}
+                  onChange={() => handleCheckbox(p.id_puesto_trabajo)}
+                />
+                {p.nombre} {p.seniority ? `(${p.seniority})` : ""}
+              </label>
+            ))}
+          </div>
+        </div>
         <button
           type="submit"
           style={{
