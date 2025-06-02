@@ -760,3 +760,22 @@ def obtener_certificaciones_por_candidato(id_candidato: int):
         return certificaciones
     finally:
         db.cerrar_conexion(conn)
+
+#subir certificaciones por candidato
+@app.post("/candidato/{id_candidato}/certificaciones")
+def subir_certificaciones_por_candidato(id_candidato: int, certificaciones: List[CertificacionInput]):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        for cert in certificaciones:
+            cursor.execute(
+                "INSERT INTO certificaciones_por_candidato (id_candidato, id_certificacion) VALUES (%s, %s)",
+                (id_candidato, cert.id_certificacion)
+            )
+        conn.commit()
+        return {"mensaje": "Certificaciones subidas correctamente"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.cerrar_conexion(conn)

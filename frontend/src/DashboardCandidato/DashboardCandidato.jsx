@@ -316,6 +316,9 @@ const handleGuardarCertificaciones = async () => {
         <button className={`${styles.navButton} ${seccionVisible === 'notificaciones' ? styles.active : ''}`} onClick={() => mostrarSeccion('notificaciones')}>
           Notificaciones
         </button>
+          <button className={`${styles.navButton} ${seccionVisible === 'misCertificaciones' ? styles.active : ''}`} onClick={() => mostrarSeccion('misCertificaciones')}>
+          Mis Certificaciones
+        </button>
       </nav>
       <div className={styles.sectionsContainer}>
 
@@ -509,6 +512,45 @@ const handleGuardarCertificaciones = async () => {
             ) : (<p className={styles.noItemsText}>No tienes notificaciones nuevas.</p>)}
           </div>
         )}
+         {seccionVisible === 'misCertificaciones' && (
+    <div className={`${styles.card} ${styles.sectionCard}`}>
+      <h2 className={styles.cardTitle}>Mis Certificaciones</h2>
+      {isLoadingCertificaciones && <p>Cargando certificaciones...</p>}
+      {certificacionesError && <p className={styles.errorMessage}>{certificacionesError}</p>}
+      {!isLoadingCertificaciones && !certificacionesError && (
+        <>
+          <form>
+            <div style={{ maxHeight: 250, overflowY: "auto", background: "#f8fafc", borderRadius: 8, padding: 16 }}>
+              {certificaciones.length === 0 && <span style={{ color: "#888" }}>No hay certificaciones de interés.</span>}
+              {certificaciones.map(cert => (
+                <label key={cert.id_certificacion} style={{ display: "block", marginBottom: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={certificacionesSeleccionadas.includes(cert.id_certificacion)}
+                    onChange={() => handleCertificacionChange(cert.id_certificacion)}
+                  />
+                  <span style={{ marginLeft: 8, fontWeight: 500 }}>{cert.nombre}</span>
+                </label>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={styles.buttonPrimary}
+              style={{ marginTop: 16 }}
+              onClick={handleGuardarCertificaciones}
+            >
+              Guardar certificaciones
+            </button>
+            {mensajeCertificaciones && (
+              <p style={{ marginTop: 10, color: mensajeCertificaciones.startsWith("Error") ? "#d32f2f" : "#388e3c" }}>
+                {mensajeCertificaciones}
+              </p>
+            )}
+          </form>
+        </>
+      )}
+    </div>
+  )}
       </div>
 
       {/* Modal de postulación */}
