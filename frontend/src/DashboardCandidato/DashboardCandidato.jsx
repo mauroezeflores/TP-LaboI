@@ -69,6 +69,71 @@ const DashboardCandidato = () => {
   const [convocatoriasDisponibles, setConvocatoriasDisponibles] = useState([]);
   const [isLoadingConvocatorias, setIsLoadingConvocatorias] = useState(false);
   const [convocatoriasError, setConvocatoriasError] = useState('');
+
+  // certificaciones
+  const [certificaciones, setCertificaciones] = useState([]);
+  const [certificacionesSeleccionadas, setCertificacionesSeleccionadas] = useState([]);
+  const [isLoadingCertificaciones, setIsLoadingCertificaciones] = useState(false);
+  const [certificacionesError, setCertificacionesError] = useState('');
+  const [mensajeCertificaciones, setMensajeCertificaciones] = useState('');
+
+  // Traer certificaciones y las que ya tiene el candidato
+const fetchCertificaciones = useCallback(async () => {
+  setIsLoadingCertificaciones(true);
+  setCertificacionesError('');
+  try {
+    // Trae todas las certificaciones de interés
+    const res = await fetch(`${API_BASE_URL}/certificaciones`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Error al obtener certificaciones");
+    setCertificaciones(data);
+
+    // Trae las certificaciones que ya tiene el candidato
+    const res2 = await fetch(`${API_BASE_URL}/candidato/${candidatoInfo.id_usuario}/certificaciones`);
+    const data2 = await res2.json();
+    if (res2.ok && Array.isArray(data2)) {
+      setCertificacionesSeleccionadas(data2.map(c => c.id_certificacion));
+    }
+  } catch (err) {
+    setCertificacionesError(err.message);
+  } finally {
+    setIsLoadingCertificaciones(false);
+  }
+}, [candidatoInfo.id_usuario]);
+
+// Cargar certificaciones al entrar a la pestaña
+useEffect(() => {
+  if (seccionVisible === 'misCertificaciones') {
+    fetchCertificaciones();
+  }
+}, [seccionVisible, fetchCertificaciones]);
+
+const handleCertificacionChange = (id_certificacion) => {
+  setCertificacionesSeleccionadas(prev =>
+    prev.includes(id_certificacion)
+      ? prev.filter(id => id !== id_certificacion)
+      : [...prev, id_certificacion]
+  );
+};
+
+const handleGuardarCertificaciones = async () => {
+  setMensajeCertificaciones('');
+  try {
+    const res = await fetch(`${API_BASE_URL}/candidato/${candidatoInfo.id_usuario}/certificaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ certificaciones: certificacionesSeleccionadas }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Error al guardar certificaciones");
+    setMensajeCertificaciones("¡Certificaciones guardadas!");
+  } catch (err) {
+    setMensajeCertificaciones("Error: " + err.message);
+  }
+};
+
+  // Filtros y postulaciones
+ 
   const [filtros] = useState({
     area: [ { name: 'Programacion', count: 0 }, { name: 'Soporte tecnico', count: 0 } ],
     modalidad: [ { name: 'Presencial', count: 0 }, { name: 'Híbrido', count: 0 }, { name: 'Remoto', count: 0 } ],

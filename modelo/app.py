@@ -743,3 +743,20 @@ def asociar_certificacion_puesto(data: CertificacionPuestoInput):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.cerrar_conexion(conn)
+
+#traer certificaciones por candidato
+@app.get("/candidato/{id_candidato}/certificaciones")
+def obtener_certificaciones_por_candidato(id_candidato: int):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT c.id_certificacion, c.nombre, c.peso
+            FROM certificacion c
+            JOIN certificaciones_por_candidato cp ON c.id_certificacion = cp.id_certificacion
+            WHERE cp.id_candidato = %s
+        """, (id_candidato,))
+        certificaciones = cursor.fetchall()
+        return certificaciones
+    finally:
+        db.cerrar_conexion(conn)
