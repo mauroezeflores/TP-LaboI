@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from fastapi import APIRouter
 from datetime import date, datetime
 from pydantic.networks import EmailStr
-
+from fastapi import Body
 
 app = FastAPI()
 
@@ -762,20 +762,55 @@ def obtener_certificaciones_por_candidato(id_candidato: int):
         db.cerrar_conexion(conn)
 
 #subir certificaciones por candidato
-@app.post("/candidato/{id_candidato}/certificaciones")
-def subir_certificaciones_por_candidato(id_candidato: int, certificaciones: List[CertificacionInput]):
+@app.post("/candidato/{id_usuario}/certificaciones")
+def subir_certificaciones_por_candidato(id_usuario: int, data: dict = Body(...)):
+    """
+    Espera un JSON como: { "certificaciones": [1, 2, 3, ...] }
+    El id_usuario es el id del usuario logueado, NO el id_candidato.
+    """
+    certificaciones = data.get("certificaciones", [])
     conn = db.abrir_conexion()
     try:
         cursor = conn.cursor()
-        for cert in certificaciones:
+        # Buscar el id_candidato correspondiente al id_usuario
+        cursor.execute(
+            "SELECT id_candidato FROM candidato WHERE id_usuario = %s",
+            (id_usuario,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="No se encontró el candidato para este usuario")
+        id_candidato = row[0]
+
+        # Elimina las certificaciones anteriores del candidato
+        cursor.execute(
+            "DELETE FROM certificaciones_por_candidato WHERE id_candidato = %s",
+            (id_candidato,)
+        )
+        # Inserta las nuevas certificaciones seleccionadas
+        for id_certificacion in certificaciones:
             cursor.execute(
                 "INSERT INTO certificaciones_por_candidato (id_candidato, id_certificacion) VALUES (%s, %s)",
-                (id_candidato, cert.id_certificacion)
+                (id_candidato, id_certificacion)
             )
         conn.commit()
-        return {"mensaje": "Certificaciones subidas correctamente"}
+        return {"mensaje": "Certificaciones actualizadas correctamente"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.cerrar_conexion(conn)
+
+# Obtener el id_candidato a partir del id_usuario
+@app.get("/candidato/usuario/{id_usuario}")
+def get_candidato_by_usuario(id_usuario: int):
+    conn = db.abrir_conexion()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id_candidato FROM candidato WHERE id_usuario = %s", (id_usuario,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="No se encontró el candidato para este usuario")
+        return {"id_candidato": row[0]}
     finally:
         db.cerrar_conexion(conn)

@@ -71,13 +71,14 @@ const DashboardCandidato = () => {
   const [convocatoriasError, setConvocatoriasError] = useState('');
 
   // certificaciones
+  const [isGuardandoCertificaciones, setIsGuardandoCertificaciones] = useState(false);
   const [certificaciones, setCertificaciones] = useState([]);
   const [certificacionesSeleccionadas, setCertificacionesSeleccionadas] = useState([]);
   const [isLoadingCertificaciones, setIsLoadingCertificaciones] = useState(false);
   const [certificacionesError, setCertificacionesError] = useState('');
   const [mensajeCertificaciones, setMensajeCertificaciones] = useState('');
 
-  // Traer certificaciones y las que ya tiene el candidato
+// Traer certificaciones y las que ya tiene el candidato
 const fetchCertificaciones = useCallback(async () => {
   setIsLoadingCertificaciones(true);
   setCertificacionesError('');
@@ -86,14 +87,32 @@ const fetchCertificaciones = useCallback(async () => {
     const res = await fetch(`${API_BASE_URL}/certificaciones`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Error al obtener certificaciones");
-    setCertificaciones(data);
 
-    // Trae las certificaciones que ya tiene el candidato
-    const res2 = await fetch(`${API_BASE_URL}/candidato/${candidatoInfo.id_usuario}/certificaciones`);
-    const data2 = await res2.json();
-    if (res2.ok && Array.isArray(data2)) {
-      setCertificacionesSeleccionadas(data2.map(c => c.id_certificacion));
+    // 1. Obtener el id_candidato a partir del id_usuario
+    const resCandidato = await fetch(`${API_BASE_URL}/candidato/usuario/${candidatoInfo.id_usuario}`);
+    const dataCandidato = await resCandidato.json();
+    if (!resCandidato.ok || !dataCandidato.id_candidato) {
+      setCertificacionesError("No se pudo obtener el perfil de candidato.");
+      setCertificaciones([]);
+      setCertificacionesSeleccionadas([]);
+      setIsLoadingCertificaciones(false);
+      return;
     }
+    const id_candidato = dataCandidato.id_candidato;
+
+    // 2. Trae las certificaciones que ya tiene el candidato (usando id_candidato)
+    const res2 = await fetch(`${API_BASE_URL}/candidato/${id_candidato}/certificaciones`);
+    const data2 = await res2.json();
+    let yaPosee = [];
+    if (res2.ok && Array.isArray(data2)) {
+      yaPosee = data2.map(c => c.id_certificacion);
+    }
+
+    // 3. Filtra para mostrar solo las que NO posee
+    const certificacionesNoPoseidas = data.filter(cert => !yaPosee.includes(cert.id_certificacion));
+    setCertificaciones(certificacionesNoPoseidas);
+    setCertificacionesSeleccionadas([]); // Limpia selección al recargar
+
   } catch (err) {
     setCertificacionesError(err.message);
   } finally {
@@ -118,6 +137,7 @@ const handleCertificacionChange = (id_certificacion) => {
 
 const handleGuardarCertificaciones = async () => {
   setMensajeCertificaciones('');
+  setIsGuardandoCertificaciones(true);
   try {
     const res = await fetch(`${API_BASE_URL}/candidato/${candidatoInfo.id_usuario}/certificaciones`, {
       method: 'POST',
@@ -127,8 +147,11 @@ const handleGuardarCertificaciones = async () => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Error al guardar certificaciones");
     setMensajeCertificaciones("¡Certificaciones guardadas!");
+    await fetchCertificaciones(); // Recarga para que ya no se muestren las agregadas
   } catch (err) {
     setMensajeCertificaciones("Error: " + err.message);
+  } finally {
+    setIsGuardandoCertificaciones(false);
   }
 };
 
@@ -512,45 +535,47 @@ const handleGuardarCertificaciones = async () => {
             ) : (<p className={styles.noItemsText}>No tienes notificaciones nuevas.</p>)}
           </div>
         )}
-         {seccionVisible === 'misCertificaciones' && (
-    <div className={`${styles.card} ${styles.sectionCard}`}>
-      <h2 className={styles.cardTitle}>Mis Certificaciones</h2>
-      {isLoadingCertificaciones && <p>Cargando certificaciones...</p>}
-      {certificacionesError && <p className={styles.errorMessage}>{certificacionesError}</p>}
-      {!isLoadingCertificaciones && !certificacionesError && (
-        <>
-          <form>
-            <div style={{ maxHeight: 250, overflowY: "auto", background: "#f8fafc", borderRadius: 8, padding: 16 }}>
-              {certificaciones.length === 0 && <span style={{ color: "#888" }}>No hay certificaciones de interés.</span>}
-              {certificaciones.map(cert => (
-                <label key={cert.id_certificacion} style={{ display: "block", marginBottom: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={certificacionesSeleccionadas.includes(cert.id_certificacion)}
-                    onChange={() => handleCertificacionChange(cert.id_certificacion)}
-                  />
-                  <span style={{ marginLeft: 8, fontWeight: 500 }}>{cert.nombre}</span>
-                </label>
-              ))}
-            </div>
-            <button
-              type="button"
-              className={styles.buttonPrimary}
-              style={{ marginTop: 16 }}
-              onClick={handleGuardarCertificaciones}
-            >
-              Guardar certificaciones
-            </button>
-            {mensajeCertificaciones && (
-              <p style={{ marginTop: 10, color: mensajeCertificaciones.startsWith("Error") ? "#d32f2f" : "#388e3c" }}>
-                {mensajeCertificaciones}
-              </p>
-            )}
-          </form>
-        </>
-      )}
-    </div>
-  )}
+      {seccionVisible === 'misCertificaciones' && (
+  <div className={`${styles.card} ${styles.sectionCard}`}>
+    <h2 className={styles.cardTitle}>Mis Certificaciones</h2>
+    {isLoadingCertificaciones && <p>Cargando certificaciones...</p>}
+    {certificacionesError && <p className={styles.errorMessage}>{certificacionesError}</p>}
+    {!isLoadingCertificaciones && !certificacionesError && (
+      <>
+        <form>
+          <div style={{ maxHeight: 250, overflowY: "auto", background: "#f8fafc", borderRadius: 8, padding: 16 }}>
+            {certificaciones.length === 0 && <span style={{ color: "#888" }}>No hay certificaciones nuevas para agregar.</span>}
+            {certificaciones.map(cert => (
+              <label key={cert.id_certificacion} style={{ display: "block", marginBottom: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={certificacionesSeleccionadas.includes(cert.id_certificacion)}
+                  onChange={() => handleCertificacionChange(cert.id_certificacion)}
+                  disabled={isGuardandoCertificaciones}
+                />
+                <span style={{ marginLeft: 8, fontWeight: 500 }}>{cert.nombre}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            className={styles.buttonPrimary}
+            style={{ marginTop: 16 }}
+            onClick={handleGuardarCertificaciones}
+            disabled={certificacionesSeleccionadas.length === 0 || isGuardandoCertificaciones}
+          >
+            {isGuardandoCertificaciones ? "Guardando..." : "Guardar certificaciones"}
+          </button>
+          {mensajeCertificaciones && (
+            <p style={{ marginTop: 10, color: mensajeCertificaciones.startsWith("Error") ? "#d32f2f" : "#388e3c" }}>
+              {mensajeCertificaciones}
+            </p>
+          )}
+        </form>
+      </>
+    )}
+  </div>
+)}
       </div>
 
       {/* Modal de postulación */}
