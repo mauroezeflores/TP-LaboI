@@ -53,7 +53,7 @@ def load_and_preprocess_data(data_path=DATA_PATH):
     X_scaled_array = scaler.fit_transform(X_df_unscaled) 
     X_scaled_df = pd.DataFrame(X_scaled_array, columns=features) 
     
-    joblib.dump(scaler, 'scaler_final.joblib')
+    joblib.dump(scaler, 'scaler_cvs.joblib')
     print("Scaler guardado como 'scaler_final.joblib'")
     
     return X_scaled_df, y, features, scaler, df_original
@@ -209,8 +209,8 @@ if __name__ == '__main__':
 
     # Guardar el modelo RandomForest y artefactos
     joblib.dump(rf_produccion, NOMBRE_MODELO_SALIDA) # Usa el nombre que definiste
-    joblib.dump(features, 'model_features_prod.joblib')
-    joblib.dump(best_threshold_rf_prod, 'threshold_prod.joblib')
+    joblib.dump(features, 'model_features_cvs.joblib')
+    joblib.dump(best_threshold_rf_prod, 'threshold_cvs.joblib')
     # El scaler ya se guardó en load_and_preprocess_data como 'scaler_final.joblib'
     
     print(f"\n Modelo RandomForest de Producción guardado como '{NOMBRE_MODELO_SALIDA}'.")
@@ -222,8 +222,8 @@ if __name__ == '__main__':
     nuevos_candidatos_test = generate_sample_candidates(num_candidates=10)
     predict_new_candidates(nuevos_candidatos_test, 
                            NOMBRE_MODELO_SALIDA, 
-                           'scaler_final.joblib', 
-                           'model_features_prod.joblib', 
+                           'scaler_cvs.joblib',             # NUEVO
+                           'model_features_cvs.joblib', 
                            best_threshold_rf_prod)
     
     print("\n--- Pipeline de Producción para RandomForest Completado ---")

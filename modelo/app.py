@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from joblib import load
 import pandas as pd
 import auxiliares as aux
@@ -16,9 +17,12 @@ from fastapi.responses import JSONResponse
 from fastapi import APIRouter
 from datetime import date, datetime
 from pydantic.networks import EmailStr
+from sklearn.exceptions import NotFittedError
 
 
 app = FastAPI()
+
+app.mount("/modelo/cvs", StaticFiles(directory="cvs"), name="cvs")
 
 class CertificacionPuestoInput(BaseModel):
     id_certificacion: int
@@ -108,9 +112,11 @@ class CandidatoParaConvocatoriaOutput(BaseModel):
     nombre: Optional[str] = None
     apellido: Optional[str] = None
     email: Optional[str] = None
-    telefono: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
-    ubicacion: Optional[str] = None # Descomentar si tienes esta info y la añades a la query
+    telefono: Optional[str] = None
+    ubicacion: Optional[str] = None
     cvUrl: Optional[str] = None
+    es_apto: Optional[bool] = None      # <--- Añadido
+    score_ml: Optional[float] = None
 
 class ConvocatoriaDisponibleOutput(BaseModel):
     id: int
@@ -133,6 +139,11 @@ app.add_middleware(
 modelo_desempeno = load("modelo_prediccion_de_desempeno.joblib")
 modelo_rotacion = load("../modelo/modelo_prediccion_de_rotacion.joblib")
 scaler_rotacion = load("../modelo/scaler.joblib")
+modelo_eval_cv = load("modelo_evaluacion_cvs.joblib")
+scaler_eval_cv = load("scaler_cvs.joblib")
+model_features_eval_cv = load("model_features_cvs.joblib") # Esta lista contiene los nombres de las features post one-hot encoding
+threshold_eval_cv = load("threshold_cvs.joblib")
+
 
 # Endpoint 1: Predicción individual de datos
 @app.get("/predecir/desempeno/{id_empleado}")
@@ -495,39 +506,7 @@ async def obtener_info_convocatoria(convocatoria_id: int):
         if conn:
             db.cerrar_conexion(conn)
 
-# --- Endpoint para listar candidatos de una convocatoria todavia no funcioan. ---
-@app.get("/convocatoria/{convocatoria_id}/candidatos", response_model=List[CandidatoParaConvocatoriaOutput])
-async def listar_candidatos_por_convocatoria(convocatoria_id: int):
-    conn = None
-    try:
-        conn = db.abrir_conexion()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-      
-        query = """
-            SELECT DISTINCT ON (cand.id_candidato)
-                cand.id_candidato as id,
-                cand.nombre,
-                cand.apellido,
-                cand.email,
-                cv.url as cvUrl
-            FROM candidatos_por_convocatoria cpc
-            JOIN candidato cand ON cpc.id_candidato = cand.id_candidato
-            LEFT JOIN cv ON cand.id_usuario = cv.id_usuario
-            WHERE cpc.id_convocatoria = %s
-            ORDER BY cand.id_candidato, cand.apellido, cand.nombre; 
-        """
-        
-        cursor.execute(query, (convocatoria_id,))
-        candidatos = cursor.fetchall()
-        return candidatos
-    except Exception as e:
-        print(f"Error en GET /convocatoria/{convocatoria_id}/candidatos: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Error interno al obtener candidatos de la convocatoria.")
-    finally:
-        if conn:
-            db.cerrar_conexion(conn)
+
 
 @app.get("/convocatorias/disponibles", response_model=List[ConvocatoriaDisponibleOutput])
 async def listar_convocatorias_para_candidatos():
@@ -743,3 +722,114 @@ def asociar_certificacion_puesto(data: CertificacionPuestoInput):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.cerrar_conexion(conn)
+@app.get("/convocatoria/{convocatoria_id}/candidatos", response_model=List[CandidatoParaConvocatoriaOutput])
+async def listar_candidatos_por_convocatoria(convocatoria_id: int):
+    conn = None
+    try:
+        conn = db.abrir_conexion()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+        # Tu query original para obtener datos básicos del candidato
+        query = """
+            SELECT DISTINCT ON (cand.id_candidato)
+                cand.id_candidato as id,
+                cand.nombre,
+                cand.apellido,
+                cand.email,
+                cand.tel_num__telefono as telefono,
+                cv.url as "cvUrl"
+            FROM candidatos_por_convocatoria cpc
+            JOIN candidato cand ON cpc.id_candidato = cand.id_candidato
+            LEFT JOIN cv ON cand.id_usuario = cv.id_usuario
+            WHERE cpc.id_convocatoria = %s
+            ORDER BY cand.id_candidato, cand.apellido, cand.nombre; 
+        """
+    
+        cursor.execute(query, (convocatoria_id,))
+        candidatos = cursor.fetchall()
+        print("Resultado crudo de la query:")
+
+        candidatos_con_prediccion = []
+        for cand_dict in candidatos:
+            id_candidato = cand_dict['id']
+            es_apto_pred = None
+            score_ml_pred = None
+            
+            try:
+                # 1. Preparar datos para el modelo
+                features_candidato_raw = aux_cv.preparar_datos_candidato_para_modelo(
+                    conn, id_candidato, convocatoria_id
+                )
+
+                if features_candidato_raw:
+                    df_cand = pd.DataFrame([features_candidato_raw])
+                    
+                    # 2. One-Hot Encode 'nivel_educativo'
+                    # Asegúrate que las categorías y drop_first coincidan con el entrenamiento.
+                    # El script de entrenamiento usa: pd.get_dummies(df, columns=['nivel_educativo'], drop_first=True)
+                    # Las categorías implícitas en el CSV son ['secundario', 'terciario', 'universitario']
+                    # Si 'secundario' es la primera alfabéticamente, será la dropeada.
+                    
+                    # Para asegurar consistencia, define las categorías explícitamente:
+                    categorias_nivel_educativo = ['secundario', 'terciario', 'universitario'] # Orden importa si drop_first depende de ello.
+                                                                                              # O mejor, el orden que usó tu `pd.get_dummies` al entrenar.
+                                                                                              # Si 'secundario' es el primero en el orden que tomó get_dummies,
+                                                                                              # es el que se omite con drop_first=True.
+
+                    df_cand['nivel_educativo'] = pd.Categorical(
+                        df_cand['nivel_educativo'],
+                        categories=categorias_nivel_educativo, # Estas son las categorías que tu modelo conoce de 'nivel_educativo'
+                        ordered=False # No es ordinal para one-hot encoding
+                    )
+                    df_cand_encoded = pd.get_dummies(df_cand, columns=['nivel_educativo']) # Debe coincidir con el entrenamiento
+                                     
+                    # 3. Alinear columnas con las features del modelo (model_features_eval_cv)
+                    # model_features_eval_cv ya tiene los nombres de las columnas post-dummificación
+                    df_cand_aligned = df_cand_encoded.reindex(columns=model_features_eval_cv, fill_value=0)
+                    print(f"--- Depurando Candidato ID: {id_candidato} ---")
+                    print("DataFrame Alineado (antes de escalar):")
+                    print(df_cand_aligned) # Ver qué entra al escalador
+                    
+                    # 4. Escalar features (asegurándose que el orden de columnas sea el esperado por el scaler)
+                    X_cand_scaled = scaler_eval_cv.transform(df_cand_aligned[model_features_eval_cv]) # Usar model_features_eval_cv para el orden
+                    print("Features Escaladas (entrada al modelo):")
+                    print(X_cand_scaled) # Ver qué entra al modelo
+                    X_cand_df_for_pred = pd.DataFrame(X_cand_scaled, columns=model_features_eval_cv)
+
+                    # 5. Predecir usando el DataFrame
+                    # Asegúrate de que modelo_eval_cv es el RandomForestClassifier cargado
+                    prob_apto = modelo_eval_cv.predict_proba(X_cand_df_for_pred)[:, 1] # Probabilidad de la clase positiva (1)
+                    prediccion_binaria = (prob_apto >= threshold_eval_cv).astype(int)[0]
+
+                    es_apto_pred = bool(prediccion_binaria)
+                    score_ml_pred = round(float(prob_apto[0]), 4)
+
+                else: # Si no se pudieron obtener features
+                    print(f"Advertencia: No se pudieron preparar features para candidato {id_candidato}")
+
+            except NotFittedError as nfe: # Específicamente para errores de Scaler no ajustado o con features incorrectas
+                 print(f"Error de NotFittedError para candidato {id_candidato}: {nfe}. Asegúrate que el scaler esté ajustado y las features coincidan.")
+                 import traceback
+                 traceback.print_exc()
+            except ValueError as ve: # Para errores de shape o tipo en transform/predict
+                print(f"Error de ValueError (shape/tipo) para candidato {id_candidato}: {ve}")
+                import traceback
+                traceback.print_exc()
+            except Exception as pred_e:
+                print(f"Error general durante la predicción para candidato {id_candidato}: {pred_e}")
+                import traceback
+                traceback.print_exc()
+            
+            cand_dict['es_apto'] = es_apto_pred
+            cand_dict['score_ml'] = score_ml_pred
+            candidatos_con_prediccion.append(cand_dict)
+        
+        return candidatos_con_prediccion
+    except Exception as e:
+        print(f"Error en GET /convocatoria/{convocatoria_id}/candidatos: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno al obtener candidatos de la convocatoria.")
+    finally:
+        if conn:
+            db.cerrar_conexion(conn)
