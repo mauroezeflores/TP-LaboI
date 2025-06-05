@@ -17,7 +17,7 @@ export default function VerCandidatos() {
         try {
             const [infoResponse, candidatosResponse] = await Promise.all([
                  fetch(`${API_BASE_URL}/convocatoria/${convocatoriaId}/info`),
-                 fetch(`${API_BASE_URL}/convocatoria/${convocatoriaId}/candidatos`)
+                 fetch(`${API_BASE_URL}/convocatoria/${convocatoriaId}/candidatos`) // Este endpoint ahora incluirá es_apto y score_ml
             ]);
 
             if (!infoResponse.ok) {
@@ -65,9 +65,11 @@ export default function VerCandidatos() {
                                    <th>Nombre</th>
                                    <th>Apellido</th>
                                    <th>Email</th>
-                                    <th>Teléfono</th> 
-                                    <th>Ubicación</th> 
+                                   <th>Teléfono</th> 
+                                   <th>Ubicación</th>
                                    <th>CV</th>
+                                   <th>Score ML</th>      {/* <--- Nueva Columna */}
+                                   <th>Recomendación</th> {/* <--- Nueva Columna */}
                                 </tr>
                               </thead>
                              <tbody>
@@ -75,15 +77,30 @@ export default function VerCandidatos() {
                                     <tr key={cand.id}>
                                         <td>{cand.nombre || 'N/A'}</td>
                                         <td>{cand.apellido || 'N/A'}</td>
-                                        <td>{cand.email || 'N/A'}</td>
-                                         <td>{cand.telefono || 'N/A'}</td>
-                                        <td>{cand.ubicacion || 'N/A'}</td>
+                                        <td>{cand.email || 'N/A'}</td> 
+                                        <td>{cand.telefono || 'N/A'}</td>
+                                        <td>{cand.ubicacion || 'N/A'}</td>  
                                         <td>
-                                           {cand.cvUrl ? (
-                                              <a href={cand.cvUrl} target="_blank" rel="noopener noreferrer" className={styles.cvLink}>
-                                                 Ver CV
-                                              </a>
-                                           ) : ( <span>N/A</span> )}
+                                            {/* Mostrar CV como enlace si existe */}
+                                            {cand.cvUrl ? (
+                                                <a href={cand.cvUrl} target="_blank" rel="noopener noreferrer">
+                                                    Ver CV
+                                                </a>
+                                            ) : (
+                                                'N/A' // Si no hay CV, mostrar N/A
+                                            )}
+                                        </td>
+                                        <td> 
+                                            {/* Mostrar Score ML */}
+                                            {cand.score_ml !== null && cand.score_ml !== undefined 
+                                                ? cand.score_ml.toFixed(3) 
+                                                : 'N/P'} {/* N/P = No Procesado o No Pudo Predecir */}
+                                        </td>
+                                        <td>
+                                            {/* Mostrar Recomendación */}
+                                            {cand.es_apto === null || cand.es_apto === undefined 
+                                                ? 'N/P' 
+                                                : (cand.es_apto ? <span style={{color: 'green', fontWeight: 'bold'}}>Apto ✅</span> : <span style={{color: 'red', fontWeight: 'bold'}}>No Apto ❌</span>)}
                                         </td>
                                     </tr>
                                 ))}

@@ -127,10 +127,10 @@ modelo_rotacion = load("../modelo/modelo_prediccion_de_rotacion.joblib")
 scaler_rotacion = load("../modelo/scaler.joblib")
 
 #Evaluación de CVs
-modelo_evaluacion_cv = load("../modelo/modelo_evaluacion_cv.joblib")
-scaler_evaluacion_cv = load("../modelo/scaler_evaluacion_cv.joblib")
-fetures_evaluacion_cv = load("../modelo/features_evaluacion_cv.joblib")
-threshold_evaluacion_cv = load("../modelo/threshold_evaluacion_cv.joblib")
+modelo_evaluacion_cv = load("../modelo/modelo_evaluacion_cvs.joblib")
+scaler_evaluacion_cv = load("../modelo/scaler_cvs.joblib")
+fetures_evaluacion_cv = load("../modelo/model_features_cvs.joblib")
+threshold_evaluacion_cv = load("../modelo/threshold_cvs.joblib")
 
 # Endpoint 1: Predicción individual de datos
 @app.get("/predecir/desempeno/{id_empleado}")
@@ -484,38 +484,40 @@ async def obtener_info_convocatoria(convocatoria_id: int):
             db.cerrar_conexion(conn)
 
 # --- Endpoint para listar candidatos de una convocatoria todavia no funcioan. ---
-@app.get("/convocatoria/{convocatoria_id}/candidatos", response_model=List[CandidatoParaConvocatoriaOutput])
-async def listar_candidatos_por_convocatoria(convocatoria_id: int):
-    conn = None
+@app.get("/convocatoria/{convocatoria_id}/candidatos")
+def listar_candidatos_por_convocatoria(convocatoria_id: int):
+    conn = db.abrir_conexion()
     try:
-        conn = db.abrir_conexion()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-      
+        cursor = conn.cursor()
         query = """
-            SELECT DISTINCT ON (cand.id_candidato)
-                cand.id_candidato as id,
-                cand.nombre,
-                cand.apellido,
-                cand.email,
-                cv.url as cvUrl
-            FROM candidatos_por_convocatoria cpc
-            JOIN candidato cand ON cpc.id_candidato = cand.id_candidato
-            LEFT JOIN cv ON cand.id_usuario = cv.id_usuario
-            WHERE cpc.id_convocatoria = %s
-            ORDER BY cand.id_candidato, cand.apellido, cand.nombre; 
+            SELECT c.id_candidato, c.nombre, c.apellido, c.email, c.tel_num__telefono, c.direccion, cv.url as cvUrl,
+                   ev.es_apto, ev.score_ml
+            FROM candidatos_por_convocatoria cc
+            JOIN candidato c ON cc.id_candidato = c.id_candidato
+            LEFT JOIN cv ON c.id_usuario = cv.id_usuario
+            LEFT JOIN evaluacion_cv ev ON cv.id_cv = ev.id_cv AND ev.id_convocatoria = %s
+            WHERE cc.id_convocatoria = %s
         """
-        
-        cursor.execute(query, (convocatoria_id,))
-        candidatos = cursor.fetchall()
+        cursor.execute(query, (convocatoria_id, convocatoria_id))
+        candidatos = []
+        for row in cursor.fetchall():
+            candidatos.append({
+                "id": row[0],
+                "nombre": row[1],
+                "apellido": row[2],
+                "email": row[3],
+                "telefono": row[4],
+                "ubicacion": row[5],
+                "cvUrl": row[6],
+                "es_apto": row[7],
+                "score_ml": row[8]
+            })
         return candidatos
     except Exception as e:
         print(f"Error en GET /convocatoria/{convocatoria_id}/candidatos: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Error interno al obtener candidatos de la convocatoria.")
     finally:
-        if conn:
-            db.cerrar_conexion(conn)
+        db.cerrar_conexion(conn)
 
 @app.get("/convocatorias/disponibles", response_model=List[ConvocatoriaDisponibleOutput])
 async def listar_convocatorias_para_candidatos():
@@ -694,119 +696,3 @@ def cerrar_convocatoria(id_convocatoria: int):
         return {"mensaje": "Convocatoria cerrada correctamente", "candidatos_aptos": [c[0] for c in candidatos_aptos]}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
-        
-
-def obtener_datos_ml_para_candidato(conexion, id_candidato, id_convocatoria):
-
-    id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
-    if not id_usuario:
-        #print(f"No se encontró el id_usuario para el id_candidato: {id_candidato}")
-        return None
-
-    id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
-    if not id_cv:
-        #print(f"No se encontró el id_cv para el id_usuario: {id_usuario}")
-        return None
-
-
-    try:
-        cursor = conexion.cursor()
-        query = """
-            SELECT
-                    experiencia,
-                    nivel_estudio,
-                    etiquetas_deseables_encontradas,
-                    cant_etiquetas_deseables,
-                    nivel_certificacion
-            FROM
-                    evaluacion_cv
-            WHERE
-                    id_cv = %s AND id_convocatoria = %s AND es_apto = TRUE;
-                """
-        cursor.execute(query, (id_cv,id_convocatoria))
-        datos = cursor.fetchone()
-
-        features = None
-        if datos:
-            anios_experiencia = float(datos[0]) if datos[0] is not None else 0.0 
-            nivel_educativo = str(datos[1]).lower() if datos[1] is not None else "secundario"
-
-            etiquetas_deseables_encontradas = int(datos[2]) if datos[2] is not None else 0
-            cant_total_deseables = int(datos[3]) if datos[3] is not None and datos[3] > 0 else 1 #para evitar division por cero
-
-            skill_deseables_ratio = etiquetas_deseables_encontradas / cant_total_deseables if cant_total_deseables > 0 else 0.0
-            peso_certificaciones = int(datos[4]) if datos[4] is not None else 0
-
-            features={
-                "id_candidato_original": id_candidato, 
-                "anios_experiencia": anios_experiencia,
-                "nivel_educativo": nivel_educativo,
-                "skills_deseables_ratio": skill_deseables_ratio,
-                "peso_certificaciones": peso_certificaciones
-            }
-            print(f"  Features para ML obtenidas para candidato {id_candidato}: {features}")
-        else:
-            print(f"No se encontraron datos de evaluación (o no es apto) para id_cv {id_cv}, convocatoria {id_convocatoria}")
-
-        cursor.close()
-        return features
-    except Exception as e:
-        print(f"Error al obtener los datos para el modelo de ML: {e}")
-        return None
-
-def finalizar_convocatoria_y_preparar_para_ml(conexion, id_convocatoria):
-    #Falta hacer cierre de convocatoria 
-    #print(f"Preparando datos para ML de convocatoria {id_convocatoria}...")
-    # No cerramos la convocatoria aquí, eso lo hace el endpoint
-
-    # Obtener IDs de candidatos que YA fueron marcados como aptos en evaluacion_cv
-    cursor = conexion.cursor()
-    query_aptos = """
-        SELECT DISTINCT cand.id_candidato
-        FROM evaluacion_cv ecv
-        JOIN cv ON ecv.id_cv = cv.id_cv
-        JOIN candidato cand ON cv.id_usuario = cand.id_usuario
-        WHERE ecv.id_convocatoria = %s AND ecv.es_apto = TRUE;
-    """
-    cursor.execute(query_aptos, (id_convocatoria,))
-    candidatos_aptos_tuplas = cursor.fetchall()
-    cursor.close()
-
-    if not candidatos_aptos_tuplas:
-        print(f"No hay candidatos marcados como 'aptos' en la BD para la convocatoria {id_convocatoria} para enviar al ML.")
-        return []
-
-    candidatos_aptos_ids = [c[0] for c in candidatos_aptos_tuplas]
-    #print(f"Candidatos aptos (de BD) para ML en conv {id_convocatoria}: {candidatos_aptos_ids}")
-
-    candidatos_features_para_ml = []
-    for id_candidato in candidatos_aptos_ids:
-        features_candidato = obtener_datos_ml_para_candidato(conexion, id_candidato, id_convocatoria)
-        if features_candidato:
-            candidatos_features_para_ml.append(features_candidato)
-
-    #print(f"Se han preparado features para {len(candidatos_features_para_ml)} candidatos para el modelo de ML.")
-    return candidatos_features_para_ml
-
-def guardar_score_ml_candidato(conexion, id_candidato, id_convocatoria, score_ml, decision_ml):
-    id_usuario = obtener_id_usuario_de_id_candidato(conexion, id_candidato)
-    if not id_usuario: return
-    id_cv = obtener_id_cv_de_id_usuario(conexion, id_usuario)
-    if not id_cv: return
-
-    try:
-        cursor = conexion.cursor()
-        query = """
-            UPDATE evaluacion_cv 
-            SET score_ml = %s, decision_ml = %s
-            WHERE id_cv = %s AND id_convocatoria = %s
-        """
-        cursor.execute(query, (score_ml, decision_ml, id_cv, id_convocatoria))
-        conexion.commit()
-        print(f"  Score ML para candidato {id_candidato} en conv {id_convocatoria} guardado en BD.")
-    except Exception as e:
-        print(f"  Error al guardar score ML para candidato {id_candidato}: {e}")
-    finally:
-        if cursor: cursor.close()
-    
-
